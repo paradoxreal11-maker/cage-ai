@@ -1,0 +1,59 @@
+{
+  "name": "cage-ai",
+  "version": "1.0.0",
+  "description": "CAGE AI Desktop - Advanced AI & Coding Agent Suite",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "electron .",
+    "installer": "electron . --installer",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder --win nsis"
+  },
+  "build": {
+    "appId": "com.cageai.desktop",
+    "productName": "CAGE AI",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "src/**/*",
+      "ui/**/*",
+      "package.json",
+      ".env"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "runAfterFinish": true
+    }
+  },
+  "keywords": [
+    "cage-ai",
+    "claude-ui",
+    "ai-agent",
+    "codium",
+    "desktop"
+  ],
+  "author": "CAGE AI Team",
+  "license": "Proprietary",
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "nodemailer": "^6.9.16"
+  },
+  "devDependencies": {
+    "electron": "^33.2.1",
+    "electron-builder": "^26.18.0"
+  }
+}

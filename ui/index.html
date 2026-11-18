@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CAGE AI</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- App Container -->
+  <div class="app-layout">
+    
+    <!-- Custom Claude-like Header -->
+    <header class="claude-header">
+      <div class="header-left">
+        <button id="btnToggleSidebar" class="icon-btn" title="Menüyü Aç/Kapat">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line></svg>
+        </button>
+        <div class="nav-arrows">
+          <button id="btnNavBack" class="icon-btn" title="Geri">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
+          </button>
+          <button id="btnNavForward" class="icon-btn" title="İleri">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+          </button>
+        </div>
+        <div class="header-views">
+          <button id="btnViewChat" class="icon-btn active" title="Sohbet">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+          </button>
+          <button id="btnViewArtifacts" class="icon-btn" title="Artifacts & Kod Görüntüleyici">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="header-center">
+        <!-- Plan Badge & Upgrade Trigger -->
+        <div class="plan-pill" id="headerPlanPill">
+          <span class="plan-status" id="headerPlanName">Free plan</span>
+          <span class="pill-dot">•</span>
+          <button class="upgrade-btn" id="btnHeaderUpgrade">Upgrade</button>
+        </div>
+
+        <!-- Codium Live Timer (Visible when using Codium models) -->
+        <div class="timer-pill hidden" id="headerTimerPill">
+          <span class="timer-icon">⏱️</span>
+          <span class="timer-text" id="headerTimerText">00:00</span>
+          <span class="timer-info" id="headerTimerInfo">Kalan</span>
+          <button class="timer-reset-btn hidden" id="btnResetTimer" title="2 saatte bir sıfırla">Sıfırla</button>
+        </div>
+      </div>
+
+      <div class="header-right">
+        <!-- Auth / Admin Button -->
+        <button id="btnAuthTrigger" class="icon-btn" title="Kullanıcı / Admin Girişi">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+        </button>
+
+        <!-- Window Controls -->
+        <div class="window-controls">
+          <button id="btnWinMinimize" class="win-btn" title="Simge Durumuna">−</button>
+          <button id="btnWinMaximize" class="win-btn" title="Ekranı Kapla">▢</button>
+          <button id="btnWinClose" class="win-btn close" title="Kapat">✕</button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Workspace Area -->
+    <div class="workspace-body">
+      
+      <!-- Claude-like Left Sidebar -->
+      <aside class="sidebar" id="appSidebar">
+        
+        <!-- New Chat Button -->
+        <div class="sidebar-top">
+          <button id="btnNewChat" class="btn-new-chat">
+            <span class="plus-icon">+</span>
+            <span>New</span>
+          </button>
+        </div>
+
+        <!-- Primary Nav Items -->
+        <div class="sidebar-nav">
+          <div class="nav-item" id="navSearch">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <span>Search</span>
+          </div>
+          <div class="nav-item" id="navProjects">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+            <span>Projects</span>
+          </div>
+          <div class="nav-item" id="navArtifacts">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
+            <span>Artifacts</span>
+          </div>
+          <div class="nav-item" id="navMarket">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+            <span>Market & Planlar</span>
+          </div>
+          <div class="nav-item" id="navTickets">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+            <span>Destek & Satın Alım</span>
+          </div>
+          <div class="nav-item admin-only hidden" id="navAdmin">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+            <span class="admin-badge-text">Admin Panel 🛡️</span>
+          </div>
+        </div>
+
+        <!-- Chat History List -->
+        <div class="sidebar-history-wrapper">
+          <div class="history-label">Recents</div>
+          <div class="history-list" id="chatHistoryList">
+            <!-- Dynamic chats list -->
+          </div>
+        </div>
+
+        <!-- User Profile Card -->
+        <div class="sidebar-footer">
+          <div class="user-profile-badge" id="btnUserProfile">
+            <div class="user-avatar" id="userAvatar">S</div>
+            <div class="user-meta">
+              <span class="user-name" id="userNameLabel">PARADOX</span>
+              <span class="user-plan-tag" id="userPlanTag">• Free</span>
+            </div>
+            <button class="user-menu-btn" title="Kullanıcı Menüsü">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg>
+            </button>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Center Chat Area -->
+      <main class="chat-viewport">
+        
+        <!-- Welcome Screen (CAGE AI) -->
+        <div class="welcome-container" id="welcomeContainer">
+          <div class="welcome-branding">
+            <span class="brand-asterisk">⬡</span>
+            <span class="brand-text">CAGE AI</span>
+          </div>
+        </div>
+
+        <!-- Chat Messages Container -->
+        <div class="messages-container hidden" id="messagesContainer">
+          <!-- Dynamic messages -->
+        </div>
+
+        <!-- Prompt Area -->
+        <div class="prompt-container">
+          <div class="prompt-box">
+            <textarea 
+              id="promptInput" 
+              placeholder="CAGE AI'ya ne sormak veya yaptırmak istersiniz?" 
+              rows="1"
+            ></textarea>
+
+            <div class="prompt-toolbar">
+              <div class="toolbar-left">
+                <button class="tool-btn" id="btnAttachment" title="Dosya veya Doküman Ekle">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                </button>
+                <div class="project-pill" id="projectPill">
+                  <span>Project</span>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                </div>
+              </div>
+
+              <div class="toolbar-right">
+                <!-- Model Selector Dropdown -->
+                <div class="model-selector-wrapper">
+                  <button class="model-select-btn" id="btnModelSelect">
+                    <span class="model-name" id="selectedModelLabel">Cage AI Free</span>
+                    <span class="model-badge">Free</span>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                  </button>
+
+                  <!-- Model Dropdown Menu -->
+                  <div class="model-dropdown hidden" id="modelDropdown">
+                    <div class="dropdown-header">YAPAY ZEKA MODELLERİ</div>
+                    
+                    <div class="model-option active" data-model="cage-ai-free" data-label="Cage AI Free" data-badge="Sohbet">
+                      <div class="model-opt-info">
+                        <strong>Cage AI Free</strong>
+                        <span>Sadece sohbet, kodlama yapamaz</span>
+                      </div>
+                      <span class="opt-tag">Standart</span>
+                    </div>
+
+                    <div class="model-option" data-model="cage-codium-free" data-label="Cage Codium Free" data-badge="10 dk/gün">
+                      <div class="model-opt-info">
+                        <strong>Cage Codium Free</strong>
+                        <span>Günlük 10 dk erişim (2 saat arayla günde 2 kez sıfırlanabilir)</span>
+                      </div>
+                      <span class="opt-tag opt-code">Kodlama</span>
+                    </div>
+
+                    <div class="model-option" data-model="cage-premium-ultra" data-label="Cage AI Premium & Ultra" data-badge="3x30 dk">
+                      <div class="model-opt-info">
+                        <strong>Cage AI Premium & Cage Codium Ultra</strong>
+                        <span>Sohbet sınırsız (kodlamasız) + Codium günlük 3 oturum (30'ar dk)</span>
+                      </div>
+                      <span class="opt-tag opt-pro">Paket</span>
+                    </div>
+
+                    <div class="model-option" data-model="cage-codium-5-1-ultra" data-label="Cage Codium 5.1 Ultra" data-badge="5x60 dk">
+                      <div class="model-opt-info">
+                        <strong>Cage Codium 5.1 Ultra</strong>
+                        <span>En gelişmiş kodlama aracı, günde 5 oturum (60'ar dk, sayaçlı)</span>
+                      </div>
+                      <span class="opt-tag opt-ultra">Ultra</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="mode-pill">
+                  <span>Medium</span>
+                  <span>Manual</span>
+                </div>
+
+                <!-- Voice / Mic / Send Buttons -->
+                <button class="tool-btn mic-btn" id="btnMic" title="Ses Girişi">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
+                </button>
+                <button class="tool-btn wave-btn" id="btnWave" title="Ses Çıkışı">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
+                </button>
+                <button class="send-btn" id="btnSend" title="Gönder (Enter)">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="19" x2="12" y2="5"></line><polyline points="5 12 12 5 19 12"></polyline></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <!-- Artifacts Drawer / Code Viewer (Slide-out) -->
+      <aside class="artifacts-pane hidden" id="artifactsPane">
+        <div class="artifacts-header">
+          <div class="art-title">
+            <span class="art-icon">📄</span>
+            <span id="artifactFileName">Generated Artifact</span>
+          </div>
+          <div class="art-actions">
+            <button class="art-btn" id="btnCopyArtifact" title="Kopyala">📋</button>
+            <button class="art-btn" id="btnCloseArtifacts" title="Kapat">✕</button>
+          </div>
+        </div>
+        <div class="artifacts-content" id="artifactsContent">
+          <!-- Code / content view -->
+          <pre><code id="artifactCodeText">// Artifact içeriği burada görüntülenecektir...</code></pre>
+        </div>
+      </aside>
+
+    </div>
+  </div>
+
+  <!-- MODALS -->
+
+  <!-- 1. Market & Packages Modal -->
+  <div class="modal-backdrop hidden" id="marketModal">
+    <div class="modal-window market-window">
+      <div class="modal-header">
+        <h2>✦ CAGE AI Market & Abonelik Paketleri</h2>
+        <button class="modal-close" id="btnCloseMarket">✕</button>
+      </div>
+      <div class="modal-body">
+        
+        <!-- Monthly / Annual Toggle -->
+        <div class="billing-toggle-wrapper">
+          <span class="billing-label active" id="lblMonthly">Aylık Ödeme</span>
+          <label class="switch">
+            <input type="checkbox" id="billingCycleToggle">
+            <span class="slider round"></span>
+          </label>
+          <span class="billing-label" id="lblYearly">Yıllık Ödeme <span class="discount-badge">%25 İndirim!</span></span>
+        </div>
+
+        <!-- Pricing Cards -->
+        <div class="pricing-cards-grid">
+          
+          <!-- Package 1: Cage AI Premium & Codium Ultra -->
+          <div class="pricing-card">
+            <div class="card-badge">POPÜLER SEÇİM</div>
+            <h3>Cage AI Premium & Codium Ultra</h3>
+            <p class="card-desc">Sınırsız sohbet ve güçlü kodlama oturumları tek pakette.</p>
+            <div class="price-box">
+              <span class="currency">$</span>
+              <span class="price-val" id="pricePkg1">30</span>
+              <span class="period">/ ay</span>
+            </div>
+            <div class="annual-note" id="annualNote1">Aylık faturalandırılır</div>
+            <ul class="features-list">
+              <li>✓ Cage AI Premium: Sohbet botu sınırsız (kodlama yapamaz)</li>
+              <li>✓ Cage Codium Ultra: Günlük 3 oturum hakkı</li>
+              <li>✓ Her oturum 30 dakikadır (aktif sayaç)</li>
+              <li>✓ Agent yerel dosya düzenleme ve proje analizi</li>
+              <li>✓ Öncelikli sunucu yanıt hızı</li>
+            </ul>
+            <button class="btn btn-primary btn-block btn-buy" data-pkg="premium_ultra" data-name="Cage AI Premium & Cage Codium Ultra" data-price="30">
+              Satın Al & Destek Talebi Aç
+            </button>
+          </div>
+
+          <!-- Package 2: Cage Codium 5.1 Ultra -->
+          <div class="pricing-card ultra-card">
+            <div class="card-badge ultra-badge">EN GELİŞMİŞ AJAN</div>
+            <h3>Cage Codium 5.1 Ultra</h3>
+            <p class="card-desc">Büyük mimariler ve otonom yazılım geliştirme için zirve performans.</p>
+            <div class="price-box">
+              <span class="currency">$</span>
+              <span class="price-val" id="pricePkg2">50</span>
+              <span class="period">/ ay</span>
+            </div>
+            <div class="annual-note" id="annualNote2">Aylık faturalandırılır</div>
+            <ul class="features-list">
+              <li>✓ En gelişmiş Cage Codium 5.1 kodlama motoru</li>
+              <li>✓ Günlük 5 tam oturum hakkı</li>
+              <li>✓ Her oturum tam 60 dakikadır (1 saat sayaçlı)</li>
+              <li>✓ Otonom Agent dosya okuma, yazma ve refactoring yetkisi</li>
+              <li>✓ En üst seviye akıl yürütme (reasoning) ve mimari çözümleme</li>
+              <li>✓ Öncelikli 7/24 Admin & Destek hattı</li>
+            </ul>
+            <button class="btn btn-primary btn-block btn-buy btn-ultra" data-pkg="codium_5_1_ultra" data-name="Cage Codium 5.1 Ultra" data-price="50">
+              Satın Al & Destek Talebi Aç
+            </button>
+          </div>
+
+        </div>
+
+        <!-- Promo Code Section -->
+        <div class="promo-section">
+          <h4>Bir promosyon kodunuz mu var?</h4>
+          <p>Yöneticiniz veya kampanyalar tarafından sağlanan indirim/paket kuponunuzu girin:</p>
+          <div class="promo-input-group">
+            <input type="text" id="txtPromoCode" placeholder="Örn: CAGEVIP, PROMO2026" />
+            <button class="btn btn-secondary" id="btnApplyPromo">Kuponu Uygula</button>
+          </div>
+          <div class="promo-result" id="promoResultMsg"></div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. Support / Ticket Modal -->
+  <div class="modal-backdrop hidden" id="ticketModal">
+    <div class="modal-window">
+      <div class="modal-header">
+        <h2 id="ticketModalTitle">Destek & Satın Alım Talebi Oluştur</h2>
+        <button class="modal-close" id="btnCloseTicket">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="ticket-form">
+          <div class="form-group">
+            <label>Seçilen Paket:</label>
+            <input type="text" id="txtTicketPackage" readonly class="form-control" />
+          </div>
+          <div class="form-group">
+            <label>Fiyat & Faturalandırma:</label>
+            <input type="text" id="txtTicketPrice" readonly class="form-control" />
+          </div>
+          <div class="form-group">
+            <label>Ödeme Yöntemi Tercihi:</label>
+            <select id="selPaymentMethod" class="form-control">
+              <option value="Kripto (USDT / BTC / ETH)">Kripto (USDT / BTC / ETH)</option>
+              <option value="Havale / EFT / Fast">Banka Havale / EFT / Fast</option>
+              <option value="Kredi Kartı / Online Ödeme">Kredi Kartı / Güvenli Online Link</option>
+              <option value="Diğer / Kurumsal Fatura">Diğer / Kurumsal Fatura Talebi</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>İletişim E-Postanız:</label>
+            <input type="email" id="txtTicketEmail" class="form-control" placeholder="adiniz@ornek.com" />
+          </div>
+          <div class="form-group">
+            <label>Ek Notlar / Açıklama:</label>
+            <textarea id="txtTicketNotes" class="form-control" rows="3" placeholder="Ödeme dekontu veya ek sorularınızı buraya ekleyebilirsiniz..."></textarea>
+          </div>
+          <div class="ticket-info-alert">
+            ℹ️ Talebiniz oluşturulduğunda sistem yöneticisi (Admin) tarafından incelenir ve onaylandığında paketiniz doğrudan hesabınıza tanımlanır.
+          </div>
+          <button class="btn btn-primary btn-block" id="btnSubmitTicket">Talebi Gönder</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. Agent File Permission Modal -->
+  <div class="modal-backdrop hidden" id="filePermissionModal">
+    <div class="modal-window permission-window">
+      <div class="modal-header permission-header">
+        <div class="perm-title">
+          <span class="perm-icon">⚠️</span>
+          <h2>CAGE AI Agent Dosya İşlem İzni İstiyor</h2>
+        </div>
+      </div>
+      <div class="modal-body">
+        <p class="perm-desc">
+          Yapay zeka ajanı bilgisayarınızdaki bir dosyada işlem gerçekleştirmek istiyor.
+        </p>
+
+        <div class="perm-details-card">
+          <div class="perm-row">
+            <strong>İşlem Türü:</strong>
+            <span id="permActionType" class="badge-action">YAZMA / DEĞİŞTİRME</span>
+          </div>
+          <div class="perm-row">
+            <strong>Hedef Dosya:</strong>
+            <code id="permFilePath">C:\Users\...</code>
+          </div>
+          <div class="perm-preview">
+            <strong>İçerik Önizlemesi:</strong>
+            <pre><code id="permFileContent">...</code></pre>
+          </div>
+        </div>
+
+        <div class="perm-warning-box">
+          <strong>Kullanıcı Sözleşmesi ve Yasal Beyan:</strong>
+          <p>
+            "İzin Ver" butonuna tıklayarak yapay zekanın bu dosyaya erişebildiğini, değişiklik yapabileceğini ve doğabilecek tüm risk ile sorumluluğun kendinize ait olduğunu kabul edersiniz. CAGE AI hiçbir veri kaybından ötürü sorumluluk kabul etmez.
+          </p>
+        </div>
+
+        <div class="perm-actions">
+          <button class="btn btn-secondary" id="btnRejectFilePerm">Reddet</button>
+          <button class="btn btn-primary" id="btnApproveFilePerm">İzin Ver & Çalıştır (Sorumluluğu Kabul Ediyorum)</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. Auth & OTP Modal -->
+  <div class="modal-backdrop hidden" id="authModal">
+    <div class="modal-window auth-window">
+      <div class="modal-header">
+        <h2>✦ CAGE AI Hesabına Giriş Yap / Kaydol</h2>
+        <button class="modal-close" id="btnCloseAuth">✕</button>
+      </div>
+      <div class="modal-body">
+        
+        <!-- Step 1: Email Form -->
+        <div id="authStepEmail">
+          <p class="auth-sub">E-posta adresinize tek kullanımlık 6 haneli güvenlik kodu (OTP) gönderilecektir.</p>
+          <div class="form-group">
+            <label>E-Posta Adresiniz:</label>
+            <input type="email" id="txtAuthEmail" class="form-control" placeholder="adiniz@example.com" />
+          </div>
+          <div class="form-group">
+            <label>Kullanıcı Adınız (Opsiyonel):</label>
+            <input type="text" id="txtAuthUsername" class="form-control" placeholder="PARADOX" />
+          </div>
+          <button class="btn btn-primary btn-block" id="btnSendOtp">Doğrulama Kodu Gönder</button>
+        </div>
+
+        <!-- Step 2: Code Form -->
+        <div id="authStepCode" class="hidden">
+          <p class="auth-sub">
+            <strong id="lblSentEmail"></strong> adresine gönderilen 6 haneli kodu giriniz.
+          </p>
+          
+          <div class="dev-otp-toast hidden" id="devOtpToast">
+            <span class="badge-test">TEST MODU</span>
+            <span>Kodunuz: <strong id="devOtpCode">123456</strong></span>
+            <small>(Gerçek gönderim için SMTP yapılandırabilirsiniz)</small>
+          </div>
+
+          <div class="form-group">
+            <label>6 Haneli Güvenlik Kodu:</label>
+            <input type="text" id="txtAuthOtp" class="form-control text-center otp-input" maxlength="6" placeholder="______" />
+          </div>
+          <button class="btn btn-primary btn-block" id="btnVerifyOtp">Kodu Onayla ve Giriş Yap</button>
+          <button class="btn btn-link btn-block" id="btnAuthBack">Farklı e-posta ile dene</button>
+        </div>
+
+        <!-- Admin Shortcut Button inside Auth Modal -->
+        <div class="admin-login-shortcut">
+          <button class="btn-link-subtle" id="btnOpenAdminAuth">🛡️ Yönetici (Admin) Girişi</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. Admin Panel & Login Modal -->
+  <div class="modal-backdrop hidden" id="adminModal">
+    <div class="modal-window admin-window">
+      <div class="modal-header admin-modal-header">
+        <div class="admin-header-title">
+          <span class="admin-shield">🛡️</span>
+          <h2>CAGE AI Güvenlik ve Yönetim Paneli</h2>
+        </div>
+        <button class="modal-close" id="btnCloseAdmin">✕</button>
+      </div>
+
+      <div class="modal-body">
+        
+        <!-- Admin Login Screen (if not yet authenticated as admin) -->
+        <div id="adminLoginScreen">
+          <div class="admin-login-box">
+            <h3>Admin Girişi</h3>
+            <p>Bu alan yalnızca sistem sahibine ve yetkili yöneticilere açıktır.</p>
+            <div class="form-group">
+              <label>Yönetici Kullanıcı Adı:</label>
+              <input type="text" id="txtAdminUser" class="form-control" placeholder="cage_admin" />
+            </div>
+            <div class="form-group">
+              <label>Yönetici Şifresi:</label>
+              <input type="password" id="txtAdminPass" class="form-control" placeholder="••••••••••••" />
+            </div>
+            <div class="admin-cred-hint">
+              ℹ️ <em>Şifre ve kullanıcı adınız sistem kurulumunda güvence altına alınmıştır.</em>
+            </div>
+            <button class="btn btn-primary btn-block" id="btnAdminDoLogin">Yönetici Paneline Gir</button>
+          </div>
+        </div>
+
+        <!-- Admin Dashboard Screen -->
+        <div id="adminDashboardScreen" class="hidden">
+          
+          <!-- Admin Tabs -->
+          <div class="admin-tabs">
+            <button class="admin-tab active" data-tab="incidents">🚨 Tehlikeli Durumlar (<span id="countIncidents">0</span>)</button>
+            <button class="admin-tab" data-tab="tickets">🎫 Destek &amp; Satın Alımlar (<span id="countTickets">0</span>)</button>
+            <button class="admin-tab" data-tab="promos">🎁 Promosyon Kodları (<span id="countPromos">0</span>)</button>
+            <button class="admin-tab" data-tab="users">👥 Kullanıcılar (<span id="countUsers">0</span>)</button>
+            <button class="admin-tab" data-tab="update">🚀 Güncelleme Yayınla</button>
+          </div>
+
+          <!-- Tab 1: Safety Incidents (Tehlikeli Durum Tespiti) -->
+          <div class="admin-tab-content active" id="tabContentIncidents">
+            <div class="tab-header-row">
+              <h3>Otomatik Raporlanan Tehlikeli ve Şüpheli Sohbetler</h3>
+              <p>Sözleşme gereği sistem ve kullanıcı güvenliğini tehdit eden durumlar burada denetlenir.</p>
+            </div>
+            <div class="incidents-list" id="incidentsList">
+              <!-- Dynamic Incident Cards -->
+            </div>
+          </div>
+
+          <!-- Tab 2: Tickets -->
+          <div class="admin-tab-content" id="tabContentTickets">
+            <div class="tab-header-row">
+              <h3>Satın Alım ve Destek Talepleri</h3>
+            </div>
+            <div class="tickets-table-wrapper" id="ticketsList">
+              <!-- Dynamic Tickets -->
+            </div>
+          </div>
+
+          <!-- Tab 3: Promos -->
+          <div class="admin-tab-content" id="tabContentPromos">
+            <div class="promo-creator-card">
+              <h4>Yeni Promosyon Kodu Oluştur</h4>
+              <div class="form-grid-3">
+                <input type="text" id="txtNewPromoCode" placeholder="KOD ADI (Örn: CAGEVIP)" class="form-control" />
+                <select id="selNewPromoPlan" class="form-control">
+                  <option value="premium_ultra">Cage AI Premium & Codium Ultra</option>
+                  <option value="codium_5_1_ultra">Cage Codium 5.1 Ultra</option>
+                </select>
+                <input type="number" id="txtNewPromoDays" placeholder="Geçerlilik (Gün: 30)" class="form-control" value="30" />
+              </div>
+              <button class="btn btn-primary" id="btnAdminCreatePromo">Promosyon Kodunu Kaydet</button>
+            </div>
+            <div class="promos-list" id="adminPromosList">
+              <!-- Dynamic Promo codes list -->
+            </div>
+          </div>
+
+          <!-- Tab 4: Users -->
+          <div class="admin-tab-content" id="tabContentUsers">
+            <div class="users-list" id="adminUsersList">
+              <!-- Dynamic users list -->
+            </div>
+          </div>
+
+          <!-- Tab 5: Publish Update (Güncelleme Yayınla) -->
+          <div class="admin-tab-content" id="tabContentUpdate">
+            <div class="tab-header-row">
+              <h3>🚀 Yeni Sürüm &amp; Güncelleme Yayınlama</h3>
+              <p>Buradan yeni bir güncelleme yayınladığınızda, tüm kullanıcıların ekranında zorunlu güncelleme uyarısı açılır ve güncelleme yapmadan uygulamayı kullanamazlar.</p>
+            </div>
+            <div class="promo-creator-card" style="margin-top: 16px;">
+              <div class="form-group">
+                <label>Yeni Sürüm Numarası (Versiyon):</label>
+                <input type="text" id="txtAdminNewVersion" class="form-control" placeholder="1.1.0" value="1.1.0" />
+              </div>
+              <div class="form-group">
+                <label>Güncelleme Notları / Yenilikler:</label>
+                <textarea id="txtAdminUpdateNotes" class="form-control" rows="3" placeholder="Yeni Codium 5.1 Ultra iyileştirmeleri, güvenlik yamaları ve performans artışı..."></textarea>
+              </div>
+              <div class="form-group">
+                <label class="custom-checkbox">
+                  <input type="checkbox" id="chkAdminForceUpdate" checked>
+                  <span class="checkmark"></span>
+                  <span class="check-text">Zorunlu Güncelleme (Kullanıcılar güncelleme yapmadan uygulamayı kullanamaz)</span>
+                </label>
+              </div>
+              <button class="btn btn-primary btn-block" id="btnAdminDoPublishUpdate" style="padding: 12px; font-weight: 600;">
+                🚀 Güncellemeyi Canlıya Yayınla (Tüm Kullanıcılara Gönder)
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. MANDATORY AUTO-UPDATE LOCK MODAL (Kullanımı Kilitleyen Zorunlu Güncelleme Ekranı) -->
+  <div class="modal-backdrop hidden" id="forceUpdateModal" style="z-index: 99999; backdrop-filter: blur(8px); background-color: rgba(15, 14, 13, 0.92);">
+    <div class="modal-window" style="max-width: 540px; border-color: #d97706; box-shadow: 0 0 50px rgba(217, 119, 6, 0.25);">
+      <div class="modal-header" style="background: linear-gradient(90deg, #1f1e1d, #2d1a0e); border-bottom: 1px solid #d97706;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <span style="font-size: 24px;">🚨</span>
+          <h2 style="color: #fbbf24; font-size: 18px;">Zorunlu Sistem Güncellemesi Gerekli</h2>
+        </div>
+        <!-- Note: No close button! Update is mandatory! -->
+      </div>
+      <div class="modal-body" style="padding: 26px;">
+        <div style="text-align: center; margin-bottom: 20px;">
+          <div style="display: inline-block; background-color: rgba(217, 119, 6, 0.15); border: 1px solid #d97706; padding: 6px 16px; border-radius: 20px; font-size: 13px; color: #fbbf24; font-weight: 600; margin-bottom: 12px;">
+            Yeni Sürüm: v<span id="lblUpdateNewVersion">1.1.0</span> (Mevcut: v<span id="lblUpdateCurrentVersion">1.0.0</span>)
+          </div>
+          <p style="font-size: 13px; color: #d1d5db; line-height: 1.6;">
+            CAGE AI sistem altyapısı ve yapay zeka modelleri güncellendi. Sistem güvenliği ve sözleşme gereği <strong>güncelleme tamamlanmadan uygulamanın kullanımına izin verilmemektedir</strong>.
+          </p>
+        </div>
+
+        <div style="background-color: #171615; border: 1px solid #333230; border-radius: 8px; padding: 14px; margin-bottom: 20px;">
+          <strong style="font-size: 12px; color: #aaa; display: block; margin-bottom: 6px;">GÜNCELLEME NOTLARI:</strong>
+          <div id="lblUpdateChangelog" style="font-size: 13px; color: #fff; line-height: 1.5; white-space: pre-wrap;">• Performans ve Codium Agent optimizasyonları.</div>
+        </div>
+
+        <div id="updateProgressArea" class="hidden" style="margin-bottom: 20px;">
+          <div class="progress-bar-container" style="background-color: #272624; height: 10px; border-radius: 5px; overflow: hidden; margin-bottom: 8px;">
+            <div id="updateDownloadBar" style="width: 0%; height: 100%; background: linear-gradient(90deg, #d97706, #10b981); transition: width 0.2s;"></div>
+          </div>
+          <div style="display: flex; justify-content: space-between; font-size: 12px; color: #aaa;">
+            <span id="lblUpdateDownloadStatus">Dosyalar indiriliyor...</span>
+            <span id="lblUpdateDownloadPct">0%</span>
+          </div>
+        </div>
+
+        <button class="btn btn-primary btn-block" id="btnStartAutoUpdate" style="padding: 14px; font-size: 15px; font-weight: 700; background: linear-gradient(135deg, #d97706, #b45309);">
+          ⚡ Güncellemeyi Şimdi Kur ve Uygulamayı Başlat
+        </button>
+      </div>
+    </div>
+  </div>
+
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CAGE AI — Kurulum Sihirbazı</title>
+  <link rel="stylesheet" href="installer.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+  <!-- Pencere Başlık Çubuğu -->
+  <div class="window-titlebar">
+    <div class="titlebar-left">
+      <span class="app-icon">⬡</span>
+      <span class="app-title">CAGE AI Kurulum Sihirbazı v1.0.0</span>
+    </div>
+    <div class="titlebar-controls">
+      <button id="btnMinimize" class="control-btn" title="Simge Durumuna Küçült">−</button>
+      <button id="btnClose" class="control-btn close-btn" title="Kapat">✕</button>
+    </div>
+  </div>
+
+  <div class="installer-shell">
+    <div class="installer-container">
+      
+      <!-- Sol Sidebar: Adımlar -->
+      <aside class="installer-sidebar">
+        <div class="brand">
+          <div class="brand-badge">
+            <span class="badge-icon">⬡</span>
+          </div>
+          <h2>CAGE AI</h2>
+          <span class="sub">Masaüstü Kurulumu</span>
+        </div>
+
+        <nav class="steps-nav">
+          <div class="step-item active" data-step="1">
+            <div class="step-num">1</div>
+            <div class="step-info">
+              <span class="step-title">Hoş Geldiniz</span>
+              <span class="step-desc">Giriş ve Genel Bakış</span>
+            </div>
+          </div>
+          <div class="step-item" data-step="2">
+            <div class="step-num">2</div>
+            <div class="step-info">
+              <span class="step-title">Kullanıcı Sözleşmesi</span>
+              <span class="step-desc">Yasal Sorumluluk Reddi</span>
+            </div>
+          </div>
+          <div class="step-item" data-step="3">
+            <div class="step-num">3</div>
+            <div class="step-info">
+              <span class="step-title">Kurulum Tercihleri</span>
+              <span class="step-desc">Dizin ve Kısayol</span>
+            </div>
+          </div>
+          <div class="step-item" data-step="4">
+            <div class="step-num">4</div>
+            <div class="step-info">
+              <span class="step-title">Kuruluyor</span>
+              <span class="step-desc">Dosyalar Yükleniyor</span>
+            </div>
+          </div>
+          <div class="step-item" data-step="5">
+            <div class="step-num">5</div>
+            <div class="step-info">
+              <span class="step-title">Tamamlandı</span>
+              <span class="step-desc">Uygulamayı Başlat</span>
+            </div>
+          </div>
+        </nav>
+
+        <div class="sidebar-footer">
+          <span>© 2026 CAGE AI Technologies</span>
+          <small>Sürüm 1.0.0 (64-Bit)</small>
+        </div>
+      </aside>
+
+      <!-- Sağ İçerik Alanı -->
+      <main class="installer-content">
+        
+        <!-- ADIM 1: Hoş Geldiniz -->
+        <section id="step1" class="wizard-step active">
+          <div class="step-header">
+            <span class="step-pill">ADIM 1 / 5</span>
+            <h1>CAGE AI'ya Hoş Geldiniz</h1>
+            <p>Claude zarafetinde arayüze ve Codium otonom kodlama ajanlarına sahip yeni nesil masaüstü yapay zeka deneyimi.</p>
+          </div>
+
+          <div class="features-grid">
+            <div class="feature-card">
+              <div class="f-icon">✦</div>
+              <div class="f-text">
+                <strong>Claude Tarzı Sade ve Koyu Arayüz</strong>
+                <p>Dikkat dağıtmayan, ergonomik ve profesyonel çalışma alanı.</p>
+              </div>
+            </div>
+            <div class="feature-card">
+              <div class="f-icon">⚡</div>
+              <div class="f-text">
+                <strong>Cage Codium Kodlama &amp; Ajan Motoru</strong>
+                <p>Projelerinizi analiz eden, kod yazan ve dosyalarınızı düzenleyen akıllı ajanlar.</p>
+              </div>
+            </div>
+            <div class="feature-card">
+              <div class="f-icon">🛡️</div>
+              <div class="f-text">
+                <strong>Kullanıcı İzin &amp; Güvenlik Mimarisi</strong>
+                <p>Yerel dosyalara yapılacak her müdahalede mutlak onay ve şeffaf denetim mekanizması.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="wizard-footer">
+            <div class="footer-left"></div>
+            <div class="footer-right">
+              <button id="btnNext1" class="btn btn-primary">İleri &gt;</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- ADIM 2: Kullanıcı Sözleşmesi (Upuzun maddeler) -->
+        <section id="step2" class="wizard-step">
+          <div class="step-header">
+            <span class="step-pill">ADIM 2 / 5</span>
+            <h1>Kullanıcı ve Hizmet Sözleşmesi</h1>
+            <p>Lütfen aşağıdaki yasal sorumluluk reddi ve kullanım kurallarını dikkatle inceleyiniz.</p>
+          </div>
+
+          <div class="terms-warning-banner">
+            <span class="w-icon">⚠️</span>
+            <div class="w-text">
+              <strong>ÖNEMLİ YASAL BİLGİLENDİRME:</strong> CAGE AI; yapacağınız hiçbir işlem, kod ve satın alım için ASLA sorumluluk kabul etmez. Tüm sorumluluk kullanıcıya aittir. Yapay zeka modelleri hata yapabilir ve değişebilir.
+            </div>
+          </div>
+
+          <div class="terms-scroll-box" id="termsBox">
+            <div class="terms-loader">Sözleşme yükleniyor...</div>
+          </div>
+
+          <div class="agreement-check-container">
+            <label class="custom-checkbox">
+              <input type="checkbox" id="chkAcceptTerms">
+              <span class="checkmark"></span>
+              <span class="check-text">
+                Kullanıcı Sözleşmesini, Yapay Zeka Risk Beyanını, Dosya Erişim İznini ve Güvenlik Denetim Şartlarını <strong>okudum, anladım ve aynen kabul ediyorum</strong>.
+              </span>
+            </label>
+          </div>
+
+          <div class="wizard-footer">
+            <div class="footer-left">
+              <button id="btnBack2" class="btn btn-secondary">&lt; Geri</button>
+            </div>
+            <div class="footer-right">
+              <button id="btnNext2" class="btn btn-primary" disabled>Kabul Ediyorum ve Devam Et &gt;</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- ADIM 3: Kurulum Tercihleri -->
+        <section id="step3" class="wizard-step">
+          <div class="step-header">
+            <span class="step-pill">ADIM 3 / 5</span>
+            <h1>Kurulum Tercihleri</h1>
+            <p>CAGE AI'nın kurulacağı dizini ve kısayol ayarlarını belirleyin.</p>
+          </div>
+
+          <div class="pref-card">
+            <div class="form-group">
+              <label>Hedef Kurulum Dizini:</label>
+              <div class="path-input-group">
+                <input type="text" id="txtInstallPath" value="C:\Users\Public\Programs\CageAI" readonly>
+                <button class="btn btn-secondary btn-sm" id="btnBrowse" disabled>Varsayılan</button>
+              </div>
+              <small class="help-text">Uygulama yerel kullanıcı programları klasörüne kurulacaktır.</small>
+            </div>
+
+            <div class="checkbox-group">
+              <label class="custom-checkbox">
+                <input type="checkbox" id="chkDesktopShortcut" checked>
+                <span class="checkmark"></span>
+                <span class="check-text">Masaüstüne doğrudan <strong>CAGE AI Uygulama Kısayolu</strong> oluştur</span>
+              </label>
+              <label class="custom-checkbox">
+                <input type="checkbox" id="chkStartMenu" checked>
+                <span class="checkmark"></span>
+                <span class="check-text">Windows Başlat Menüsüne ekle</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="disk-info-bar">
+            <span>Gereken Disk Alanı: <strong>~180 MB</strong></span>
+            <span>Durum: <strong>Kullanıma Hazır</strong></span>
+          </div>
+
+          <div class="wizard-footer">
+            <div class="footer-left">
+              <button id="btnBack3" class="btn btn-secondary">&lt; Geri</button>
+            </div>
+            <div class="footer-right">
+              <button id="btnInstall" class="btn btn-primary">Kuruluma Başla</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- ADIM 4: Kuruluyor (Animasyonlu İlerleme) -->
+        <section id="step4" class="wizard-step">
+          <div class="step-header">
+            <span class="step-pill">ADIM 4 / 5</span>
+            <h1>CAGE AI Kuruluyor</h1>
+            <p id="installStatusText">Gerekli dosyalar hazırlanıyor ve doğrulanıyor...</p>
+          </div>
+
+          <div class="progress-wrapper">
+            <div class="progress-bar-track">
+              <div class="progress-bar-fill" id="progressBar">
+                <div class="progress-shimmer"></div>
+              </div>
+            </div>
+            <div class="progress-meta">
+              <span class="status-indicator"></span>
+              <span id="progressPercentage">0%</span>
+            </div>
+          </div>
+
+          <div class="install-logs-container" id="installLogs">
+            <div class="log-entry">[INFO] Kurulum motoru başlatıldı.</div>
+          </div>
+
+          <div class="wizard-footer">
+            <div class="footer-left"></div>
+            <div class="footer-right">
+              <button class="btn btn-secondary" disabled>Lütfen bekleyin...</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- ADIM 5: Kurulum Tamamlandı -->
+        <section id="step5" class="wizard-step">
+          <div class="success-screen">
+            <div class="success-icon-wrapper">
+              <div class="success-icon">✓</div>
+            </div>
+            <h1>Kurulum Başarıyla Tamamlandı!</h1>
+            <p>CAGE AI masaüstü uygulaması bilgisayarınıza başarıyla kuruldu.</p>
+
+            <div class="success-card">
+              <label class="custom-checkbox">
+                <input type="checkbox" id="chkLaunchNow" checked>
+                <span class="checkmark"></span>
+                <span class="check-text">CAGE AI Uygulamasını Hemen Başlat</span>
+              </label>
+            </div>
+
+            <div class="wizard-footer" style="width: 100%; border: none;">
+              <div class="footer-left"></div>
+              <div class="footer-right">
+                <button id="btnFinish" class="btn btn-primary btn-finish">Bitir ve Uygulamayı Aç 🚀</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+      </main>
+
+    </div>
+  </div>
+
+  <script src="installer.js"></script>
+</body>
+</html>

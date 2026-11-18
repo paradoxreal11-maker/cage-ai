@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CAGE AI — Yeni Nesil Yapay Zeka &amp; Codium Kodlama Ajanı</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23d97706'><polygon points='12 2 2 7 12 12 22 7 12 2'/><polyline points='2 17 12 22 22 17'/><polyline points='2 12 12 17 22 12'/></svg>">
+</head>
+<body>
+  
+  <!-- Üst Menü / Navbar -->
+  <header class="navbar">
+    <div class="nav-container">
+      <a href="#" class="brand">
+        <span class="brand-logo">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="12 2 2 7 12 12 22 7 12 2" stroke="#d97706"></polygon>
+            <polyline points="2 17 12 22 22 17" stroke="#f59e0b"></polyline>
+            <polyline points="2 12 12 17 22 12" stroke="#b45309"></polyline>
+          </svg>
+        </span>
+        <span class="brand-name">CAGE AI</span>
+      </a>
+      <nav class="nav-links">
+        <a href="#features">Özellikler</a>
+        <a href="#models">Modeller</a>
+        <a href="#pricing">Fiyatlandırma</a>
+        <a href="#security">Güvenlik &amp; Sözleşme</a>
+        <a href="#download" class="nav-download-btn">Windows İçin İndir (.exe)</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Karşılama / Hero Alanı -->
+  <section class="hero-section">
+    <div class="container hero-container">
+      <div class="hero-badge">
+        <span class="badge-dot"></span>
+        <span>CAGE AI v1.0.0 Resmi Windows Sürümü Yayınlandı</span>
+      </div>
+      <h1 class="hero-title">
+        Gelişmiş Yapay Zeka &amp; <br>
+        <span class="highlight-text">Codium Kodlama Ajanı</span>
+      </h1>
+      <p class="hero-subtitle">
+        Özel karanlık çalışma alanı, otonom dosya yetkilendirmeli Codium kodlama motoru, oturum sayaçları ve tam güvenlik denetimli masaüstü ekosistemi.
+      </p>
+
+      <div class="hero-cta-group" id="download">
+        <a href="/CAGE_AI_Setup.exe" class="btn btn-hero-primary" download="CAGE_AI_Setup.exe" id="btnDownloadExe">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+          <span>Windows İçin CAGE AI İndir (.exe)</span>
+        </a>
+        <span class="download-meta">Windows 10 / 11 (64-Bit) • Doğrudan Kurulum Sihirbazı • Sözleşme Onaylı</span>
+      </div>
+
+      <!-- Uygulama Arayüz Önizlemesi (Mockup) -->
+      <div class="app-mockup-wrapper">
+        <div class="mockup-header">
+          <div class="mockup-dots">
+            <span></span><span></span><span></span>
+          </div>
+          <div class="mockup-pill">CAGE AI Masaüstü — Çalışma Alanı</div>
+        </div>
+        <div class="mockup-screen">
+          <div class="mockup-sidebar">
+            <div class="mockup-new">+ Yeni Sohbet</div>
+            <div class="mockup-item">🔍 Arama</div>
+            <div class="mockup-item">📁 Projelerim</div>
+            <div class="mockup-item">📄 Kod Çıktıları</div>
+            <div class="mockup-item active">🛒 Market &amp; Paketler</div>
+            <div class="mockup-item">🎫 Destek Talepleri</div>
+            <div class="mockup-spacer"></div>
+            <div class="mockup-user">
+              <span class="m-avatar">C</span>
+              <span>CAGE AI Kullanıcısı • Aktif</span>
+            </div>
+          </div>
+          <div class="mockup-center">
+            <div class="mockup-welcome">
+              <span class="m-emblem">⬡</span>
+              <span class="m-title">CAGE AI</span>
+            </div>
+            <div class="mockup-input">
+              <span class="m-placeholder">Bugün ne geliştirmek veya sormak istersiniz?</span>
+              <div class="m-toolbar">
+                <span class="m-tag">+ Dosya Ekle</span>
+                <span class="m-model-tag">Cage Codium 5.1 Ultra ⌵</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Modeller Bölümü -->
+  <section class="section models-section" id="models">
+    <div class="container">
+      <div class="section-header">
+        <h2>Yapay Zeka &amp; Codium Modelleri</h2>
+        <p>İhtiyaçlarınıza özel sohbet ve otonom kodlama seviyeleri.</p>
+      </div>
+
+      <div class="models-grid">
+        
+        <!-- Model 1: Cage AI Free -->
+        <div class="model-card">
+          <div class="model-type">SOHBET KATMANI</div>
+          <h3>Cage AI Free</h3>
+          <p class="model-desc">Genel sohbet, fikir üretimi, dil desteği ve metin analizi.</p>
+          <div class="model-feature-list">
+            <div class="m-feat">💬 Sadece sohbet odaklıdır</div>
+            <div class="m-feat strike">🚫 Kodlama ve script üretemez</div>
+            <div class="m-feat">⚡ Anında ve akıcı yanıtlar</div>
+          </div>
+          <span class="model-pricing-tag">Ücretsiz</span>
+        </div>
+
+        <!-- Model 2: Cage Codium Free -->
+        <div class="model-card highlight-border">
+          <div class="model-type code-type">GÜNLÜK KODLAMA</div>
+          <h3>Cage Codium Free</h3>
+          <p class="model-desc">Hızlı kodlama çözümleri, hata ayıklama ve script oluşturma.</p>
+          <div class="model-feature-list">
+            <div class="m-feat">⏱️ Günlük 10 dakika erişim hakkı</div>
+            <div class="m-feat">🔄 2 saat arayla günde 2 kez limit sıfırlama</div>
+            <div class="m-feat">📂 Ajan dosya yazma ve düzenleme desteği</div>
+          </div>
+          <span class="model-pricing-tag">Ücretsiz / Kotalı</span>
+        </div>
+
+        <!-- Model 3: Cage AI Premium & Ultra -->
+        <div class="model-card">
+          <div class="model-type pro-type">BİRLEŞİK GÜÇ</div>
+          <h3>Cage AI Premium &amp; Ultra</h3>
+          <p class="model-desc">Sınırsız sohbet ve güçlü 30 dakikalık kodlama oturumları tek pakette.</p>
+          <div class="model-feature-list">
+            <div class="m-feat">💬 Cage AI Premium: Sınırsız sohbet (kodlamasız)</div>
+            <div class="m-feat">⏱️ Codium Ultra: Günde 3 seans (30'ar dakika)</div>
+            <div class="m-feat">⏳ Aktif oturum geri sayım sayacı</div>
+          </div>
+          <span class="model-pricing-tag">30 USD / Ay</span>
+        </div>
+
+        <!-- Model 4: Cage Codium 5.1 Ultra -->
+        <div class="model-card ultra-card">
+          <div class="model-type ultra-type">EN GELİŞMİŞ AJAN</div>
+          <h3>Cage Codium 5.1 Ultra</h3>
+          <p class="model-desc">Büyük yazılım mimarileri ve otonom proje geliştirme için zirve araç.</p>
+          <div class="model-feature-list">
+            <div class="m-feat">🚀 En gelişmiş akıl yürütme motoru</div>
+            <div class="m-feat">⏱️ Günde 5 tam seans (60'ar dakika)</div>
+            <div class="m-feat">🛡️ Çoklu dosya refactoring ve otonom yazılım</div>
+          </div>
+          <span class="model-pricing-tag">50 USD / Ay</span>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- Fiyatlandırma ve Market Bölümü -->
+  <section class="section pricing-section" id="pricing">
+    <div class="container">
+      <div class="section-header">
+        <h2>Şeffaf Market &amp; Abonelik Paketleri</h2>
+        <p>Yıllık alımlarda aylık ücretlerde net %25 indirim kazanın.</p>
+      </div>
+
+      <!-- Aylık / Yıllık Geçiş Düğmesi -->
+      <div class="billing-switcher">
+        <span class="b-opt active" id="webMonthlyLabel">Aylık Ödeme</span>
+        <label class="switch">
+          <input type="checkbox" id="webBillingToggle">
+          <span class="slider round"></span>
+        </label>
+        <span class="b-opt" id="webYearlyLabel">Yıllık Ödeme <span class="badge-discount">%25 İndirim!</span></span>
+      </div>
+
+      <div class="pricing-grid">
+        
+        <!-- Paket 1 -->
+        <div class="price-box-card">
+          <div class="p-header">
+            <h3>Cage AI Premium &amp; Cage Codium Ultra</h3>
+            <p>Sınırsız sohbet ve günlük 3 adet 30 dakikalık kodlama seansı.</p>
+          </div>
+          <div class="p-amount">
+            <span class="currency">$</span>
+            <span class="num" id="webPrice1">30</span>
+            <span class="period">/ ay</span>
+          </div>
+          <span class="p-billed" id="webBilledNote1">Aylık olarak faturalandırılır</span>
+          <ul class="p-list">
+            <li>✓ Cage AI Premium: Sınırsız sohbet botu (kod yazamaz)</li>
+            <li>✓ Cage Codium Ultra: Günde 3 oturum x 30 dakika</li>
+            <li>✓ Geri sayım sayaç göstergesi</li>
+            <li>✓ Ajan yerel dosya oluşturma ve düzenleme</li>
+            <li>✓ Uygulama içinden Destek Talebi ile anında aktivasyon</li>
+          </ul>
+          <a href="#download" class="btn btn-card-primary">Uygulamadan Satın Al</a>
+        </div>
+
+        <!-- Paket 2 -->
+        <div class="price-box-card featured-card">
+          <div class="p-badge">EN ÇOK TERCİH EDİLEN</div>
+          <div class="p-header">
+            <h3>Cage Codium 5.1 Ultra</h3>
+            <p>Profesyonel geliştiriciler için en gelişmiş otonom kodlama aracı.</p>
+          </div>
+          <div class="p-amount">
+            <span class="currency">$</span>
+            <span class="num" id="webPrice2">50</span>
+            <span class="period">/ ay</span>
+          </div>
+          <span class="p-billed" id="webBilledNote2">Aylık olarak faturalandırılır</span>
+          <ul class="p-list">
+            <li>✓ En gelişmiş Codium 5.1 otonom kodlama motoru</li>
+            <li>✓ Günde 5 tam seans x 60 dakika (toplam 300 dk)</li>
+            <li>✓ Kod çıktıları &amp; Canlı Artifacts önizleme</li>
+            <li>✓ Otonom çoklu dosya mimarisi ve refactoring</li>
+            <li>✓ Öncelikli sunucu yanıt hızı ve 7/24 destek hattı</li>
+          </ul>
+          <a href="#download" class="btn btn-card-ultra">Uygulamadan Satın Al</a>
+        </div>
+
+      </div>
+
+      <!-- Promosyon Kodu Çağrısı -->
+      <div class="promo-callout">
+        <h4>🎁 Bir Promosyon Kodunuz mu Var?</h4>
+        <p>Yönetici (Admin) tarafından sağlanan özel kupon kodlarınızı CAGE AI masaüstü uygulamasının Market ekranından girerek anında ücretsiz veya indirimli kullanım sağlayabilirsiniz.</p>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Güvenlik & Yasal Sözleşme Bölümü -->
+  <section class="section security-section" id="security">
+    <div class="container">
+      <div class="section-header">
+        <h2>Güvenlik, İzinler ve Yasal Sorumluluk Reddi</h2>
+        <p>Kullanıcı kontrollü, şeffaf ve denetlenebilir sistem mimarisi.</p>
+      </div>
+
+      <div class="security-grid">
+        <div class="sec-card">
+          <div class="s-icon">⚠️</div>
+          <h4>Sorumluluk Reddi</h4>
+          <p>CAGE AI; kullanıcıların yapacağı eylemler, üreteceği kodlar ve satın alımlar için ASLA hukuki veya mali sorumluluk kabul etmez. Tüm sorumluluk kullanıcıya aittir.</p>
+        </div>
+
+        <div class="sec-card">
+          <div class="s-icon">🤖</div>
+          <h4>Yapay Zeka Hata Payı</h4>
+          <p>Yapay zeka modelleri olasılıksal çalışır; hata yapabilir veya yanıtları değişebilir. Sağlayıcı modelleri önceden bildirmeksizin güncelleme hakkını saklı tutar.</p>
+        </div>
+
+        <div class="sec-card">
+          <div class="s-icon">📁</div>
+          <h4>Ajan Dosya İzin Sistemi</h4>
+          <p>Codium ajanı dosyalara müdahale etmeden önce kullanıcıdan açık onay ister. Kullanıcı izin vererek riskleri kabul eder.</p>
+        </div>
+
+        <div class="sec-card">
+          <div class="s-icon">🛡️</div>
+          <h4>Tehlikeli Durum Tespiti</h4>
+          <p>Sistem tehlikeli veya zararlı içerik algıladığında durumu otomatik raporlar; yetkili admin bu sohbeti güvenlik denetimi için inceleyebilir.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Alt Bilgi / Footer -->
+  <footer class="footer">
+    <div class="container footer-content">
+      <div class="f-left">
+        <div class="brand">
+          <span class="brand-name">CAGE AI</span>
+        </div>
+        <p>© 2026 CAGE AI Technologies. Tüm Hakları Saklıdır.</p>
+      </div>
+      <div class="f-right">
+        <span>Windows Masaüstü Sürümü v1.0.0</span>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Canlı Yıllık / Aylık Geçiş Hesaplayıcısı
+    const toggle = document.getElementById('webBillingToggle');
+    const p1 = document.getElementById('webPrice1');
+    const p2 = document.getElementById('webPrice2');
+    const note1 = document.getElementById('webBilledNote1');
+    const note2 = document.getElementById('webBilledNote2');
+    const lblMonthly = document.getElementById('webMonthlyLabel');
+    const lblYearly = document.getElementById('webYearlyLabel');
+
+    toggle.addEventListener('change', () => {
+      if (toggle.checked) {
+        lblMonthly.classList.remove('active');
+        lblYearly.classList.add('active');
+        p1.textContent = '22.50';
+        p2.textContent = '37.50';
+        note1.textContent = 'Yıllık 270 USD tek seferde tahsil edilir (%25 Tasarruf)';
+        note2.textContent = 'Yıllık 450 USD tek seferde tahsil edilir (%25 Tasarruf)';
+      } else {
+        lblMonthly.classList.add('active');
+        lblYearly.classList.remove('active');
+        p1.textContent = '30';
+        p2.textContent = '50';
+        note1.textContent = 'Aylık olarak faturalandırılır';
+        note2.textContent = 'Aylık olarak faturalandırılır';
+      }
+    });
+  </script>
+</body>
+</html>
