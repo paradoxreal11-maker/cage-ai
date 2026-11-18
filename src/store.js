@@ -135,6 +135,25 @@ class Store {
           merged.currentUser.username = 'Kullanıcı';
           merged.currentUser.email = 'kullanici@cageai.internal';
         }
+
+        // Ensure admin user exists for normal login
+        if (!merged.users || !Array.isArray(merged.users)) {
+          merged.users = this.getDefaultData().users;
+        } else {
+          const hasAdmin = merged.users.some(u => u.role === 'admin' || u.username === 'cage_admin' || u.email === 'admin@cageai.internal');
+          if (!hasAdmin) {
+            merged.users.push({
+              id: 'admin_root',
+              username: 'cage_admin',
+              email: 'admin@cageai.internal',
+              password: 'CageAdmin#2026!SecuredVault',
+              role: 'admin',
+              plan: 'codium_5_1_ultra',
+              planExpireDate: '2099-12-31',
+              createdAt: new Date().toISOString()
+            });
+          }
+        }
         return merged;
       }
     } catch (err) {
@@ -194,14 +213,17 @@ class Store {
   }
 
   loginUser({ email, password }) {
-    const cleanEmail = (email || '').toLowerCase().trim();
-    if (!cleanEmail || !password) {
-      return { success: false, message: 'Lütfen e-posta ve şifrenizi girin.' };
+    const inputClean = (email || '').toLowerCase().trim();
+    if (!inputClean || !password) {
+      return { success: false, message: 'Lütfen kullanıcı adı / e-posta ve şifrenizi girin.' };
     }
 
-    const user = this.data.users.find(u => u.email.toLowerCase() === cleanEmail);
+    const user = this.data.users.find(u => 
+      u.email.toLowerCase() === inputClean || 
+      u.username.toLowerCase() === inputClean
+    );
     if (!user) {
-      return { success: false, message: 'Bu e-posta adresiyle kayıtlı kullanıcı bulunamadı.' };
+      return { success: false, message: 'Bu kullanıcı adı veya e-posta ile kayıtlı kullanıcı bulunamadı.' };
     }
 
     if (user.password && user.password !== password) {

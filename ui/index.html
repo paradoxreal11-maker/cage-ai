@@ -79,9 +79,9 @@
         </div>
 
         <!-- Windows Administrator Elevation Status -->
-        <div class="admin-elevated-pill" id="headerAdminPill" title="Windows Yönetici (Admin) Yetkisi Durumu">
+        <div class="admin-elevated-pill" id="headerAdminPill" title="Windows Yönetici Yetkisi Durumu">
           <span class="elevated-dot" id="headerAdminDot"></span>
-          <span id="headerAdminText">Yönetici (Admin)</span>
+          <span id="headerAdminText">Sistem İzni (Aktif)</span>
         </div>
       </div>
 
@@ -131,10 +131,6 @@
           <div class="nav-item" id="navTickets">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
             <span>Destek &amp; Satın Alım</span>
-          </div>
-          <div class="nav-item admin-only hidden" id="navAdmin">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
-            <span class="admin-badge-text">Admin Panel 🛡️</span>
           </div>
         </div>
 
@@ -331,8 +327,8 @@
               <button class="editor-action-btn" id="btnCopyCodeStudio" title="Kodu Kopyala">
                 📋 Kopyala
               </button>
-              <button class="editor-action-btn highlight" id="btnSaveToFile" title="Diske Kaydet (Admin Yetkili)">
-                💾 Diske Yaz (Admin)
+              <button class="editor-action-btn highlight" id="btnSaveToFile" title="Diske Kaydet">
+                💾 Diske Kaydet
               </button>
             </div>
           </div>
@@ -421,7 +417,7 @@ function welcomeToCageCodium() {
               <li>✓ Her oturum tam 60 dakikadır (1 saat sayaçlı)</li>
               <li>✓ Otonom Agent dosya okuma, yazma ve refactoring yetkisi</li>
               <li>✓ En üst seviye akıl yürütme (reasoning) ve mimari çözümleme</li>
-              <li>✓ Öncelikli 7/24 Admin &amp; Destek hattı</li>
+              <li>✓ Öncelikli 7/24 Kesintisiz Destek Hattı</li>
             </ul>
             <button class="btn btn-primary btn-block btn-buy btn-ultra" data-pkg="codium_5_1_ultra" data-name="Cage Codium 5.1 Ultra" data-price="50">
               Satın Al &amp; Destek Talebi Aç
@@ -480,7 +476,7 @@ function welcomeToCageCodium() {
             <textarea id="txtTicketNotes" class="form-control" rows="3" placeholder="Ödeme tercihi veya sorularınızı buraya ekleyebilirsiniz..."></textarea>
           </div>
           <div class="ticket-info-alert">
-            ℹ️ Talebiniz oluşturulduğunda sistem yöneticisi (Admin) tarafından incelenir ve onaylandığında paketiniz doğrudan hesabınıza tanımlanır.
+            ℹ️ Talebiniz oluşturulduğunda destek ekibimiz tarafından incelenir ve onaylandığında paketiniz doğrudan hesabınıza tanımlanır.
           </div>
           <button class="btn btn-primary btn-block" id="btnSubmitTicket">Talebi Gönder</button>
         </div>
@@ -577,10 +573,6 @@ function welcomeToCageCodium() {
           <button class="btn btn-primary btn-block" id="btnDoRegister" style="margin-top: 10px;">Kayıt Ol ve Giriş Yap</button>
         </div>
 
-        <div class="admin-login-shortcut">
-          <button class="btn-link-subtle" id="btnOpenAdminAuth">🛡️ Yönetici (Admin) Girişi</button>
-        </div>
-
       </div>
     </div>
   </div>
@@ -628,7 +620,7 @@ function welcomeToCageCodium() {
             <span class="quota-val" id="accountCodiumQuota">Günlük 10 Dk</span>
           </div>
           <div class="quota-row">
-            <span>🛡️ Yönetici (Admin) Dosya Erişimi:</span>
+            <span>🛡️ Güvenli Dosya &amp; Kod Erişimi:</span>
             <span class="quota-val" style="color: #10b981;">Aktif (Onay Korumalı)</span>
           </div>
         </div>
@@ -658,117 +650,6 @@ function welcomeToCageCodium() {
           </button>
         </div>
 
-      </div>
-    </div>
-  </div>
-
-  <!-- 5. Admin Panel & Login Modal -->
-  <div class="modal-backdrop hidden" id="adminModal">
-    <div class="modal-window admin-window">
-      <div class="modal-header admin-modal-header">
-        <div class="admin-header-title">
-          <span class="admin-shield">🛡️</span>
-          <h2>CAGE AI Güvenlik ve Yönetim Paneli</h2>
-        </div>
-        <button class="modal-close" id="btnCloseAdmin">✕</button>
-      </div>
-
-      <div class="modal-body">
-        
-        <!-- Admin Login Screen -->
-        <div id="adminLoginScreen">
-          <div class="admin-login-box">
-            <h3>Admin Girişi</h3>
-            <p>Bu alan yalnızca sistem yöneticisine açıktır.</p>
-            <div class="form-group">
-              <label>Yönetici Kullanıcı Adı:</label>
-              <input type="text" id="txtAdminUser" class="form-control" placeholder="cage_admin" />
-            </div>
-            <div class="form-group">
-              <label>Yönetici Şifresi:</label>
-              <input type="password" id="txtAdminPass" class="form-control" placeholder="••••••••••••" />
-            </div>
-            <button class="btn btn-primary btn-block" id="btnAdminDoLogin">Yönetici Paneline Gir</button>
-          </div>
-        </div>
-
-        <!-- Admin Dashboard Screen -->
-        <div id="adminDashboardScreen" class="hidden">
-          <div class="admin-tabs">
-            <button class="admin-tab active" data-tab="incidents">🚨 Tehlikeli Durumlar (<span id="countIncidents">0</span>)</button>
-            <button class="admin-tab" data-tab="tickets">🎫 Destek &amp; Satın Alımlar (<span id="countTickets">0</span>)</button>
-            <button class="admin-tab" data-tab="promos">🎁 Promosyon Kodları (<span id="countPromos">0</span>)</button>
-            <button class="admin-tab" data-tab="users">👥 Kullanıcılar (<span id="countUsers">0</span>)</button>
-            <button class="admin-tab" data-tab="update">🚀 Güncelleme Yayınla</button>
-          </div>
-
-          <!-- Tab 1: Incidents -->
-          <div class="admin-tab-content active" id="tabContentIncidents">
-            <div class="tab-header-row">
-              <h3>Otomatik Raporlanan Tehlikeli ve Şüpheli Sohbetler</h3>
-              <p>Sözleşme gereği sistem ve kullanıcı güvenliğini tehdit eden durumlar burada denetlenir.</p>
-            </div>
-            <div class="incidents-list" id="incidentsList"></div>
-          </div>
-
-          <!-- Tab 2: Tickets -->
-          <div class="admin-tab-content" id="tabContentTickets">
-            <div class="tab-header-row">
-              <h3>Satın Alım ve Destek Talepleri</h3>
-            </div>
-            <div class="tickets-table-wrapper" id="ticketsList"></div>
-          </div>
-
-          <!-- Tab 3: Promos -->
-          <div class="admin-tab-content" id="tabContentPromos">
-            <div class="promo-creator-card">
-              <h4>Yeni Promosyon Kodu Oluştur</h4>
-              <div class="form-grid-3">
-                <input type="text" id="txtNewPromoCode" placeholder="KOD ADI (Örn: CAGEVIP)" class="form-control" />
-                <select id="selNewPromoPlan" class="form-control">
-                  <option value="premium_ultra">Cage AI Premium &amp; Codium Ultra</option>
-                  <option value="codium_5_1_ultra">Cage Codium 5.1 Ultra</option>
-                </select>
-                <input type="number" id="txtNewPromoDays" placeholder="Geçerlilik (Gün: 30)" class="form-control" value="30" />
-              </div>
-              <button class="btn btn-primary" id="btnAdminCreatePromo">Promosyon Kodunu Kaydet</button>
-            </div>
-            <div class="promos-list" id="adminPromosList"></div>
-          </div>
-
-          <!-- Tab 4: Users -->
-          <div class="admin-tab-content" id="tabContentUsers">
-            <div class="users-list" id="adminUsersList"></div>
-          </div>
-
-          <!-- Tab 5: Publish Update -->
-          <div class="admin-tab-content" id="tabContentUpdate">
-            <div class="tab-header-row">
-              <h3>🚀 Yeni Sürüm &amp; Güncelleme Yayınlama</h3>
-              <p>Buradan yeni bir güncelleme yayınladığınızda, tüm kullanıcıların ekranında zorunlu güncelleme uyarısı açılır ve güncelleme yapılmadan uygulama kullanılamaz.</p>
-            </div>
-            <div class="promo-creator-card" style="margin-top: 16px;">
-              <div class="form-group">
-                <label>Yeni Sürüm Numarası (Versiyon):</label>
-                <input type="text" id="txtAdminNewVersion" class="form-control" placeholder="1.1.0" value="1.1.0" />
-              </div>
-              <div class="form-group">
-                <label>Güncelleme Notları / Yenilikler:</label>
-                <textarea id="txtAdminUpdateNotes" class="form-control" rows="3" placeholder="Yeni Codium 5.1 Ultra iyileştirmeleri, güvenlik yamaları ve performans artışı..."></textarea>
-              </div>
-              <div class="form-group">
-                <label class="custom-checkbox">
-                  <input type="checkbox" id="chkAdminForceUpdate" checked>
-                  <span class="checkmark"></span>
-                  <span class="check-text">Zorunlu Güncelleme (Kullanıcılar güncelleme yapmadan uygulamayı kullanamaz)</span>
-                </label>
-              </div>
-              <button class="btn btn-primary btn-block" id="btnAdminDoPublishUpdate" style="padding: 12px; font-weight: 600;">
-                🚀 Güncellemeyi Canlıya Yayınla (Tüm Kullanıcılara Gönder)
-              </button>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   </div>

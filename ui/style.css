@@ -323,10 +323,6 @@ body {
   font-weight: 500;
 }
 
-.nav-item.admin-only {
-  color: #fbbf24;
-}
-
 .sidebar-history-wrapper {
   flex: 1;
   overflow-y: auto;
@@ -1137,7 +1133,6 @@ textarea::placeholder {
 }
 
 .market-window { max-width: 850px; }
-.admin-window { max-width: 950px; }
 
 .modal-header {
   padding: 16px 22px;
@@ -1411,40 +1406,6 @@ input:checked + .slider:before { transform: translateX(20px); }
   border-radius: 6px;
   font-size: 13px;
   text-transform: uppercase;
-}
-
-/* Admin Tabs & Lists */
-.admin-tabs {
-  display: flex;
-  gap: 8px;
-  border-bottom: 1px solid var(--border-color);
-  padding-bottom: 10px;
-  margin-bottom: 18px;
-}
-
-.admin-tab {
-  background: transparent;
-  border: none;
-  color: var(--text-muted);
-  font-size: 13px;
-  padding: 6px 14px;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.15s;
-}
-
-.admin-tab.active {
-  background-color: var(--accent-orange);
-  color: #fff;
-  font-weight: 600;
-}
-
-.admin-tab-content { display: none; }
-.admin-tab-content.active { display: block; animation: tabFadeIn 0.25s ease; }
-
-@keyframes tabFadeIn {
-  from { opacity: 0; transform: translateY(4px); }
-  to { opacity: 1; transform: translateY(0); }
 }
 
 .hidden { display: none !important; }

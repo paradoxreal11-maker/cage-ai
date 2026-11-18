@@ -46,15 +46,6 @@ contextBridge.exposeInMainWorld('cageAI', {
   authLogout: () => ipcRenderer.invoke('auth-logout'),
   updateUserProfile: (data) => ipcRenderer.invoke('update-user-profile', data),
 
-  // Admin
-  adminLogin: (credentials) => ipcRenderer.invoke('admin-login', credentials),
-  adminGetData: () => ipcRenderer.invoke('admin-get-data'),
-  adminCreatePromoCode: (promo) => ipcRenderer.invoke('admin-create-promo-code', promo),
-  adminDeletePromoCode: (codeId) => ipcRenderer.invoke('admin-delete-promo-code', codeId),
-  adminUpdateTicketStatus: (ticketId, status, newPlan) => ipcRenderer.invoke('admin-update-ticket-status', { ticketId, status, newPlan }),
-  adminResolveIncident: (incidentId, notes) => ipcRenderer.invoke('admin-resolve-incident', { incidentId, notes }),
-  adminPublishUpdate: (updateData) => ipcRenderer.invoke('admin-publish-update', updateData),
-
   // Administrator Privileges & Elevation
   checkAdminStatus: () => ipcRenderer.invoke('check-admin-status'),
   requestAdminRelaunch: () => ipcRenderer.invoke('request-admin-relaunch'),

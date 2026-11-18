@@ -61,7 +61,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   const navMarket = document.getElementById('navMarket');
   const navTickets = document.getElementById('navTickets');
-  const navAdmin = document.getElementById('navAdmin');
   const btnUserProfile = document.getElementById('btnUserProfile');
   const userNameLabel = document.getElementById('userNameLabel');
   const userPlanTag = document.getElementById('userPlanTag');
@@ -141,16 +140,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   const txtRegEmail = document.getElementById('txtRegEmail');
   const txtRegPassword = document.getElementById('txtRegPassword');
   const btnDoRegister = document.getElementById('btnDoRegister');
-  const btnOpenAdminAuth = document.getElementById('btnOpenAdminAuth');
-
-  // Admin Modal Elements
-  const adminModal = document.getElementById('adminModal');
-  const btnCloseAdmin = document.getElementById('btnCloseAdmin');
-  const adminLoginScreen = document.getElementById('adminLoginScreen');
-  const adminDashboardScreen = document.getElementById('adminDashboardScreen');
-  const txtAdminUser = document.getElementById('txtAdminUser');
-  const txtAdminPass = document.getElementById('txtAdminPass');
-  const btnAdminDoLogin = document.getElementById('btnAdminDoLogin');
 
   // Force Update Modal Elements
   const forceUpdateModal = document.getElementById('forceUpdateModal');
@@ -162,7 +151,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   const updateDownloadBar = document.getElementById('updateDownloadBar');
   const lblUpdateDownloadStatus = document.getElementById('lblUpdateDownloadStatus');
   const lblUpdateDownloadPct = document.getElementById('lblUpdateDownloadPct');
-  const btnAdminDoPublishUpdate = document.getElementById('btnAdminDoPublishUpdate');
 
   // Splash & Toast Elements
   const splashScreen = document.getElementById('splashScreen');
@@ -284,13 +272,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     headerPlanName.textContent = planTitle;
     userPlanTag.textContent = `• ${planTitle}`;
-
-    // Admin Access Button
-    if (u.role === 'admin') {
-      navAdmin.classList.remove('hidden');
-    } else {
-      navAdmin.classList.add('hidden');
-    }
 
     updateTimerDisplay();
   }
@@ -807,13 +788,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         currentCodeChat.activePath = res.filePath;
         currentCodeChat.codeContent = res.content;
         
-        renderCodeMessageBubble('ai', `📂 **Dosya Başarıyla Açıldı (Admin):** \`${res.filePath}\`\nDosyayı inceleyebilir, sağ panelden doğrudan düzenleyebilir veya Codium ajanı ile refactor ettirebilirsiniz.`);
+        renderCodeMessageBubble('ai', `📂 **Dosya Başarıyla Açıldı:** \`${res.filePath}\`\nDosyayı inceleyebilir, sağ panelden doğrudan düzenleyebilir veya Codium ajanı ile refactor ettirebilirsiniz.`);
         messagesContainerCode.scrollTop = messagesContainerCode.scrollHeight;
       }
     });
   }
 
-  // Live Editor: Open Project Folder (Admin Enabled)
+  // Live Editor: Open Project Folder
   if (btnOpenFolder) {
     btnOpenFolder.addEventListener('click', async () => {
       if (!window.cageAI) return;
@@ -824,7 +805,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
         currentCodeChat.folderPath = res.folderPath;
         const fileCount = res.items ? res.items.length : 0;
-        renderCodeMessageBubble('ai', `📁 **Proje Klasörü Seçildi (Admin Yetkili):** \`${res.folderPath}\` (${fileCount} dosya/klasör)\nCodium ajanı bu çalışma alanındaki dosyaları doğrudan okuyabilir ve yeni kodlar üretebilir.`);
+        renderCodeMessageBubble('ai', `📁 **Proje Klasörü Seçildi:** \`${res.folderPath}\` (${fileCount} dosya/klasör)\nCodium ajanı bu çalışma alanındaki dosyaları doğrudan okuyabilir ve yeni kodlar üretebilir.`);
         messagesContainerCode.scrollTop = messagesContainerCode.scrollHeight;
       }
     });
@@ -1103,7 +1084,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (accountLargeAvatar) accountLargeAvatar.textContent = dName.charAt(0).toUpperCase();
     if (accountDisplayUsername) accountDisplayUsername.textContent = dName;
     if (accountDisplayEmail) accountDisplayEmail.textContent = u.email || 'Giriş yapılmadı';
-    if (accountDisplayRole) accountDisplayRole.textContent = u.role === 'admin' ? '🛡️ Yönetici (Admin)' : 'Kullanıcı';
+    if (accountDisplayRole) accountDisplayRole.textContent = u.role === 'admin' ? 'Yetkili Hesap' : 'Kullanıcı';
     
     let planTitle = 'Cage AI Free';
     let codiumInfo = 'Günlük 10 Dk (Sayaçlı)';
@@ -1264,202 +1245,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
 
-  // Admin Shortcut inside Auth Modal
-  btnOpenAdminAuth.addEventListener('click', () => {
-    authModal.classList.add('hidden');
-    adminModal.classList.remove('hidden');
-  });
 
-  // ADMIN PANEL & DASHBOARD
-  navAdmin.addEventListener('click', () => {
-    adminModal.classList.remove('hidden');
-    if (storeData?.currentUser?.role === 'admin') {
-      showAdminDashboard();
-    } else {
-      adminLoginScreen.classList.remove('hidden');
-      adminDashboardScreen.classList.add('hidden');
-    }
-  });
-
-  btnCloseAdmin.addEventListener('click', () => adminModal.classList.add('hidden'));
-
-  btnAdminDoLogin.addEventListener('click', async () => {
-    const u = txtAdminUser.value.trim();
-    const p = txtAdminPass.value.trim();
-
-    if (!window.cageAI) return;
-    const res = await window.cageAI.adminLogin({ username: u, password: p });
-    if (res.success) {
-      alert(res.message);
-      showAdminDashboard();
-      await refreshStoreData();
-    } else {
-      alert(res.message);
-    }
-  });
-
-  async function showAdminDashboard() {
-    adminLoginScreen.classList.add('hidden');
-    adminDashboardScreen.classList.remove('hidden');
-
-    const data = await window.cageAI.adminGetData();
-
-    // Counts
-    document.getElementById('countIncidents').textContent = (data.safetyIncidents || []).length;
-    document.getElementById('countTickets').textContent = (data.tickets || []).length;
-    document.getElementById('countPromos').textContent = (data.promoCodes || []).length;
-    document.getElementById('countUsers').textContent = (data.users || []).length;
-
-    renderAdminIncidents(data.safetyIncidents || []);
-    renderAdminTickets(data.tickets || []);
-    renderAdminPromos(data.promoCodes || []);
-    renderAdminUsers(data.users || []);
-  }
-
-  // Admin Tabs
-  document.querySelectorAll('.admin-tab').forEach(tab => {
-    tab.addEventListener('click', () => {
-      document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
-      document.querySelectorAll('.admin-tab-content').forEach(c => c.classList.remove('active'));
-
-      tab.classList.add('active');
-      const tabName = tab.getAttribute('data-tab');
-      const targetContent = document.getElementById('tabContent' + tabName.charAt(0).toUpperCase() + tabName.slice(1));
-      if (targetContent) targetContent.classList.add('active');
-    });
-  });
-
-  function renderAdminIncidents(incidents) {
-    const list = document.getElementById('incidentsList');
-    if (incidents.length === 0) {
-      list.innerHTML = '<div style="color: #888; font-size: 13px;">Henüz kaydedilmiş güvenlik ihlali veya tehlikeli sohbet bulunmuyor.</div>';
-      return;
-    }
-
-    list.innerHTML = '';
-    incidents.forEach(inc => {
-      const card = document.createElement('div');
-      card.className = 'incident-card';
-      card.innerHTML = `
-        <div class="incident-header">
-          <strong>Kullanıcı: ${escapeHtml(inc.userEmail)}</strong>
-          <span class="incident-badge-crit">${inc.severity} (${inc.status})</span>
-        </div>
-        <div style="font-size: 12px; color: #ffedd5; margin-bottom: 4px;"><strong>Tespit Nedeni:</strong> ${escapeHtml(inc.reason)}</div>
-        <div class="incident-prompt-box">${escapeHtml(inc.prompt)}</div>
-        <div class="incident-footer">
-          <span>Tarih: ${new Date(inc.timestamp).toLocaleString()} | Model: ${inc.model}</span>
-          ${inc.status === 'PENDING_REVIEW' ? `<button class="btn btn-secondary btn-sm" onclick="resolveIncident('${inc.id}')">İncelemeyi Kapat</button>` : '<span style="color: #10b981;">✓ Çözümlendi</span>'}
-        </div>
-      `;
-      list.appendChild(card);
-    });
-  }
-
-  window.resolveIncident = async (id) => {
-    if (!window.cageAI) return;
-    await window.cageAI.adminResolveIncident(id, 'Admin tarafından incelendi.');
-    showAdminDashboard();
-  };
-
-  function renderAdminTickets(tickets) {
-    const list = document.getElementById('ticketsList');
-    if (tickets.length === 0) {
-      list.innerHTML = '<div style="color: #888; font-size: 13px;">Bekleyen satın alma veya destek talebi bulunmuyor.</div>';
-      return;
-    }
-
-    list.innerHTML = '';
-    tickets.forEach(t => {
-      const row = document.createElement('div');
-      row.className = 'feature-box';
-      row.style.marginBottom = '12px';
-      row.innerHTML = `
-        <div style="flex: 1;">
-          <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
-            <strong>${escapeHtml(t.packageName)} (${t.price})</strong>
-            <span style="font-size: 11px; padding: 2px 6px; border-radius: 4px; background: #333;">${t.status}</span>
-          </div>
-          <div style="font-size: 12px; color: #aaa;">Kullanıcı: ${escapeHtml(t.userEmail)} | Ödeme: ${t.paymentMethod}</div>
-          ${t.notes ? `<div style="font-size: 12px; color: #fbbf24; margin-top: 4px;">Not: ${escapeHtml(t.notes)}</div>` : ''}
-          <div style="margin-top: 10px; display: flex; gap: 8px;">
-            ${t.status === 'PENDING' ? `
-              <button class="btn btn-primary btn-sm" onclick="approveTicket('${t.id}', '${t.packageId}')">Onayla &amp; Paketi Yükselt</button>
-              <button class="btn btn-secondary btn-sm" onclick="rejectTicket('${t.id}')">Reddet</button>
-            ` : '<span style="color: #10b981; font-size: 12px;">İşlem tamamlandı</span>'}
-          </div>
-        </div>
-      `;
-      list.appendChild(row);
-    });
-  }
-
-  window.approveTicket = async (ticketId, pkgId) => {
-    if (!window.cageAI) return;
-    await window.cageAI.adminUpdateTicketStatus(ticketId, 'APPROVED', pkgId);
-    alert('Talep onaylandı ve kullanıcının paketi anında aktifleştirildi!');
-    showAdminDashboard();
-    await refreshStoreData();
-  };
-
-  window.rejectTicket = async (ticketId) => {
-    if (!window.cageAI) return;
-    await window.cageAI.adminUpdateTicketStatus(ticketId, 'REJECTED');
-    showAdminDashboard();
-  };
-
-  function renderAdminPromos(promos) {
-    const list = document.getElementById('adminPromosList');
-    list.innerHTML = '';
-    promos.forEach(p => {
-      const div = document.createElement('div');
-      div.className = 'feature-box';
-      div.style.marginBottom = '8px';
-      div.innerHTML = `
-        <div style="flex: 1;">
-          <strong>KOD: ${p.code} (%${p.discountPct} İndirim - ${p.plan})</strong>
-          <div style="font-size: 12px; color: #aaa;">Kullanım: ${p.currentUses}/${p.maxUses} | Geçerlilik: ${p.validUntil}</div>
-        </div>
-        <button class="btn btn-secondary btn-sm" onclick="deletePromo('${p.id}')">Sil</button>
-      `;
-      list.appendChild(div);
-    });
-  }
-
-  window.deletePromo = async (id) => {
-    if (!window.cageAI) return;
-    await window.cageAI.adminDeletePromoCode(id);
-    showAdminDashboard();
-  };
-
-  document.getElementById('btnAdminCreatePromo').addEventListener('click', async () => {
-    const code = document.getElementById('txtNewPromoCode').value.trim();
-    const plan = document.getElementById('selNewPromoPlan').value;
-    const days = document.getElementById('txtNewPromoDays').value;
-
-    if (!code || !window.cageAI) return;
-    await window.cageAI.adminCreatePromoCode({ code, plan, durationDays: days });
-    alert('Promosyon kodu oluşturuldu!');
-    document.getElementById('txtNewPromoCode').value = '';
-    showAdminDashboard();
-  });
-
-  function renderAdminUsers(users) {
-    const list = document.getElementById('adminUsersList');
-    list.innerHTML = '';
-    users.forEach(u => {
-      const div = document.createElement('div');
-      div.className = 'feature-box';
-      div.style.marginBottom = '8px';
-      div.innerHTML = `
-        <div style="flex: 1;">
-          <strong>${escapeHtml(u.username)} (${escapeHtml(u.email)})</strong>
-          <div style="font-size: 12px; color: #aaa;">Rol: ${u.role} | Paket: <span style="color: #f59e0b;">${u.plan}</span></div>
-        </div>
-      `;
-      list.appendChild(div);
-    });
-  }
 
   // AUTO-UPDATE & LOCK SYSTEM
   async function checkAppUpdates() {
@@ -1504,41 +1290,19 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
 
-  // Admin Publish Update Action
-  if (btnAdminDoPublishUpdate) {
-    btnAdminDoPublishUpdate.addEventListener('click', async () => {
-      const ver = document.getElementById('txtAdminNewVersion').value.trim();
-      const notes = document.getElementById('txtAdminUpdateNotes').value.trim();
-      const force = document.getElementById('chkAdminForceUpdate').checked;
-
-      if (!ver || !window.cageAI) return;
-      btnAdminDoPublishUpdate.disabled = true;
-
-      const res = await window.cageAI.adminPublishUpdate({
-        version: ver,
-        releaseNotes: notes,
-        forceUpdate: force
-      });
-
-      alert(res.message);
-      btnAdminDoPublishUpdate.disabled = false;
-      showAdminDashboard();
-    });
-  }
-
-  // Windows Administrator Privilege Detection & Elevation Action
+  // Windows Process Privilege Detection & Elevation Action
   async function checkAdminElevation() {
     if (!window.cageAI || !headerAdminPill) return;
     try {
       const res = await window.cageAI.checkAdminStatus();
       if (res && res.isAdmin) {
         headerAdminPill.classList.remove('not-admin');
-        if (headerAdminText) headerAdminText.textContent = 'Yönetici (Admin)';
-        headerAdminPill.title = 'Uygulama tam Windows Yönetici (Administrator) yetkileriyle çalışmaktadır.';
+        if (headerAdminText) headerAdminText.textContent = 'Sistem İzni (Aktif)';
+        headerAdminPill.title = 'Uygulama tam dosya sistemi erişim yetkileriyle çalışmaktadır.';
       } else {
         headerAdminPill.classList.add('not-admin');
-        if (headerAdminText) headerAdminText.textContent = 'Yönetici Yetkisi İste';
-        headerAdminPill.title = 'Tıklayarak Windows Yönetici (Administrator) izniyle yeniden başlatın.';
+        if (headerAdminText) headerAdminText.textContent = 'Dosya İzni İste';
+        headerAdminPill.title = 'Tıklayarak Windows Yönetici izniyle yeniden başlatın.';
       }
     } catch (e) {
       console.warn('Admin status check error:', e);
@@ -1550,12 +1314,12 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (!window.cageAI) return;
       const res = await window.cageAI.checkAdminStatus();
       if (!res?.isAdmin) {
-        const confirmRelaunch = confirm('CAGE AI dosya sistemine tam okuma/yazma/düzenleme erişimi sağlamak için Windows Yönetici (Administrator) izniyle yeniden başlatılsın mı?');
+        const confirmRelaunch = confirm('CAGE AI dosya sistemine tam okuma/yazma/düzenleme erişimi sağlamak için Windows Yönetici izniyle yeniden başlatılsın mı?');
         if (confirmRelaunch) {
           await window.cageAI.requestAdminRelaunch();
         }
       } else {
-        alert('CAGE AI zaten Windows Yönetici (Administrator) modunda tam dosya erişim yetkisiyle çalışmaktadır.');
+        showToast('CAGE AI tam dosya erişim yetkisiyle çalışmaktadır.');
       }
     });
   }
