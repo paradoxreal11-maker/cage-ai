@@ -499,6 +499,10 @@ ipcMain.handle('auth-logout', async () => {
   return { success: true };
 });
 
+ipcMain.handle('update-user-profile', async (event, data) => {
+  return store.updateUserProfile(data);
+});
+
 // Admin Authentication & Operations
 ipcMain.handle('admin-login', async (event, { username, password }) => {
   if (username === ADMIN_USER && password === ADMIN_PASS) {

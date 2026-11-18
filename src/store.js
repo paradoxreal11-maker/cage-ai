@@ -23,14 +23,14 @@ class Store {
         installDate: null,
         termsAccepted: false,
         theme: 'dark',
-        appVersion: '1.0.0'
+        appVersion: '1.0.1'
       },
       updates: {
-        currentVersion: '1.0.0',
-        latestVersion: '1.0.0',
-        minRequiredVersion: '1.0.0',
+        currentVersion: '1.0.1',
+        latestVersion: '1.0.1',
+        minRequiredVersion: '1.0.1',
         forceUpdate: true,
-        releaseNotes: 'CAGE AI 1.0.0 ilk kararlı sürüm.',
+        releaseNotes: 'CAGE AI 1.0.1: Animasyonlu açılış yükleme ekranı, gelişmiş Hesap Ayarları, ve chatbox stabilizasyonları.',
         downloadUrl: 'https://cage-ai.vercel.app',
         lastPublishedAt: new Date().toISOString()
       },
@@ -212,6 +212,36 @@ class Store {
     this.save();
 
     return { success: true, user: user, message: 'Giriş başarılı! Hoş geldiniz.' };
+  }
+
+  updateUserProfile({ username, newPassword }) {
+    if (!this.data.currentUser || this.data.currentUser.role === 'guest') {
+      return { success: false, message: 'Giriş yapılmış bir kullanıcı bulunamadı.' };
+    }
+
+    const currentId = this.data.currentUser.id;
+    const userInDb = this.data.users.find(u => u.id === currentId || u.email.toLowerCase() === this.data.currentUser.email.toLowerCase());
+
+    if (username && username.trim()) {
+      const cleanName = username.trim();
+      this.data.currentUser.username = cleanName;
+      if (userInDb) userInDb.username = cleanName;
+    }
+
+    if (newPassword && newPassword.trim()) {
+      if (newPassword.trim().length < 3) {
+        return { success: false, message: 'Şifre en az 3 karakter olmalıdır.' };
+      }
+      this.data.currentUser.password = newPassword.trim();
+      if (userInDb) userInDb.password = newPassword.trim();
+    }
+
+    this.save();
+    return { 
+      success: true, 
+      message: 'Profil bilgileriniz başarıyla güncellendi.', 
+      user: this.data.currentUser 
+    };
   }
 
   // Session timer management & limits

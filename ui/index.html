@@ -10,6 +10,34 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@500;600;700;800&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
 </head>
 <body>
+  <!-- SPLASH / LOADING SCREEN (AÇILIŞ YÜKLEME EKRANI - HER AÇILIŞTA 10-15 SN ÇALIŞIR) -->
+  <div class="splash-screen" id="splashScreen">
+    <div class="splash-content">
+      <div class="splash-logo-wrapper">
+        <div class="splash-glow"></div>
+        <div class="splash-hex-ring"></div>
+        <span class="splash-emblem">⬡</span>
+      </div>
+      <h1 class="splash-title">CAGE AI</h1>
+      <p class="splash-status-text" id="splashStatusText">Ortam oluşturuluyor, lütfen bekleyiniz...</p>
+      
+      <div class="splash-progress-track">
+        <div class="splash-progress-bar" id="splashProgressBar"></div>
+      </div>
+      <div class="splash-percentage" id="splashPercentage">0%</div>
+
+      <div class="splash-footer-note">
+        <span>v1.0.1 • Gelişmiş Yapay Zeka &amp; Codium Ajanı</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- In-App Floating Toast Notification -->
+  <div class="app-toast hidden" id="appToast">
+    <span class="toast-icon" id="toastIcon">✓</span>
+    <span class="toast-msg" id="toastMsg">İşlem başarılı</span>
+  </div>
+
   <!-- App Container -->
   <div class="app-layout">
     
@@ -551,6 +579,83 @@ function welcomeToCageCodium() {
 
         <div class="admin-login-shortcut">
           <button class="btn-link-subtle" id="btnOpenAdminAuth">🛡️ Yönetici (Admin) Girişi</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- 4.5. HESAP AYARLARI MODALI (KULLANICI PROFİLİ, ŞİFRE & İSİM DEĞİŞTİRME, ÇIKIŞ YAPMA) -->
+  <div class="modal-backdrop hidden" id="accountSettingsModal">
+    <div class="modal-window account-window">
+      <div class="modal-header">
+        <div class="modal-header-title">
+          <span style="font-size: 20px;">⚙️</span>
+          <h2>Hesap Ayarları &amp; Profil</h2>
+        </div>
+        <button class="modal-close" id="btnCloseAccountSettings">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <!-- Profile Overview Card -->
+        <div class="account-profile-card">
+          <div class="account-avatar-large" id="accountLargeAvatar">K</div>
+          <div class="account-profile-info">
+            <div class="account-name-row">
+              <h3 id="accountDisplayUsername">Kullanıcı</h3>
+              <span class="account-role-badge" id="accountDisplayRole">Kullanıcı</span>
+            </div>
+            <p class="account-email" id="accountDisplayEmail">kullanici@cageai.internal</p>
+            <div class="account-plan-badge" id="accountDisplayPlan">
+              <span class="plan-dot"></span>
+              <span id="accountPlanLabel">Cage Free Plan</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Plan & Quota Info Card -->
+        <div class="account-info-box">
+          <div class="info-box-header">
+            <strong>Plan &amp; Ajan Kullanım Hakları</strong>
+            <button class="btn btn-secondary btn-sm" id="btnSettingsUpgradePlan">⚡ Yükselt</button>
+          </div>
+          <div class="quota-row">
+            <span>💬 Genel Sohbet Erişimi:</span>
+            <span class="quota-val">Sınırsız (Doğal Dil)</span>
+          </div>
+          <div class="quota-row">
+            <span>⚡ Codium Kodlama Ajanı:</span>
+            <span class="quota-val" id="accountCodiumQuota">Günlük 10 Dk</span>
+          </div>
+          <div class="quota-row">
+            <span>🛡️ Yönetici (Admin) Dosya Erişimi:</span>
+            <span class="quota-val" style="color: #10b981;">Aktif (Onay Korumalı)</span>
+          </div>
+        </div>
+
+        <!-- Update Username Section -->
+        <div class="settings-form-section">
+          <h4>Kullanıcı Adı Güncelle</h4>
+          <div class="settings-input-group">
+            <input type="text" id="txtUpdateUsername" class="form-control" placeholder="Yeni kullanıcı adı giriniz" />
+            <button class="btn btn-primary" id="btnSaveUsername">Kaydet</button>
+          </div>
+        </div>
+
+        <!-- Update Password Section -->
+        <div class="settings-form-section">
+          <h4>Şifre Değiştir</h4>
+          <div class="settings-input-group">
+            <input type="password" id="txtUpdatePassword" class="form-control" placeholder="Yeni şifrenizi giriniz" />
+            <button class="btn btn-primary" id="btnSavePassword">Şifreyi Güncelle</button>
+          </div>
+        </div>
+
+        <!-- Logout Action -->
+        <div class="settings-logout-section">
+          <button class="btn btn-danger-outline btn-block" id="btnLogoutUser">
+            🚪 Hesaptan Güvenli Çıkış Yap
+          </button>
         </div>
 
       </div>

@@ -44,6 +44,7 @@ contextBridge.exposeInMainWorld('cageAI', {
   authLogin: (credentials) => ipcRenderer.invoke('auth-login', credentials),
   authRegister: (userData) => ipcRenderer.invoke('auth-register', userData),
   authLogout: () => ipcRenderer.invoke('auth-logout'),
+  updateUserProfile: (data) => ipcRenderer.invoke('update-user-profile', data),
 
   // Admin
   adminLogin: (credentials) => ipcRenderer.invoke('admin-login', credentials),

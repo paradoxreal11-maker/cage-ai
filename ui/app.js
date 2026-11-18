@@ -164,6 +164,59 @@ document.addEventListener('DOMContentLoaded', async () => {
   const lblUpdateDownloadPct = document.getElementById('lblUpdateDownloadPct');
   const btnAdminDoPublishUpdate = document.getElementById('btnAdminDoPublishUpdate');
 
+  // Splash & Toast Elements
+  const splashScreen = document.getElementById('splashScreen');
+  const splashStatusText = document.getElementById('splashStatusText');
+  const splashProgressBar = document.getElementById('splashProgressBar');
+  const splashPercentage = document.getElementById('splashPercentage');
+
+  const appToast = document.getElementById('appToast');
+  const toastIcon = document.getElementById('toastIcon');
+  const toastMsg = document.getElementById('toastMsg');
+  let toastTimer = null;
+
+  function showToast(message, isError = false) {
+    if (!appToast || !toastMsg) return;
+    toastMsg.textContent = message;
+    if (toastIcon) {
+      toastIcon.textContent = isError ? '⚠️' : '✓';
+      toastIcon.style.color = isError ? '#ef4444' : '#10b981';
+    }
+    appToast.style.borderColor = isError ? '#ef4444' : '#d97706';
+    appToast.classList.remove('hidden');
+    
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => {
+      appToast.classList.add('hidden');
+    }, 3200);
+  }
+
+  // Account Settings Modal Elements
+  const accountSettingsModal = document.getElementById('accountSettingsModal');
+  const btnCloseAccountSettings = document.getElementById('btnCloseAccountSettings');
+  const accountLargeAvatar = document.getElementById('accountLargeAvatar');
+  const accountDisplayUsername = document.getElementById('accountDisplayUsername');
+  const accountDisplayEmail = document.getElementById('accountDisplayEmail');
+  const accountDisplayRole = document.getElementById('accountDisplayRole');
+  const accountPlanLabel = document.getElementById('accountPlanLabel');
+  const accountCodiumQuota = document.getElementById('accountCodiumQuota');
+  const btnSettingsUpgradePlan = document.getElementById('btnSettingsUpgradePlan');
+  const txtUpdateUsername = document.getElementById('txtUpdateUsername');
+  const btnSaveUsername = document.getElementById('btnSaveUsername');
+  const txtUpdatePassword = document.getElementById('txtUpdatePassword');
+  const btnSavePassword = document.getElementById('btnSavePassword');
+  const btnLogoutUser = document.getElementById('btnLogoutUser');
+
+  function focusActiveInput() {
+    setTimeout(() => {
+      if (activeMode === 'chat') {
+        promptInputChat?.focus();
+      } else {
+        promptInputCode?.focus();
+      }
+    }, 60);
+  }
+
   // Window Controls
   btnWinMinimize.addEventListener('click', () => window.cageAI?.minimize());
   btnWinMaximize.addEventListener('click', () => window.cageAI?.maximize());
@@ -1031,15 +1084,123 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const res = await window.cageAI.createTicket(ticketData);
     if (res.success) {
-      alert('Talebiniz başarıyla oluşturuldu! Yöneticimiz en kısa sürede talebinizi onaylayacak ve paketiniz hesabınıza tanımlanacaktır.');
+      showToast('Talebiniz alındı! Yönetici onayladığında paketiniz tanımlanacaktır.');
       ticketModal.classList.add('hidden');
+      focusActiveInput();
     }
   });
 
-  // SIMPLIFIED AUTHENTICATION (NO OTP - Email + Username + Password)
+  // USER AUTHENTICATION & ACCOUNT PROFILE LOGIC
+  function isUserLoggedIn() {
+    const u = storeData?.currentUser;
+    return !!(u && u.role !== 'guest' && u.email && !u.email.endsWith('@cageai.internal'));
+  }
+
+  function openAccountSettings() {
+    const u = storeData?.currentUser || {};
+    const dName = (u.username && u.username !== 'PARADOX') ? u.username : 'Kullanıcı';
+    
+    if (accountLargeAvatar) accountLargeAvatar.textContent = dName.charAt(0).toUpperCase();
+    if (accountDisplayUsername) accountDisplayUsername.textContent = dName;
+    if (accountDisplayEmail) accountDisplayEmail.textContent = u.email || 'Giriş yapılmadı';
+    if (accountDisplayRole) accountDisplayRole.textContent = u.role === 'admin' ? '🛡️ Yönetici (Admin)' : 'Kullanıcı';
+    
+    let planTitle = 'Cage AI Free';
+    let codiumInfo = 'Günlük 10 Dk (Sayaçlı)';
+    if (u.plan === 'premium_ultra') {
+      planTitle = 'Cage AI Premium & Ultra';
+      codiumInfo = 'Günde 3x30 Dk (Ultra)';
+    } else if (u.plan === 'codium_5_1_ultra') {
+      planTitle = 'Cage Codium 5.1 Ultra';
+      codiumInfo = 'Günde 5x60 Dk (Zirve Ajan)';
+    }
+    if (accountPlanLabel) accountPlanLabel.textContent = planTitle;
+    if (accountCodiumQuota) accountCodiumQuota.textContent = codiumInfo;
+
+    if (txtUpdateUsername) txtUpdateUsername.value = dName;
+    if (txtUpdatePassword) txtUpdatePassword.value = '';
+
+    accountSettingsModal.classList.remove('hidden');
+  }
+
   btnAuthTrigger.addEventListener('click', () => authModal.classList.remove('hidden'));
-  btnUserProfile.addEventListener('click', () => authModal.classList.remove('hidden'));
-  btnCloseAuth.addEventListener('click', () => authModal.classList.add('hidden'));
+  
+  // Clicking profile name/avatar opens Account Settings if logged in, otherwise opens Auth Login
+  btnUserProfile.addEventListener('click', () => {
+    if (isUserLoggedIn()) {
+      openAccountSettings();
+    } else {
+      authModal.classList.remove('hidden');
+    }
+  });
+
+  btnCloseAuth.addEventListener('click', () => {
+    authModal.classList.add('hidden');
+    focusActiveInput();
+  });
+
+  if (btnCloseAccountSettings) {
+    btnCloseAccountSettings.addEventListener('click', () => {
+      accountSettingsModal.classList.add('hidden');
+      focusActiveInput();
+    });
+  }
+
+  if (btnSettingsUpgradePlan) {
+    btnSettingsUpgradePlan.addEventListener('click', () => {
+      accountSettingsModal.classList.add('hidden');
+      marketModal.classList.remove('hidden');
+    });
+  }
+
+  if (btnSaveUsername) {
+    btnSaveUsername.addEventListener('click', async () => {
+      const newName = txtUpdateUsername.value.trim();
+      if (!newName) {
+        showToast('Lütfen geçerli bir kullanıcı adı girin.', true);
+        return;
+      }
+      if (!window.cageAI) return;
+      const res = await window.cageAI.updateUserProfile({ username: newName });
+      if (res.success) {
+        showToast(res.message || 'Kullanıcı adınız güncellendi!');
+        await refreshStoreData();
+        openAccountSettings();
+      } else {
+        showToast(res.message || 'Hata oluştu', true);
+      }
+    });
+  }
+
+  if (btnSavePassword) {
+    btnSavePassword.addEventListener('click', async () => {
+      const newPass = txtUpdatePassword.value.trim();
+      if (!newPass || newPass.length < 3) {
+        showToast('Şifre en az 3 karakter olmalıdır.', true);
+        return;
+      }
+      if (!window.cageAI) return;
+      const res = await window.cageAI.updateUserProfile({ newPassword: newPass });
+      if (res.success) {
+        showToast(res.message || 'Şifreniz başarıyla güncellendi!');
+        txtUpdatePassword.value = '';
+        await refreshStoreData();
+      } else {
+        showToast(res.message || 'Hata oluştu', true);
+      }
+    });
+  }
+
+  if (btnLogoutUser) {
+    btnLogoutUser.addEventListener('click', async () => {
+      if (!window.cageAI) return;
+      await window.cageAI.authLogout();
+      accountSettingsModal.classList.add('hidden');
+      showToast('Hesabınızdan güvenle çıkış yapıldı.');
+      await refreshStoreData();
+      focusActiveInput();
+    });
+  }
 
   // Auth Tabs Toggle
   tabAuthLogin.addEventListener('click', () => {
@@ -1062,18 +1223,20 @@ document.addEventListener('DOMContentLoaded', async () => {
     const password = txtLoginPassword.value.trim();
 
     if (!email || !password) {
-      alert('Lütfen e-posta ve şifrenizi girin.');
+      showToast('Lütfen e-posta ve şifrenizi girin.', true);
       return;
     }
 
     if (!window.cageAI) return;
     const res = await window.cageAI.authLogin({ email, password });
     if (res.success) {
-      alert(res.message || 'Başarıyla giriş yapıldı!');
+      showToast(res.message || 'Başarıyla giriş yapıldı!');
       authModal.classList.add('hidden');
+      txtLoginPassword.value = '';
       await refreshStoreData();
+      focusActiveInput();
     } else {
-      alert(res.message);
+      showToast(res.message || 'Giriş yapılamadı.', true);
     }
   });
 
@@ -1084,18 +1247,20 @@ document.addEventListener('DOMContentLoaded', async () => {
     const password = txtRegPassword.value.trim();
 
     if (!email || !password) {
-      alert('Lütfen geçerli bir e-posta ve şifre girin.');
+      showToast('Lütfen geçerli bir e-posta ve şifre girin.', true);
       return;
     }
 
     if (!window.cageAI) return;
     const res = await window.cageAI.authRegister({ username, email, password });
     if (res.success) {
-      alert(res.message || 'Hesabınız oluşturuldu ve giriş yapıldı!');
+      showToast(res.message || 'Hesabınız oluşturuldu ve giriş yapıldı!');
       authModal.classList.add('hidden');
+      txtRegPassword.value = '';
       await refreshStoreData();
+      focusActiveInput();
     } else {
-      alert(res.message);
+      showToast(res.message || 'Kayıt yapılamadı.', true);
     }
   });
 
@@ -1394,6 +1559,62 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     });
   }
+
+  // Auto-focus prompt input when clicking anywhere on prompt box
+  document.querySelectorAll('.prompt-box').forEach(box => {
+    box.addEventListener('click', (e) => {
+      if (!e.target.closest('button') && !e.target.closest('.model-dropdown') && !e.target.closest('input')) {
+        const ta = box.querySelector('textarea');
+        if (ta) ta.focus();
+      }
+    });
+  });
+
+  // STARTUP ANIMATED SPLASH SCREEN (10-15s with percentage & status texts)
+  function runStartupSplashScreen() {
+    if (!splashScreen) return;
+    
+    const totalDurationMs = 12000; // ~12 seconds
+    const intervalMs = 100;
+    const totalSteps = totalDurationMs / intervalMs;
+    let step = 0;
+
+    const stages = [
+      { maxPct: 18, text: 'Ortam oluşturuluyor, lütfen bekleyiniz...' },
+      { maxPct: 38, text: 'Sistem çekirdeği ve yapay zeka modülleri doğrulanıyor...' },
+      { maxPct: 62, text: 'Codium kodlama ajan mimarisi hazırlanıyor...' },
+      { maxPct: 84, text: 'Kullanıcı ortamı ve yerel dosya izinleri senkronize ediliyor...' },
+      { maxPct: 98, text: 'Son kontroller tamamlanıyor...' },
+      { maxPct: 100, text: 'Hazır! CAGE AI çalışma alanı açılıyor...' }
+    ];
+
+    const timer = setInterval(() => {
+      step++;
+      const pct = Math.min(100, Math.floor((step / totalSteps) * 100));
+      
+      if (splashProgressBar) splashProgressBar.style.width = pct + '%';
+      if (splashPercentage) splashPercentage.textContent = pct + '%';
+
+      const currentStage = stages.find(s => pct <= s.maxPct) || stages[stages.length - 1];
+      if (splashStatusText && splashStatusText.textContent !== currentStage.text) {
+        splashStatusText.textContent = currentStage.text;
+      }
+
+      if (pct >= 100) {
+        clearInterval(timer);
+        setTimeout(() => {
+          splashScreen.classList.add('fade-out');
+          setTimeout(() => {
+            splashScreen.style.display = 'none';
+            focusActiveInput();
+          }, 600);
+        }, 300);
+      }
+    }, intervalMs);
+  }
+
+  // Start Splash Screen Immediately
+  runStartupSplashScreen();
 
   // Initialize Application
   await refreshStoreData();

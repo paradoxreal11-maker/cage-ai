@@ -1,9 +1,9 @@
 {
-  "currentVersion": "1.0.0",
-  "latestVersion": "1.0.0",
-  "minRequiredVersion": "1.0.0",
+  "currentVersion": "1.0.1",
+  "latestVersion": "1.0.1",
+  "minRequiredVersion": "1.0.1",
   "forceUpdate": false,
-  "releaseNotes": "CAGE AI 1.0.0 resmi sürüm. Windows Yönetici yetkili dosya sistemi, otonom Codium 5.1 Ultra kodlama motoru ve sıfır OTP kolaylığı aktif.",
-  "downloadUrl": "https://cage-ai.vercel.app",
-  "lastPublishedAt": "2026-11-18T15:00:00.000Z"
+  "releaseNotes": "CAGE AI 1.0.1: Animasyonlu açılış yükleme ekranı, gelişmiş Hesap Ayarları, ve chatbox stabilizasyonları.",
+  "downloadUrl": "https://cage-ai.vercel.app/CAGE_AI_Setup.exe",
+  "lastPublishedAt": "2026-11-18T19:30:00.000Z"
 }

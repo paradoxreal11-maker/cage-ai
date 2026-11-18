@@ -631,6 +631,9 @@ body {
 }
 
 textarea {
+  width: 100%;
+  box-sizing: border-box;
+  display: block;
   background: transparent;
   border: none;
   outline: none;
@@ -640,6 +643,7 @@ textarea {
   resize: none;
   line-height: 1.5;
   max-height: 200px;
+  cursor: text;
 }
 
 textarea::placeholder {
@@ -1444,3 +1448,338 @@ input:checked + .slider:before { transform: translateX(20px); }
 }
 
 .hidden { display: none !important; }
+
+/* ==========================================================================
+   SPLASH / LOADING SCREEN (10-15s ANIMATED STARTUP OVERLAY)
+   ========================================================================== */
+.splash-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle at center, #1c1a17 0%, #0d0c0b 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999999;
+  opacity: 1;
+  transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.6s;
+  user-select: none;
+}
+
+.splash-screen.fade-out {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.splash-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  max-width: 440px;
+  padding: 30px;
+}
+
+.splash-logo-wrapper {
+  position: relative;
+  width: 90px;
+  height: 90px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 22px;
+}
+
+.splash-glow {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(217, 119, 6, 0.45) 0%, rgba(217, 119, 6, 0) 70%);
+  animation: splashPulse 2.4s ease-in-out infinite alternate;
+}
+
+.splash-hex-ring {
+  position: absolute;
+  width: 86px;
+  height: 86px;
+  border-radius: 24px;
+  border: 2px dashed rgba(251, 191, 36, 0.6);
+  animation: splashSpin 9s linear infinite;
+  box-shadow: 0 0 25px rgba(217, 119, 6, 0.3);
+}
+
+.splash-emblem {
+  font-size: 52px;
+  color: #fbbf24;
+  text-shadow: 0 0 24px rgba(251, 191, 36, 0.8), 0 0 45px rgba(217, 119, 6, 0.5);
+  animation: splashBreathe 2.4s ease-in-out infinite alternate;
+  z-index: 2;
+}
+
+@keyframes splashSpin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes splashPulse {
+  0% { transform: scale(0.85); opacity: 0.4; }
+  100% { transform: scale(1.35); opacity: 0.9; }
+}
+
+@keyframes splashBreathe {
+  0% { transform: scale(0.95); filter: drop-shadow(0 0 8px #d97706); }
+  100% { transform: scale(1.08); filter: drop-shadow(0 0 25px #fbbf24); }
+}
+
+.splash-title {
+  font-family: 'Outfit', sans-serif;
+  font-size: 32px;
+  font-weight: 800;
+  letter-spacing: 3px;
+  color: #ffffff;
+  margin: 0 0 10px 0;
+  text-shadow: 0 4px 18px rgba(0, 0, 0, 0.8);
+}
+
+.splash-status-text {
+  font-size: 13.5px;
+  color: #9ca3af;
+  margin: 0 0 18px 0;
+  font-weight: 400;
+  min-height: 20px;
+  transition: color 0.3s;
+}
+
+.splash-progress-track {
+  width: 280px;
+  height: 5px;
+  background-color: #232220;
+  border-radius: 4px;
+  overflow: hidden;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.6);
+}
+
+.splash-progress-bar {
+  width: 0%;
+  height: 100%;
+  background: linear-gradient(90deg, #d97706, #fbbf24, #10b981);
+  border-radius: 4px;
+  box-shadow: 0 0 12px rgba(251, 191, 36, 0.6);
+  transition: width 0.15s ease-out;
+}
+
+.splash-percentage {
+  font-family: 'Fira Code', monospace;
+  font-size: 13px;
+  font-weight: 600;
+  color: #fbbf24;
+  margin-top: 10px;
+  letter-spacing: 0.5px;
+}
+
+.splash-footer-note {
+  margin-top: 32px;
+  font-size: 11px;
+  color: #555452;
+  letter-spacing: 0.5px;
+}
+
+/* ==========================================================================
+   IN-APP FLOATING TOAST NOTIFICATION
+   ========================================================================== */
+.app-toast {
+  position: fixed;
+  top: 24px;
+  right: 28px;
+  background-color: #1e1d1b;
+  border: 1px solid #d97706;
+  border-radius: 10px;
+  padding: 12px 18px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), 0 0 15px rgba(217, 119, 6, 0.2);
+  z-index: 1000000;
+  animation: toastSlideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  color: #fff;
+  font-size: 13.5px;
+  pointer-events: none;
+}
+
+@keyframes toastSlideIn {
+  from { transform: translateX(40px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+.toast-icon {
+  font-weight: 700;
+  color: #10b981;
+  font-size: 15px;
+}
+
+/* ==========================================================================
+   ACCOUNT SETTINGS & PROFILE MODAL
+   ========================================================================== */
+.account-window {
+  max-width: 520px;
+  background-color: #1a1917;
+  border: 1px solid #383734;
+}
+
+.account-profile-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: linear-gradient(135deg, #181715, #22201d);
+  border: 1px solid #333230;
+  border-radius: 12px;
+  padding: 16px 18px;
+  margin-bottom: 16px;
+}
+
+.account-avatar-large {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #d97706, #92400e);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  font-weight: 700;
+  border: 2px solid #fbbf24;
+  box-shadow: 0 0 18px rgba(217, 119, 6, 0.3);
+  flex-shrink: 0;
+}
+
+.account-profile-info {
+  flex: 1;
+}
+
+.account-name-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.account-name-row h3 {
+  font-size: 17px;
+  font-weight: 700;
+  color: #fff;
+  margin: 0;
+}
+
+.account-role-badge {
+  background: rgba(217, 119, 6, 0.15);
+  border: 1px solid #d97706;
+  color: #fbbf24;
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-weight: 600;
+}
+
+.account-email {
+  font-size: 12.5px;
+  color: #888682;
+  margin: 3px 0 6px 0;
+}
+
+.account-plan-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #10b981;
+  font-weight: 500;
+}
+
+.plan-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: #10b981;
+  box-shadow: 0 0 6px #10b981;
+}
+
+.account-info-box {
+  background-color: #141312;
+  border: 1px solid #2a2927;
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin-bottom: 16px;
+}
+
+.info-box-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  font-size: 13px;
+  color: #fff;
+}
+
+.quota-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12.5px;
+  color: #9ca3af;
+  padding: 4px 0;
+}
+
+.quota-val {
+  color: #ffffff;
+  font-weight: 500;
+}
+
+.settings-form-section {
+  margin-bottom: 14px;
+}
+
+.settings-form-section h4 {
+  font-size: 12px;
+  color: #a8a29e;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0 0 6px 0;
+  font-weight: 600;
+}
+
+.settings-input-group {
+  display: flex;
+  gap: 8px;
+}
+
+.settings-input-group .form-control {
+  flex: 1;
+}
+
+.settings-logout-section {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid #2d2c2a;
+}
+
+.btn-danger-outline {
+  background-color: transparent;
+  border: 1px solid #ef4444;
+  color: #ef4444;
+  padding: 10px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13.5px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  width: 100%;
+}
+
+.btn-danger-outline:hover {
+  background-color: rgba(239, 68, 68, 0.12);
+  border-color: #f87171;
+  color: #fca5a5;
+}
