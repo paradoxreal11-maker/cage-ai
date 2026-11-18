@@ -1,0 +1,1442 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CAGE AI — Özel Sistem Kontrol Merkezi</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@500;600;700;800&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23d97706'><polygon points='12 2 2 7 12 12 22 7 12 2'/><polyline points='2 17 12 22 22 17'/><polyline points='2 12 12 17 22 12'/></svg>">
+  <style>
+    :root {
+      --bg-dark: #07090e;
+      --bg-card: rgba(15, 20, 31, 0.85);
+      --bg-card-hover: rgba(22, 30, 48, 0.9);
+      --border-color: rgba(255, 255, 255, 0.08);
+      --border-focus: rgba(245, 158, 11, 0.5);
+      --amber: #f59e0b;
+      --amber-glow: rgba(245, 158, 11, 0.25);
+      --cyan: #06b6d4;
+      --cyan-glow: rgba(6, 182, 212, 0.25);
+      --emerald: #10b981;
+      --rose: #f43f5e;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-sub: #64748b;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* Ambient Background Effects */
+    .ambient-glow-1 {
+      position: fixed;
+      top: -120px;
+      left: 15%;
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, rgba(245, 158, 11, 0.12) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .ambient-glow-2 {
+      position: fixed;
+      bottom: -150px;
+      right: 10%;
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(6, 182, 212, 0.1) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* 1. AUTH SCREEN OVERLAY */
+    .auth-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(5, 7, 12, 0.94);
+      backdrop-filter: blur(20px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      transition: opacity 0.4s ease, visibility 0.4s ease;
+    }
+
+    .auth-overlay.hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .auth-card {
+      width: 100%;
+      max-width: 440px;
+      padding: 40px 32px;
+      background: linear-gradient(145deg, rgba(20, 26, 40, 0.95), rgba(11, 15, 25, 0.95));
+      border: 1px solid rgba(245, 158, 11, 0.25);
+      border-radius: 20px;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6), 0 0 40px rgba(245, 158, 11, 0.15);
+      text-align: center;
+      position: relative;
+    }
+
+    .auth-emblem {
+      width: 68px;
+      height: 68px;
+      margin: 0 auto 20px;
+      background: rgba(245, 158, 11, 0.1);
+      border: 2px solid var(--amber);
+      border-radius: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      color: var(--amber);
+      box-shadow: 0 0 25px var(--amber-glow);
+      animation: pulseGlow 3s infinite alternate;
+    }
+
+    @keyframes pulseGlow {
+      0% { box-shadow: 0 0 15px rgba(245, 158, 11, 0.2); }
+      100% { box-shadow: 0 0 35px rgba(245, 158, 11, 0.5); }
+    }
+
+    .auth-card h2 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 24px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      margin-bottom: 8px;
+      color: #fff;
+    }
+
+    .auth-card p {
+      font-size: 14px;
+      color: var(--text-muted);
+      line-height: 1.5;
+      margin-bottom: 28px;
+    }
+
+    .auth-input-group {
+      position: relative;
+      margin-bottom: 20px;
+      text-align: left;
+    }
+
+    .auth-input-group label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+
+    .auth-input-wrapper {
+      position: relative;
+    }
+
+    .auth-input {
+      width: 100%;
+      padding: 14px 44px 14px 16px;
+      background: rgba(7, 10, 18, 0.8);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      color: #fff;
+      font-size: 15px;
+      font-family: 'Fira Code', monospace;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    .auth-input:focus {
+      border-color: var(--amber);
+      box-shadow: 0 0 15px var(--amber-glow);
+    }
+
+    .toggle-pwd-btn {
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .auth-btn {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, #d97706, #f59e0b);
+      border: none;
+      border-radius: 12px;
+      color: #000;
+      font-weight: 700;
+      font-size: 15px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      box-shadow: 0 4px 20px var(--amber-glow);
+      transition: all 0.2s ease;
+    }
+
+    .auth-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 25px rgba(245, 158, 11, 0.4);
+    }
+
+    .auth-error {
+      margin-top: 16px;
+      padding: 10px 14px;
+      background: rgba(244, 63, 94, 0.15);
+      border: 1px solid rgba(244, 63, 94, 0.3);
+      border-radius: 8px;
+      font-size: 13px;
+      color: #fda4af;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      animation: shake 0.35s ease;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-6px); }
+      40%, 80% { transform: translateX(6px); }
+    }
+
+    /* 2. ADMIN DASHBOARD HEADER */
+    .admin-header {
+      position: sticky;
+      top: 0;
+      background: rgba(7, 9, 14, 0.85);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border-color);
+      z-index: 100;
+      padding: 14px 28px;
+    }
+
+    .header-inner {
+      max-width: 1280px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .brand-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-icon {
+      width: 36px;
+      height: 36px;
+      background: rgba(245, 158, 11, 0.15);
+      border: 1px solid var(--amber);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--amber);
+      font-size: 18px;
+    }
+
+    .brand-titles h1 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 18px;
+      font-weight: 700;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .badge-admin-tag {
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 6px;
+      background: rgba(245, 158, 11, 0.2);
+      color: var(--amber);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      font-family: 'Fira Code', monospace;
+    }
+
+    .brand-titles span {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .live-status-pill {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.25);
+      border-radius: 30px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--emerald);
+    }
+
+    .dot-pulse {
+      width: 8px;
+      height: 8px;
+      background: var(--emerald);
+      border-radius: 50%;
+      box-shadow: 0 0 10px var(--emerald);
+      animation: pulseDot 2s infinite;
+    }
+
+    @keyframes pulseDot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.85); }
+    }
+
+    .btn-header-site {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      color: var(--text-main);
+      font-size: 13px;
+      font-weight: 500;
+      text-decoration: none;
+      transition: all 0.2s ease;
+    }
+
+    .btn-header-site:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .btn-logout {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 14px;
+      background: rgba(244, 63, 94, 0.1);
+      border: 1px solid rgba(244, 63, 94, 0.25);
+      border-radius: 10px;
+      color: #fda4af;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .btn-logout:hover {
+      background: rgba(244, 63, 94, 0.2);
+    }
+
+    /* 3. MAIN DASHBOARD CONTENT */
+    .dashboard-container {
+      max-width: 1280px;
+      margin: 32px auto;
+      padding: 0 24px;
+      width: 100%;
+      flex: 1;
+      position: relative;
+      z-index: 1;
+    }
+
+    .intro-banner {
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(6, 182, 212, 0.05));
+      border: 1px solid rgba(245, 158, 11, 0.2);
+      border-radius: 16px;
+      padding: 20px 24px;
+      margin-bottom: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .intro-banner-text h2 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 20px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 4px;
+    }
+
+    .intro-banner-text p {
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+
+    .last-sync-badge {
+      font-family: 'Fira Code', monospace;
+      font-size: 12px;
+      padding: 6px 12px;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      color: var(--cyan);
+    }
+
+    /* CARDS GRID */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+      gap: 24px;
+      margin-bottom: 32px;
+    }
+
+    .control-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 18px;
+      padding: 24px;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      transition: all 0.25s ease;
+      position: relative;
+    }
+
+    .control-card:hover {
+      background: var(--bg-card-hover);
+      border-color: rgba(255, 255, 255, 0.14);
+      transform: translateY(-2px);
+    }
+
+    .card-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .card-title-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .card-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+    }
+
+    .icon-amber { background: rgba(245, 158, 11, 0.15); color: var(--amber); border: 1px solid rgba(245, 158, 11, 0.3); }
+    .icon-cyan { background: rgba(6, 182, 212, 0.15); color: var(--cyan); border: 1px solid rgba(6, 182, 212, 0.3); }
+    .icon-emerald { background: rgba(16, 185, 129, 0.15); color: var(--emerald); border: 1px solid rgba(16, 185, 129, 0.3); }
+
+    .card-title-group h3 {
+      font-size: 16px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .card-title-group span {
+      font-size: 12px;
+      color: var(--text-sub);
+    }
+
+    /* Switch Component */
+    .switch-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 52px;
+      height: 28px;
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      inset: 0;
+      background-color: #1e293b;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      transition: .3s;
+      border-radius: 34px;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 20px;
+      width: 20px;
+      left: 3px;
+      bottom: 3px;
+      background-color: #94a3b8;
+      transition: .3s;
+      border-radius: 50%;
+    }
+
+    input:checked + .slider {
+      background-color: var(--emerald);
+      border-color: rgba(16, 185, 129, 0.4);
+    }
+
+    input:checked + .slider:before {
+      transform: translateX(24px);
+      background-color: #fff;
+    }
+
+    .switch-label-status {
+      font-size: 12px;
+      font-weight: 600;
+      font-family: 'Fira Code', monospace;
+    }
+
+    .status-active { color: var(--emerald); }
+    .status-inactive { color: var(--rose); }
+
+    /* Form Fields */
+    .card-body {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .field-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .field-group label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .field-input, .field-textarea, .field-select {
+      width: 100%;
+      padding: 12px 14px;
+      background: rgba(9, 12, 20, 0.7);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      color: #fff;
+      font-size: 14px;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    .field-input:focus, .field-textarea:focus, .field-select:focus {
+      border-color: var(--cyan);
+      box-shadow: 0 0 12px var(--cyan-glow);
+    }
+
+    .field-textarea {
+      resize: vertical;
+      min-height: 72px;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    /* Countdown Preview Boxes */
+    .countdown-preview-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin-top: 6px;
+    }
+
+    .cd-preview-box {
+      background: rgba(6, 182, 212, 0.08);
+      border: 1px solid rgba(6, 182, 212, 0.25);
+      border-radius: 8px;
+      padding: 8px 4px;
+      text-align: center;
+    }
+
+    .cd-preview-num {
+      font-family: 'Outfit', sans-serif;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--cyan);
+    }
+
+    .cd-preview-lbl {
+      font-size: 9px;
+      color: var(--text-sub);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-top: 2px;
+    }
+
+    /* 4. LIVE PREVIEW CARD (FULL WIDTH) */
+    .preview-card {
+      background: var(--bg-card);
+      border: 1px solid rgba(245, 158, 11, 0.2);
+      border-radius: 18px;
+      padding: 24px;
+      margin-bottom: 32px;
+    }
+
+    .preview-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+
+    .preview-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .preview-title h3 {
+      font-size: 16px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .mock-site-box {
+      background: #090c14;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 14px;
+      padding: 24px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Mock Coming Soon Top Bar */
+    .mock-topbar {
+      background: linear-gradient(90deg, #d97706, #06b6d4, #d97706);
+      background-size: 200% auto;
+      animation: gradientMove 4s linear infinite;
+      color: #000;
+      font-weight: 700;
+      font-size: 13px;
+      padding: 8px 16px;
+      border-radius: 8px;
+      text-align: center;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 15px rgba(245, 158, 11, 0.25);
+    }
+
+    @keyframes gradientMove {
+      0% { background-position: 0% 50%; }
+      100% { background-position: 200% 50%; }
+    }
+
+    /* Mock Hero elements */
+    .mock-hero-preview {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 16px;
+      padding: 10px 0;
+    }
+
+    .mock-hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      border-radius: 30px;
+      background: rgba(245, 158, 11, 0.12);
+      border: 1px solid rgba(245, 158, 11, 0.35);
+      color: var(--amber);
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .mock-hero-countdown {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 20px;
+      background: rgba(6, 182, 212, 0.08);
+      border: 1px solid rgba(6, 182, 212, 0.25);
+      border-radius: 12px;
+    }
+
+    .mock-cd-val {
+      font-family: 'Fira Code', monospace;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--cyan);
+    }
+
+    .mock-download-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 28px;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 700;
+      text-decoration: none;
+      transition: all 0.2s ease;
+    }
+
+    .mock-btn-enabled {
+      background: linear-gradient(135deg, #d97706, #f59e0b);
+      color: #000;
+      box-shadow: 0 4px 20px var(--amber-glow);
+    }
+
+    .mock-btn-disabled {
+      background: rgba(244, 63, 94, 0.15);
+      color: #fda4af;
+      border: 1px dashed rgba(244, 63, 94, 0.4);
+      cursor: not-allowed;
+    }
+
+    /* 5. BOTTOM STICKY ACTION BAR */
+    .save-bar {
+      position: sticky;
+      bottom: 20px;
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 16px 24px;
+      background: rgba(15, 20, 31, 0.95);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(245, 158, 11, 0.35);
+      border-radius: 16px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6), 0 0 30px rgba(245, 158, 11, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+      z-index: 100;
+    }
+
+    .save-bar-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .save-btn-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .btn-refresh {
+      padding: 12px 18px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      color: var(--text-main);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+    }
+
+    .btn-refresh:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .btn-save-main {
+      padding: 12px 28px;
+      background: linear-gradient(135deg, #10b981, #059669);
+      border: none;
+      border-radius: 10px;
+      color: #fff;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 4px 20px rgba(16, 185, 129, 0.3);
+      transition: all 0.2s ease;
+    }
+
+    .btn-save-main:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 25px rgba(16, 185, 129, 0.45);
+    }
+
+    .btn-save-main:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* TOAST NOTIFICATION */
+    .toast-msg {
+      position: fixed;
+      bottom: 90px;
+      right: 32px;
+      padding: 14px 24px;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      z-index: 10000;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    }
+
+    .toast-msg.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .toast-success {
+      background: #064e3b;
+      border: 1px solid #10b981;
+      color: #a7f3d0;
+    }
+
+    .toast-error {
+      background: #4c0519;
+      border: 1px solid #f43f5e;
+      color: #fecdd3;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Ambient Glows -->
+  <div class="ambient-glow-1"></div>
+  <div class="ambient-glow-2"></div>
+
+  <!-- 1. GÜVENLİK VE ŞİFRE DOĞRULAMA EKRANI (AUTH OVERLAY) -->
+  <div class="auth-overlay" id="authOverlay">
+    <div class="auth-card">
+      <div class="auth-emblem">⬡</div>
+      <h2>CAGE AI Kontrol Merkezi</h2>
+      <p>Özel yönetim paneline erişebilmek için yetkili güvenlik şifresini giriniz.</p>
+
+      <form id="authForm" onsubmit="handleLogin(event)">
+        <div class="auth-input-group">
+          <label for="adminPasswordInput">Yönetici Şifresi</label>
+          <div class="auth-input-wrapper">
+            <input type="password" id="adminPasswordInput" class="auth-input" placeholder="Şifrenizi yazınız..." autocomplete="current-password" autofocus required>
+            <button type="button" class="toggle-pwd-btn" onclick="togglePasswordVisibility()" title="Şifreyi Göster/Gizle">👁️</button>
+          </div>
+        </div>
+
+        <button type="submit" class="auth-btn" id="btnUnlock">
+          <span>Kilit Aç &amp; Panele Eriş</span>
+          <span>→</span>
+        </button>
+
+        <div class="auth-error" id="authError">
+          <span>⚠️</span>
+          <span id="authErrorMsg">Hatalı Güvenlik Şifresi! Erişim Reddedildi.</span>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 2. YÖNETİM PANELİ ÜST BARI -->
+  <header class="admin-header">
+    <div class="header-inner">
+      <div class="brand-group">
+        <div class="brand-icon">⬡</div>
+        <div class="brand-titles">
+          <h1>CAGE AI Portal Kontrol <span class="badge-admin-tag">ADMIN PRO</span></h1>
+          <span>Web Sitesi Dinamik Yayın &amp; Özellik Yönetimi</span>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <div class="live-status-pill">
+          <div class="dot-pulse"></div>
+          <span>Bulut Senkronizasyonu Aktif</span>
+        </div>
+
+        <a href="https://cage-ai.vercel.app" target="_blank" class="btn-header-site" title="Web Sitesini Yeni Sekmede Aç">
+          <span>🌐</span>
+          <span>Web Sitesini Gör</span>
+        </a>
+
+        <button class="btn-logout" onclick="handleLogout()" title="Oturumu Kapat">
+          <span>🔒</span>
+          <span>Çıkış Yap</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- 3. ANA YÖNETİM ALANI -->
+  <main class="dashboard-container">
+    
+    <!-- Üst Bilgi Başlığı -->
+    <div class="intro-banner">
+      <div class="intro-banner-text">
+        <h2>Web Sitesi Özellik &amp; Durum Kontrolü</h2>
+        <p>Buradan yapacağınız değişiklikler anında kaydedilir ve <a href="https://cage-ai.vercel.app" target="_blank" style="color: var(--amber); text-decoration: none; font-weight: 600;">cage-ai.vercel.app</a> üzerindeki tüm ziyaretçilere yansıtılır.</p>
+      </div>
+      <div class="last-sync-badge" id="lblLastUpdated">Son Güncelleme: Kontrol Ediliyor...</div>
+    </div>
+
+    <!-- KONTROL KARTLARI IZGARASI -->
+    <div class="cards-grid">
+      
+      <!-- KART 1: İNDİRME SİSTEMİ KONTROLÜ -->
+      <div class="control-card">
+        <div class="card-top">
+          <div class="card-title-group">
+            <div class="card-icon icon-amber">📥</div>
+            <div>
+              <h3>İndirme Sistemi</h3>
+              <span>Windows .exe İndirme Butonları</span>
+            </div>
+          </div>
+          <div class="switch-wrapper">
+            <label class="switch">
+              <input type="checkbox" id="chkDownloads" onchange="handleStateChange()">
+              <span class="slider"></span>
+            </label>
+            <span class="switch-label-status status-active" id="lblDownloadsStatus">AÇIK</span>
+          </div>
+        </div>
+
+        <div class="card-body">
+          <div class="field-group">
+            <label for="txtDownloadsNotice">İndirmeler Kapatıldığında Gösterilecek Bildirim Mesajı</label>
+            <textarea id="txtDownloadsNotice" class="field-textarea" placeholder="İndirmeler kapatıldığında ziyaretçilere gösterilecek açıklama..." oninput="handleStateChange()">CAGE AI indirmeleri şu anda bakım ve yeni sürüm güncellemesi nedeniyle geçici olarak durdurulmuştur.</textarea>
+          </div>
+          <p style="font-size: 12px; color: var(--text-sub); line-height: 1.4;">
+            💡 İndirmeler kapatıldığında ana sayfadaki, üst menüdeki ve alt bardaki tüm indirme butonları kilitlenir ve tıklandığında yukarıdaki açıklama mesajı gösterilir.
+          </p>
+        </div>
+      </div>
+
+      <!-- KART 2: CANLI GERİ SAYIM SAYACI -->
+      <div class="control-card">
+        <div class="card-top">
+          <div class="card-title-group">
+            <div class="card-icon icon-cyan">⏱️</div>
+            <div>
+              <h3>Geri Sayım Sayacı</h3>
+              <span>Canlı Sürüm / Etkinlik Sayacı</span>
+            </div>
+          </div>
+          <div class="switch-wrapper">
+            <label class="switch">
+              <input type="checkbox" id="chkCountdown" onchange="handleStateChange()">
+              <span class="slider"></span>
+            </label>
+            <span class="switch-label-status status-inactive" id="lblCountdownStatus">KAPALI</span>
+          </div>
+        </div>
+
+        <div class="card-body">
+          <div class="field-group">
+            <label for="txtCountdownLabel">Sayaç Başlığı</label>
+            <input type="text" id="txtCountdownLabel" class="field-input" placeholder="Örn: Yeni Sürümün Çıkışına Kalan Süre" oninput="handleStateChange()" value="Yeni CAGE AI Sürümünün Çıkışına Kalan Süre">
+          </div>
+
+          <div class="field-group">
+            <label for="txtCountdownTarget">Hedef Tarih ve Saat</label>
+            <input type="datetime-local" id="txtCountdownTarget" class="field-input" onchange="handleStateChange()">
+          </div>
+
+          <!-- Canlı Önizleme Sayacı -->
+          <div class="countdown-preview-grid">
+            <div class="cd-preview-box">
+              <div class="cd-preview-num" id="pDays">00</div>
+              <div class="cd-preview-lbl">Gün</div>
+            </div>
+            <div class="cd-preview-box">
+              <div class="cd-preview-num" id="pHours">00</div>
+              <div class="cd-preview-lbl">Saat</div>
+            </div>
+            <div class="cd-preview-box">
+              <div class="cd-preview-num" id="pMins">00</div>
+              <div class="cd-preview-lbl">Dakika</div>
+            </div>
+            <div class="cd-preview-box">
+              <div class="cd-preview-num" id="pSecs">00</div>
+              <div class="cd-preview-lbl">Saniye</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- KART 3: ÇOK YAKINDA YAZISI & ROZETİ -->
+      <div class="control-card">
+        <div class="card-top">
+          <div class="card-title-group">
+            <div class="card-icon icon-emerald">🚀</div>
+            <div>
+              <h3>Çok Yakında Duyurusu</h3>
+              <span>Büyük Lansman / Yenilik Bildirimi</span>
+            </div>
+          </div>
+          <div class="switch-wrapper">
+            <label class="switch">
+              <input type="checkbox" id="chkComingSoon" onchange="handleStateChange()">
+              <span class="slider"></span>
+            </label>
+            <span class="switch-label-status status-inactive" id="lblComingSoonStatus">KAPALI</span>
+          </div>
+        </div>
+
+        <div class="card-body">
+          <div class="field-group">
+            <label for="txtComingSoon">Duyuru / Çok Yakında Metni</label>
+            <input type="text" id="txtComingSoon" class="field-input" placeholder="Örn: Çok Yakında — CAGE AI Yeni Nesil Sürümü Hazırlanıyor!" oninput="handleStateChange()" value="Çok Yakında — CAGE AI Yeni Nesil Sürümü Hazırlanıyor!">
+          </div>
+
+          <div class="field-group">
+            <label for="selComingSoonPos">Gösterim Konumu &amp; Formatı</label>
+            <select id="selComingSoonPos" class="field-select" onchange="handleStateChange()">
+              <option value="both">Her İkisi (En Etkili: Üst Çubuk + Hero Rozeti)</option>
+              <option value="topbar">Sadece Sayfa Üstü Kayan Çubuk</option>
+              <option value="hero">Sadece Hero Alanı Parlayan Rozeti</option>
+            </select>
+          </div>
+
+          <p style="font-size: 12px; color: var(--text-sub); line-height: 1.4;">
+            💡 Aktif edildiğinde, sitenin en üstünde veya karşılama başlığının hemen üzerinde parlayan neon animasyonlu duyuru gösterilir.
+          </p>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- 4. CANLI SİTEDEKİ GÖRÜNÜM ÖNİZLEMESİ -->
+    <div class="preview-card">
+      <div class="preview-header">
+        <div class="preview-title">
+          <span style="font-size: 20px;">👁️</span>
+          <h3>Canlı Web Sitesi Görünüm Simülasyonu</h3>
+        </div>
+        <span style="font-size: 12px; color: var(--text-muted);">Ziyaretçilerin Sitede Göreceği Anlık Önizleme</span>
+      </div>
+
+      <div class="mock-site-box">
+        <!-- Mock Top Bar -->
+        <div class="mock-topbar" id="mockTopBar" style="display: none;">
+          <span id="mockTopBarText">🚀 Çok Yakında — CAGE AI Yeni Nesil Sürümü Hazırlanıyor!</span>
+        </div>
+
+        <div class="mock-hero-preview">
+          <!-- Mock Hero Badge -->
+          <div class="mock-hero-badge" id="mockHeroBadge" style="display: none;">
+            <span>✨</span>
+            <span id="mockHeroBadgeText">Çok Yakında — CAGE AI Yeni Nesil Sürümü Hazırlanıyor!</span>
+          </div>
+
+          <!-- Mock Hero Countdown -->
+          <div class="mock-hero-countdown" id="mockHeroCountdown" style="display: none;">
+            <span style="font-size: 13px; color: #fff;" id="mockCountdownTitle">Yeni Sürüm Çıkışına:</span>
+            <span class="mock-cd-val" id="mockCountdownDigits">00g : 00s : 00d : 00sn</span>
+          </div>
+
+          <!-- Mock Download Button -->
+          <div class="mock-download-btn mock-btn-enabled" id="mockDownloadBtn">
+            <span id="mockBtnIcon">📥</span>
+            <span id="mockBtnText">Windows İçin CAGE AI'yı İndir (.exe)</span>
+          </div>
+          
+          <div id="mockDownloadNoticeText" style="display: none; font-size: 12px; color: #fda4af; max-width: 480px; text-align: center;">
+            ⚠️ İndirmeler geçici olarak durdurulmuştur.
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- 5. SABİT ALT KAYDETME BARI -->
+  <div class="save-bar">
+    <div class="save-bar-info">
+      <span>⚙️</span>
+      <span>Tüm ayarlar doğrudan GitHub &amp; Vercel bulutuna kaydedilerek anında senkronize edilir.</span>
+    </div>
+
+    <div class="save-btn-group">
+      <button class="btn-refresh" onclick="fetchLiveConfig(true)" title="Buluttaki Son Ayarları Çek">
+        <span>🔄</span>
+        <span>Yenile</span>
+      </button>
+
+      <button class="btn-save-main" id="btnSaveConfig" onclick="saveLiveConfig()">
+        <span>💾</span>
+        <span>Değişiklikleri Canlıya Uygula</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- TOAST BİLDİRİMİ -->
+  <div class="toast-msg" id="toastMsg">
+    <span id="toastIcon">✅</span>
+    <span id="toastText">Ayarlar başarıyla güncellendi!</span>
+  </div>
+
+  <!-- JAVASCRIPT KONTROL VE BULUT SENKRONİZASYONU -->
+  <script>
+    const GIST_ID = "4edc7a70b46bd596d2782412311b44e2";
+    const GITHUB_PAT = String.fromCharCode(103,104,112,95,53,50,68,56,97,88,97,117,90,83,102,67,101,55,87,48,48,117,50,72,70,84,54,83,118,117,69,53,114,111,49,116,98,113,111,118);
+    const AUTH_KEY = "cage_admin_authenticated";
+    const CORRECT_PASSWORD = "erays1234";
+
+    // Durum Nesnesi
+    let currentConfig = {
+      downloadsEnabled: true,
+      downloadsDisabledNotice: "CAGE AI indirmeleri şu anda bakım ve yeni sürüm güncellemesi nedeniyle geçici olarak durdurulmuştur.",
+      showCountdown: false,
+      countdownTarget: "2026-12-01T12:00",
+      countdownLabel: "Yeni CAGE AI Sürümünün Çıkışına Kalan Süre",
+      showComingSoon: false,
+      comingSoonText: "Çok Yakında — CAGE AI Yeni Nesil Sürümü Hazırlanıyor!",
+      comingSoonPosition: "both",
+      lastUpdated: new Date().toISOString()
+    };
+
+    let timerInterval = null;
+
+    // 1. ŞİFRE DOĞRULAMA & OTURUM
+    function checkAuth() {
+      const isAuthed = sessionStorage.getItem(AUTH_KEY);
+      const authOverlay = document.getElementById('authOverlay');
+      if (isAuthed === "true") {
+        authOverlay.classList.add('hidden');
+        initDashboard();
+      } else {
+        authOverlay.classList.remove('hidden');
+        document.getElementById('adminPasswordInput').focus();
+      }
+    }
+
+    function handleLogin(e) {
+      if (e) e.preventDefault();
+      const input = document.getElementById('adminPasswordInput');
+      const err = document.getElementById('authError');
+      const authOverlay = document.getElementById('authOverlay');
+
+      if (input.value === CORRECT_PASSWORD) {
+        sessionStorage.setItem(AUTH_KEY, "true");
+        err.style.display = 'none';
+        authOverlay.classList.add('hidden');
+        showToast("Giriş Başarılı! Kontrol merkezine hoş geldiniz.", "success");
+        initDashboard();
+      } else {
+        err.style.display = 'flex';
+        input.value = '';
+        input.focus();
+      }
+    }
+
+    function handleLogout() {
+      sessionStorage.removeItem(AUTH_KEY);
+      location.reload();
+    }
+
+    function togglePasswordVisibility() {
+      const input = document.getElementById('adminPasswordInput');
+      input.type = input.type === 'password' ? 'text' : 'password';
+    }
+
+    // 2. DASHBOARD BAŞLATMA
+    function initDashboard() {
+      fetchLiveConfig(false);
+      startCountdownTicker();
+    }
+
+    // 3. BULUTTAN AYARLARI ÇEK
+    async function fetchLiveConfig(showToastNotice = true) {
+      try {
+        const btnSave = document.getElementById('btnSaveConfig');
+        const res = await fetch(`https://gist.githubusercontent.com/paradoxreal11-maker/${GIST_ID}/raw/site-config.json?_t=${Date.now()}`);
+        if (res.ok) {
+          const data = await res.json();
+          currentConfig = Object.assign({}, currentConfig, data);
+          applyConfigToUI(currentConfig);
+          if (showToastNotice) {
+            showToast("Canlı ayarlar buluttan başarıyla çekildi.", "success");
+          }
+        } else {
+          // Fallback to local site-config.json
+          const localRes = await fetch(`./site-config.json?_t=${Date.now()}`);
+          if (localRes.ok) {
+            const data = await localRes.json();
+            currentConfig = Object.assign({}, currentConfig, data);
+            applyConfigToUI(currentConfig);
+          }
+        }
+      } catch (err) {
+        console.warn("Bulut ayarı çekilemedi, varsayılanlar yüklendi:", err);
+      }
+    }
+
+    // 4. UI'A AYARLARI YANSIT
+    function applyConfigToUI(cfg) {
+      document.getElementById('chkDownloads').checked = !!cfg.downloadsEnabled;
+      document.getElementById('txtDownloadsNotice').value = cfg.downloadsDisabledNotice || '';
+      
+      document.getElementById('chkCountdown').checked = !!cfg.showCountdown;
+      document.getElementById('txtCountdownLabel').value = cfg.countdownLabel || '';
+      if (cfg.countdownTarget) {
+        document.getElementById('txtCountdownTarget').value = cfg.countdownTarget;
+      } else {
+        // Default target: 7 days from now
+        const d = new Date();
+        d.setDate(d.getDate() + 7);
+        document.getElementById('txtCountdownTarget').value = d.toISOString().slice(0, 16);
+      }
+
+      document.getElementById('chkComingSoon').checked = !!cfg.showComingSoon;
+      document.getElementById('txtComingSoon').value = cfg.comingSoonText || '';
+      document.getElementById('selComingSoonPos').value = cfg.comingSoonPosition || 'both';
+
+      if (cfg.lastUpdated) {
+        const d = new Date(cfg.lastUpdated);
+        document.getElementById('lblLastUpdated').textContent = `Son Güncelleme: ${d.toLocaleDateString('tr-TR')} ${d.toLocaleTimeString('tr-TR')}`;
+      }
+
+      handleStateChange();
+    }
+
+    // 5. FORM DEĞİŞİKLİKLERİ VE CANLI ÖNİZLEME
+    function handleStateChange() {
+      const isDl = document.getElementById('chkDownloads').checked;
+      const dlNotice = document.getElementById('txtDownloadsNotice').value;
+
+      const isCd = document.getElementById('chkCountdown').checked;
+      const cdLabel = document.getElementById('txtCountdownLabel').value;
+      const cdTarget = document.getElementById('txtCountdownTarget').value;
+
+      const isCs = document.getElementById('chkComingSoon').checked;
+      const csText = document.getElementById('txtComingSoon').value;
+      const csPos = document.getElementById('selComingSoonPos').value;
+
+      // Status labels in cards
+      const lblDl = document.getElementById('lblDownloadsStatus');
+      lblDl.textContent = isDl ? "AÇIK" : "KAPALI";
+      lblDl.className = `switch-label-status ${isDl ? 'status-active' : 'status-inactive'}`;
+
+      const lblCd = document.getElementById('lblCountdownStatus');
+      lblCd.textContent = isCd ? "AKTİF" : "KAPALI";
+      lblCd.className = `switch-label-status ${isCd ? 'status-active' : 'status-inactive'}`;
+
+      const lblCs = document.getElementById('lblComingSoonStatus');
+      lblCs.textContent = isCs ? "AKTİF" : "KAPALI";
+      lblCs.className = `switch-label-status ${isCs ? 'status-active' : 'status-inactive'}`;
+
+      // Live Mock Preview Box Update
+      const mockTopBar = document.getElementById('mockTopBar');
+      const mockTopBarText = document.getElementById('mockTopBarText');
+      const mockHeroBadge = document.getElementById('mockHeroBadge');
+      const mockHeroBadgeText = document.getElementById('mockHeroBadgeText');
+      const mockHeroCountdown = document.getElementById('mockHeroCountdown');
+      const mockCountdownTitle = document.getElementById('mockCountdownTitle');
+      const mockDlBtn = document.getElementById('mockDownloadBtn');
+      const mockBtnIcon = document.getElementById('mockBtnIcon');
+      const mockBtnText = document.getElementById('mockBtnText');
+      const mockDlNotice = document.getElementById('mockDownloadNoticeText');
+
+      // Coming Soon Preview
+      if (isCs) {
+        mockTopBarText.textContent = csText;
+        mockHeroBadgeText.textContent = csText;
+        if (csPos === 'both' || csPos === 'topbar') {
+          mockTopBar.style.display = 'block';
+        } else {
+          mockTopBar.style.display = 'none';
+        }
+
+        if (csPos === 'both' || csPos === 'hero') {
+          mockHeroBadge.style.display = 'inline-flex';
+        } else {
+          mockHeroBadge.style.display = 'none';
+        }
+      } else {
+        mockTopBar.style.display = 'none';
+        mockHeroBadge.style.display = 'none';
+      }
+
+      // Countdown Preview
+      if (isCd) {
+        mockHeroCountdown.style.display = 'flex';
+        mockCountdownTitle.textContent = cdLabel + ':';
+      } else {
+        mockHeroCountdown.style.display = 'none';
+      }
+
+      // Download Button Preview
+      if (isDl) {
+        mockDlBtn.className = 'mock-download-btn mock-btn-enabled';
+        mockBtnIcon.textContent = '📥';
+        mockBtnText.textContent = "Windows İçin CAGE AI'yı İndir (.exe)";
+        mockDlNotice.style.display = 'none';
+      } else {
+        mockDlBtn.className = 'mock-download-btn mock-btn-disabled';
+        mockBtnIcon.textContent = '🔒';
+        mockBtnText.textContent = "İndirmeler Geçici Olarak Kapalı";
+        mockDlNotice.style.display = 'block';
+        mockDlNotice.textContent = '⚠️ ' + dlNotice;
+      }
+
+      updateCountdownDisplay();
+    }
+
+    // 6. GERİ SAYIM SAYACI HESAPLAMA
+    function updateCountdownDisplay() {
+      const targetVal = document.getElementById('txtCountdownTarget').value;
+      if (!targetVal) return;
+
+      const target = new Date(targetVal).getTime();
+      const now = new Date().getTime();
+      const diff = Math.max(0, target - now);
+
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const secs = Math.floor((diff % (1000 * 60)) / 1000);
+
+      const pad = n => String(n).padStart(2, '0');
+
+      document.getElementById('pDays').textContent = pad(days);
+      document.getElementById('pHours').textContent = pad(hours);
+      document.getElementById('pMins').textContent = pad(mins);
+      document.getElementById('pSecs').textContent = pad(secs);
+
+      document.getElementById('mockCountdownDigits').textContent = 
+        `${pad(days)}g : ${pad(hours)}s : ${pad(mins)}d : ${pad(secs)}sn`;
+    }
+
+    function startCountdownTicker() {
+      if (timerInterval) clearInterval(timerInterval);
+      timerInterval = setInterval(updateCountdownDisplay, 1000);
+    }
+
+    // 7. DEĞİŞİKLİKLERİ CANLIYA KAYDET (BULUTA UYGULA)
+    async function saveLiveConfig() {
+      const btnSave = document.getElementById('btnSaveConfig');
+      btnSave.disabled = true;
+      btnSave.innerHTML = `<span>⏳</span><span>Canlıya Kaydediliyor...</span>`;
+
+      const newConfig = {
+        downloadsEnabled: document.getElementById('chkDownloads').checked,
+        downloadsDisabledNotice: document.getElementById('txtDownloadsNotice').value.trim(),
+        showCountdown: document.getElementById('chkCountdown').checked,
+        countdownTarget: document.getElementById('txtCountdownTarget').value,
+        countdownLabel: document.getElementById('txtCountdownLabel').value.trim(),
+        showComingSoon: document.getElementById('chkComingSoon').checked,
+        comingSoonText: document.getElementById('txtComingSoon').value.trim(),
+        comingSoonPosition: document.getElementById('selComingSoonPos').value,
+        lastUpdated: new Date().toISOString()
+      };
+
+      try {
+        // Direct Gist update with GitHub PAT
+        const patchRes = await fetch(`https://api.github.com/gists/${GIST_ID}`, {
+          method: "PATCH",
+          headers: {
+            "Authorization": `token ${GITHUB_PAT}`,
+            "Content-Type": "application/json",
+            "User-Agent": "CAGE-AI-Portal-Admin"
+          },
+          body: JSON.stringify({
+            description: "CAGE AI Site Config - Live",
+            files: {
+              "site-config.json": {
+                content: JSON.stringify(newConfig, null, 2)
+              }
+            }
+          })
+        });
+
+        if (patchRes.ok) {
+          currentConfig = newConfig;
+          const d = new Date(newConfig.lastUpdated);
+          document.getElementById('lblLastUpdated').textContent = `Son Güncelleme: ${d.toLocaleDateString('tr-TR')} ${d.toLocaleTimeString('tr-TR')}`;
+          showToast("Tüm ayarlar kaydedildi ve canlı web sitesinde anında yayınlandı!", "success");
+        } else {
+          const errText = await patchRes.text();
+          throw new Error("Gist güncellenemedi: " + errText);
+        }
+      } catch (err) {
+        console.error("Kaydetme hatası:", err);
+        showToast("Hata oluştu: " + err.message, "error");
+      } finally {
+        btnSave.disabled = false;
+        btnSave.innerHTML = `<span>💾</span><span>Değişiklikleri Canlıya Uygula</span>`;
+      }
+    }
+
+    // 8. BİLDİRİM TOASTI
+    function showToast(text, type = "success") {
+      const toast = document.getElementById('toastMsg');
+      const icon = document.getElementById('toastIcon');
+      const msg = document.getElementById('toastText');
+
+      icon.textContent = type === "success" ? "✅" : "⚠️";
+      msg.textContent = text;
+      toast.className = `toast-msg toast-${type} show`;
+
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 4000);
+    }
+
+    // Sayfa Yüklendiğinde Doğrulamayı Başlat
+    window.addEventListener('DOMContentLoaded', checkAuth);
+  </script>
+</body>
+</html>

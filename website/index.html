@@ -17,6 +17,12 @@
   <div class="ambient-glow glow-right"></div>
   <div class="ambient-grid"></div>
 
+  <!-- DİNAMİK ÜST DUYURU BARI (ÇOK YAKINDA) -->
+  <div class="site-top-announcement" id="siteTopAnnouncementBar" style="display: none;">
+    <span class="badge-pill">YENİLİK</span>
+    <span id="siteTopAnnouncementText">Çok Yakında — CAGE AI Yeni Nesil Sürümü Hazırlanıyor!</span>
+  </div>
+
   <!-- Üst Menü / Navbar -->
   <header class="navbar">
     <div class="nav-container">
@@ -48,6 +54,12 @@
   <section class="hero-section">
     <div class="container hero-container">
       
+      <!-- DİNAMİK ÇOK YAKINDA HERO ROZETİ -->
+      <div class="site-hero-coming-soon-badge" id="siteComingSoonHeroBadge" style="display: none;">
+        <span class="pulse-sparkle">✨</span>
+        <span id="siteComingSoonHeroText">Çok Yakında — CAGE AI Yeni Nesil Sürümü Hazırlanıyor!</span>
+      </div>
+
       <div class="hero-badge">
         <span class="badge-dot"></span>
         <span class="badge-text">Resmi Windows Masaüstü Sürümü Yayınlandı</span>
@@ -62,6 +74,32 @@
       <p class="hero-subtitle">
         Karanlık ve sezgisel çalışma alanı, Windows dosya erişim yetkisiyle bilgisayarınızdaki dosyalara doğrudan erişip düzenleme yapabilen otonom Codium ajanı, çift panelli kod stüdyosu ve kesintisiz geliştirici deneyimi.
       </p>
+
+      <!-- DİNAMİK CANLI GERİ SAYIM SAYACI -->
+      <div class="site-countdown-wrapper" id="siteCountdownBox" style="display: none;">
+        <div class="countdown-header-row">
+          <span class="cd-icon">⏱️</span>
+          <span class="cd-label" id="siteCountdownLabel">Yeni CAGE AI Sürümünün Çıkışına Kalan Süre</span>
+        </div>
+        <div class="countdown-grid">
+          <div class="cd-digit-box">
+            <span class="cd-digit-val" id="cdDays">00</span>
+            <span class="cd-digit-lbl">Gün</span>
+          </div>
+          <div class="cd-digit-box">
+            <span class="cd-digit-val" id="cdHours">00</span>
+            <span class="cd-digit-lbl">Saat</span>
+          </div>
+          <div class="cd-digit-box">
+            <span class="cd-digit-val" id="cdMins">00</span>
+            <span class="cd-digit-lbl">Dakika</span>
+          </div>
+          <div class="cd-digit-box">
+            <span class="cd-digit-val" id="cdSecs">00</span>
+            <span class="cd-digit-lbl">Saniye</span>
+          </div>
+        </div>
+      </div>
 
       <!-- CTA & Download Box -->
       <div class="hero-cta-group" id="download">
@@ -695,6 +733,164 @@
         }, 2000);
       });
     }
+
+    // 6. DİNAMİK YÖNETİM AYARLARI & GERİ SAYIM MOTORU (CAGE AI CLOUD SYNC)
+    const GIST_CONFIG_URL = "https://gist.githubusercontent.com/paradoxreal11-maker/4edc7a70b46bd596d2782412311b44e2/raw/site-config.json";
+    let siteCountdownInterval = null;
+    let siteCurrentNotice = "CAGE AI indirmeleri bakım nedeniyle geçici olarak durdurulmuştur.";
+
+    async function loadDynamicSiteConfig() {
+      try {
+        let config = null;
+        try {
+          const res = await fetch(`${GIST_CONFIG_URL}?_t=${Date.now()}`);
+          if (res.ok) {
+            config = await res.json();
+          }
+        } catch (e) {
+          console.warn("Gist config fetch error, trying local:", e);
+        }
+
+        if (!config) {
+          const localRes = await fetch(`./site-config.json?_t=${Date.now()}`);
+          if (localRes.ok) {
+            config = await localRes.json();
+          }
+        }
+
+        if (config) {
+          applySiteConfiguration(config);
+        }
+      } catch (err) {
+        console.warn("Dinamik ayarlar yüklenemedi:", err);
+      }
+    }
+
+    function applySiteConfiguration(cfg) {
+      // 1. Çok Yakında Duyurusu Kontrolü
+      const topBar = document.getElementById('siteTopAnnouncementBar');
+      const topBarText = document.getElementById('siteTopAnnouncementText');
+      const heroBadge = document.getElementById('siteComingSoonHeroBadge');
+      const heroBadgeText = document.getElementById('siteComingSoonHeroText');
+
+      if (cfg.showComingSoon && cfg.comingSoonText) {
+        const text = cfg.comingSoonText;
+        const pos = cfg.comingSoonPosition || 'both';
+
+        if (pos === 'both' || pos === 'topbar') {
+          topBarText.textContent = text;
+          topBar.style.display = 'flex';
+        } else {
+          topBar.style.display = 'none';
+        }
+
+        if (pos === 'both' || pos === 'hero') {
+          heroBadgeText.textContent = text;
+          heroBadge.style.display = 'inline-flex';
+        } else {
+          heroBadge.style.display = 'none';
+        }
+      } else {
+        if (topBar) topBar.style.display = 'none';
+        if (heroBadge) heroBadge.style.display = 'none';
+      }
+
+      // 2. Canlı Geri Sayım Sayacı Kontrolü
+      const countdownBox = document.getElementById('siteCountdownBox');
+      const countdownLabel = document.getElementById('siteCountdownLabel');
+
+      if (cfg.showCountdown && cfg.countdownTarget) {
+        countdownBox.style.display = 'block';
+        if (countdownLabel && cfg.countdownLabel) {
+          countdownLabel.textContent = cfg.countdownLabel;
+        }
+
+        initSiteCountdown(cfg.countdownTarget);
+      } else {
+        if (countdownBox) countdownBox.style.display = 'none';
+      }
+
+      // 3. İndirme Kapatma / Kilitleme Kontrolü
+      siteCurrentNotice = cfg.downloadsDisabledNotice || siteCurrentNotice;
+      const downloadElements = [
+        document.getElementById('btnDownloadHero'),
+        document.querySelector('.nav-download-btn'),
+        document.querySelector('.bottom-cta-banner a[download]')
+      ].filter(Boolean);
+
+      if (cfg.downloadsEnabled === false) {
+        downloadElements.forEach(el => {
+          el.classList.add('download-disabled');
+          el.removeAttribute('download');
+          el.setAttribute('data-disabled', 'true');
+          
+          // Güncelleme başlıkları
+          const titleSpan = el.querySelector('.btn-title');
+          if (titleSpan) titleSpan.textContent = 'İndirmeler Geçici Olarak Kapalı';
+          const navSpan = el.querySelector('span');
+          if (navSpan && el.classList.contains('nav-download-btn')) navSpan.textContent = 'İndirmeler Kapalı';
+          
+          el.onclick = function(e) {
+            e.preventDefault();
+            openDownloadModal();
+          };
+        });
+      }
+    }
+
+    function initSiteCountdown(targetDateStr) {
+      if (siteCountdownInterval) clearInterval(siteCountdownInterval);
+
+      function update() {
+        const target = new Date(targetDateStr).getTime();
+        const now = new Date().getTime();
+        const diff = Math.max(0, target - now);
+
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        const secs = Math.floor((diff % (1000 * 60)) / 1000);
+
+        const pad = n => String(n).padStart(2, '0');
+
+        const elD = document.getElementById('cdDays');
+        const elH = document.getElementById('cdHours');
+        const elM = document.getElementById('cdMins');
+        const elS = document.getElementById('cdSecs');
+
+        if (elD) elD.textContent = pad(days);
+        if (elH) elH.textContent = pad(hours);
+        if (elM) elM.textContent = pad(mins);
+        if (elS) elS.textContent = pad(secs);
+      }
+
+      update();
+      siteCountdownInterval = setInterval(update, 1000);
+    }
+
+    function openDownloadModal() {
+      const modal = document.getElementById('modalDownloadNotice');
+      const msg = document.getElementById('modalDownloadNoticeMsg');
+      if (msg) msg.textContent = siteCurrentNotice;
+      if (modal) modal.classList.add('active');
+    }
+
+    function closeDownloadModal() {
+      const modal = document.getElementById('modalDownloadNotice');
+      if (modal) modal.classList.remove('active');
+    }
+
+    window.addEventListener('DOMContentLoaded', loadDynamicSiteConfig);
   </script>
+
+  <!-- İNDİRME KAPALI BİLGİLENDİRME MODALI -->
+  <div class="modal-overlay" id="modalDownloadNotice" onclick="if(event.target===this)closeDownloadModal()">
+    <div class="modal-box">
+      <div class="modal-icon-shield">🔒</div>
+      <h3>İndirmeler Geçici Olarak Durduruldu</h3>
+      <p id="modalDownloadNoticeMsg">CAGE AI indirmeleri şu anda bakım ve sürüm güncellemesi nedeniyle geçici olarak durdurulmuştur.</p>
+      <button class="modal-btn-close" onclick="closeDownloadModal()">Anladım</button>
+    </div>
+  </div>
 </body>
 </html>

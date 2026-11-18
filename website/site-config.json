@@ -1,0 +1,11 @@
+{
+  "downloadsEnabled": true,
+  "downloadsDisabledNotice": "CAGE AI indirmeleri şu anda bakım ve sürüm güncellemesi nedeniyle geçici olarak durdurulmuştur.",
+  "showCountdown": false,
+  "countdownTarget": "2026-12-01T12:00",
+  "countdownLabel": "Yeni CAGE AI Sürümünün Çıkışına Kalan Süre",
+  "showComingSoon": false,
+  "comingSoonText": "Çok Yakında — CAGE AI Yeni Nesil Sürümü Hazırlanıyor!",
+  "comingSoonPosition": "both",
+  "lastUpdated": "2026-11-19T00:00:00.000Z"
+}
