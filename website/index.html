@@ -54,16 +54,18 @@
   <section class="hero-section">
     <div class="container hero-container">
       
-      <!-- DİNAMİK ÇOK YAKINDA HERO ROZETİ -->
-      <div class="site-hero-coming-soon-badge" id="siteComingSoonHeroBadge" style="display: none;">
-        <span class="pulse-sparkle">✨</span>
-        <span id="siteComingSoonHeroText">Çok Yakında — CAGE AI Yeni Nesil Sürümü Hazırlanıyor!</span>
-      </div>
+      <div class="hero-badges-wrapper">
+        <!-- DİNAMİK ÇOK YAKINDA HERO ROZETİ -->
+        <div class="site-hero-coming-soon-badge" id="siteComingSoonHeroBadge" style="display: none;">
+          <span class="pulse-sparkle">✨</span>
+          <span id="siteComingSoonHeroText">Çok Yakında — CAGE AI Yeni Nesil Sürümü Hazırlanıyor!</span>
+        </div>
 
-      <div class="hero-badge">
-        <span class="badge-dot"></span>
-        <span class="badge-text">Resmi Windows Masaüstü Sürümü Yayınlandı</span>
-        <span class="badge-shield">🛡️ Yönetici Yetkilendirmeli</span>
+        <div class="hero-badge">
+          <span class="badge-dot"></span>
+          <span class="badge-text">Resmi Windows Masaüstü Sürümü Yayınlandı</span>
+          <span class="badge-shield">🛡️ Yönetici Yetkilendirmeli</span>
+        </div>
       </div>
 
       <h1 class="hero-title">
@@ -827,6 +829,8 @@
           // Güncelleme başlıkları
           const titleSpan = el.querySelector('.btn-title');
           if (titleSpan) titleSpan.textContent = 'İndirmeler Geçici Olarak Kapalı';
+          const subSpan = el.querySelector('.btn-sub');
+          if (subSpan) subSpan.textContent = 'Bakım ve yeni sürüm hazırlığı sürüyor';
           const navSpan = el.querySelector('span');
           if (navSpan && el.classList.contains('nav-download-btn')) navSpan.textContent = 'İndirmeler Kapalı';
           
@@ -834,6 +838,21 @@
             e.preventDefault();
             openDownloadModal();
           };
+        });
+      } else {
+        downloadElements.forEach(el => {
+          el.classList.remove('download-disabled');
+          el.setAttribute('download', 'CAGE_AI_Setup.exe');
+          el.removeAttribute('data-disabled');
+          
+          const titleSpan = el.querySelector('.btn-title');
+          if (titleSpan) titleSpan.textContent = "Windows İçin CAGE AI'yı İndir (.exe)";
+          const subSpan = el.querySelector('.btn-sub');
+          if (subSpan) subSpan.textContent = "v1.0.1 Resmi Kurulum Sihirbazı • 83.4 MB • 64-Bit";
+          const navSpan = el.querySelector('span');
+          if (navSpan && el.classList.contains('nav-download-btn')) navSpan.textContent = 'İndir (.exe)';
+          
+          el.onclick = null;
         });
       }
     }
