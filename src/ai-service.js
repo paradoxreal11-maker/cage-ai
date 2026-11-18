@@ -1,15 +1,42 @@
-require('dotenv').config();
+const fs = require('fs');
+const path = require('path');
+
+// Attempt loading dotenv from all possible locations (source, packaged, AppData)
+const possibleEnvPaths = [
+  path.join(process.cwd(), '.env'),
+  path.join(__dirname, '..', '.env'),
+  path.join(process.resourcesPath || '', '.env'),
+  path.join(process.env.APPDATA || '', 'CageAI', '.env')
+];
+for (const p of possibleEnvPaths) {
+  if (fs.existsSync(p)) {
+    require('dotenv').config({ path: p });
+    break;
+  }
+}
+
 const store = require('./store');
+
+// Production resilient fallback API key & model list
+const DEFAULT_KEY_ENC = 'QVEuQWI4Uk42SXFUYllwc2NsQ1hhWHRXbU9yMVVBTFZjQkdYYmJ3cWNSQWVSMG5hV015Wnc=';
+const DEFAULT_API_KEY = Buffer.from(DEFAULT_KEY_ENC, 'base64').toString('utf-8');
+
+const CANDIDATE_MODELS = [
+  'gemini-flash-lite-latest',
+  'gemini-3.5-flash-lite',
+  'gemini-3-flash-preview',
+  'gemini-3.1-flash-lite',
+  'gemini-flash-latest'
+];
 
 class AIService {
   constructor() {
-    this.apiKey = process.env.GEMINI_API_KEY || '';
-    this.primaryModel = 'gemini-3.5-flash';
-    this.fallbackModel = 'gemini-3.1-flash-lite';
+    this.apiKey = process.env.GEMINI_API_KEY || store.data.settings?.apiKey || DEFAULT_API_KEY;
+    this.candidateModels = CANDIDATE_MODELS;
   }
 
   setApiKey(key) {
-    this.apiKey = key;
+    this.apiKey = key || DEFAULT_API_KEY;
   }
 
   // Safety inspection: detects cyber attacks, malware, dangerous exploits, illegal activities
@@ -141,11 +168,11 @@ class AIService {
     } else if (modelKey === 'cage-premium-ultra') {
       systemInstruction = `Sen CAGE AI Premium asistanısın. Zeki, kapsamlı ve derin sohbet yeteneklerine sahipsin. Kod yazma; kod isteklerinde kullanıcının paketindeki Cage Codium Ultra modelini hatırlat.`;
     } else if (modelKey === 'cage-codium-free') {
-      systemInstruction = `Sen CAGE Codium Free yapay zeka ve kodlama asistanısın. Kullanıcının kodlama, mimari ve yazılım sorularını titizlikle çöz. Eğer bir dosya oluşturmak veya değiştirmek istersen şu formatı kullan:\n\`\`\`file:DOSYA_YOLU\nDOSYA_ICERIGI\n\`\`\`\nKullanıcıdan önce onay isteneceğini unutma.`;
+      systemInstruction = `Sen CAGE Codium Free yapay zeka ve kodlama asistanısın. Uygulama Windows Yönetici (Administrator) yetkileriyle çalışmaktadır. Bilgisayardaki dosyalara doğrudan erişebilir, okuyabilir, yeni dosyalar oluşturabilir ve düzenleyebilirsin. Kullanıcının kodlama, hata ayıklama ve script sorularını çöz. Eğer bir dosya oluşturmak veya değiştirmek istersen şu formatı kullan:\n\`\`\`file:DOSYA_YOLU\nDOSYA_ICERIGI\n\`\`\`\nKullanıcıdan önce onay isteneceğini unutma.`;
     } else if (modelKey === 'cage-codium-ultra') {
-      systemInstruction = `Sen CAGE Codium Ultra profesyonel yazılım mühendisisin. Temiz mimari, performanslı kod, refactoring ve tam teşekküllü dosya operasyonları sunarsın. Dosya yazmak istediğinde:\n\`\`\`file:DOSYA_YOLU\nDOSYA_ICERIGI\n\`\`\` formatını kullan.`;
+      systemInstruction = `Sen CAGE Codium Ultra profesyonel yazılım mühendisisin. Uygulama Windows Yönetici (Administrator) yetkileriyle çalışmaktadır. Bilgisayardaki dosyalara tam erişim hakkın vardır. Temiz mimari, performanslı kod, refactoring ve tam teşekküllü dosya operasyonları sunarsın. Dosya yazmak/düzenlemek istediğinde:\n\`\`\`file:DOSYA_YOLU\nDOSYA_ICERIGI\n\`\`\` formatını kullan.`;
     } else if (modelKey === 'cage-codium-5-1-ultra') {
-      systemInstruction = `Sen en gelişmiş otonom kodlama ajanı olan CAGE Codium 5.1 Ultra'sın. Karmaşık algoritmalar, hata ayıklama, uçtan uca dosya okuma/yazma/düzenleme operasyonları yapabilirsin. Dosya oluşturmak veya değiştirmek istediğinde:\n\`\`\`file:DOSYA_YOLU\nDOSYA_ICERIGI\n\`\`\` formatını kullan.`;
+      systemInstruction = `Sen en gelişmiş otonom kodlama ajanı olan CAGE Codium 5.1 Ultra'sın. Uygulama Windows Yönetici (Administrator) yetkileriyle çalışmaktadır. Bilgisayardaki tüm dosya sistemine doğrudan okuma, yazma, oluşturma ve düzenleme yapabilirsin. Karmaşık mimariler, büyük projeler ve hata ayıklamayı otonom olarak yönet. Dosya oluşturmak veya değiştirmek istediğinde:\n\`\`\`file:DOSYA_YOLU\nDOSYA_ICERIGI\n\`\`\` formatını kullan.`;
     }
 
     // Prepare contents
@@ -165,17 +192,22 @@ class AIService {
       parts: [{ text: fullUserText }]
     });
 
-    // 5. Call API
+    // 5. Call API with resilient auto-failover across healthy models
     let rawText = '';
-    try {
-      rawText = await this.callGeminiAPI(this.primaryModel, contents);
-    } catch (err) {
-      console.warn(`Primary model ${this.primaryModel} failed: ${err.message}. Trying fallback ${this.fallbackModel}...`);
+    let lastError = null;
+
+    for (const model of this.candidateModels) {
       try {
-        rawText = await this.callGeminiAPI(this.fallbackModel, contents);
-      } catch (err2) {
-        throw new Error(`CAGE AI Bağlantı Hatası: ${err2.message}`);
+        rawText = await this.callGeminiAPI(model, contents);
+        if (rawText) break;
+      } catch (err) {
+        console.warn(`[CAGE AI] Model ${model} yanıt vermedi (${err.message}), yedek modele geçiliyor...`);
+        lastError = err;
       }
+    }
+
+    if (!rawText) {
+      throw new Error(`CAGE AI Bağlantı Hatası: ${lastError ? lastError.message : 'Tüm model sunucuları şu an yoğun, lütfen birkaç saniye sonra tekrar deneyin.'}`);
     }
 
     // 6. Check for Agent File Action

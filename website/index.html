@@ -7,95 +7,335 @@
   <link rel="stylesheet" href="style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@500;600;700;800&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23d97706'><polygon points='12 2 2 7 12 12 22 7 12 2'/><polyline points='2 17 12 22 22 17'/><polyline points='2 12 12 17 22 12'/></svg>">
 </head>
 <body>
   
+  <!-- Ambient Background Glows -->
+  <div class="ambient-glow glow-top"></div>
+  <div class="ambient-glow glow-right"></div>
+  <div class="ambient-grid"></div>
+
   <!-- Üst Menü / Navbar -->
   <header class="navbar">
     <div class="nav-container">
       <a href="#" class="brand">
-        <span class="brand-logo">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polygon points="12 2 2 7 12 12 22 7 12 2" stroke="#d97706"></polygon>
-            <polyline points="2 17 12 22 22 17" stroke="#f59e0b"></polyline>
-            <polyline points="2 12 12 17 22 12" stroke="#b45309"></polyline>
-          </svg>
-        </span>
+        <span class="brand-logo-icon">⬡</span>
         <span class="brand-name">CAGE AI</span>
+        <span class="brand-version-badge">v1.0.0</span>
       </a>
+      
       <nav class="nav-links">
         <a href="#features">Özellikler</a>
+        <a href="#workspace">Kod Stüdyosu</a>
         <a href="#models">Modeller</a>
         <a href="#pricing">Fiyatlandırma</a>
-        <a href="#security">Güvenlik &amp; Sözleşme</a>
-        <a href="#download" class="nav-download-btn">Windows İçin İndir (.exe)</a>
+        <a href="#security">Güvenlik &amp; İzinler</a>
+        <a href="#faq">SSS</a>
       </nav>
+
+      <div class="nav-actions">
+        <a href="/CAGE_AI_Setup.exe" class="nav-download-btn" download="CAGE_AI_Setup.exe">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+          <span>İndir (.exe)</span>
+        </a>
+      </div>
     </div>
   </header>
 
   <!-- Karşılama / Hero Alanı -->
   <section class="hero-section">
     <div class="container hero-container">
+      
       <div class="hero-badge">
         <span class="badge-dot"></span>
-        <span>CAGE AI v1.0.0 Resmi Windows Sürümü Yayınlandı</span>
+        <span class="badge-text">Resmi Windows Masaüstü Sürümü Yayınlandı</span>
+        <span class="badge-shield">🛡️ Yönetici Yetkilendirmeli</span>
       </div>
+
       <h1 class="hero-title">
         Gelişmiş Yapay Zeka &amp; <br>
-        <span class="highlight-text">Codium Kodlama Ajanı</span>
+        <span class="highlight-text">Codium Kodlama Stüdyosu</span>
       </h1>
+
       <p class="hero-subtitle">
-        Özel karanlık çalışma alanı, otonom dosya yetkilendirmeli Codium kodlama motoru, oturum sayaçları ve tam güvenlik denetimli masaüstü ekosistemi.
+        Karanlık ve sezgisel çalışma alanı, <strong>Windows Yönetici (Admin)</strong> izniyle bilgisayarınızdaki dosyalara doğrudan erişip düzenleme yapabilen otonom Codium ajanı, çift panelli kod stüdyosu ve sıfır OTP kolaylığı.
       </p>
 
+      <!-- CTA & Download Box -->
       <div class="hero-cta-group" id="download">
-        <a href="/CAGE_AI_Setup.exe" class="btn btn-hero-primary" download="CAGE_AI_Setup.exe" id="btnDownloadExe">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-          <span>Windows İçin CAGE AI İndir (.exe)</span>
+        <a href="/CAGE_AI_Setup.exe" class="btn btn-hero-primary" download="CAGE_AI_Setup.exe" id="btnDownloadHero">
+          <div class="btn-icon-wrapper">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+          </div>
+          <div class="btn-text-col">
+            <span class="btn-title">Windows İçin CAGE AI'yı İndir (.exe)</span>
+            <span class="btn-sub">v1.0.0 Resmi Kurulum Sihirbazı • 83.4 MB • 64-Bit</span>
+          </div>
         </a>
-        <span class="download-meta">Windows 10 / 11 (64-Bit) • Doğrudan Kurulum Sihirbazı • Sözleşme Onaylı</span>
+
+        <div class="hero-specs-row">
+          <div class="spec-item">
+            <span class="spec-icon">🛡️</span>
+            <span>Yönetici Yetkili Dosya Erişimi</span>
+          </div>
+          <div class="spec-dot">•</div>
+          <div class="spec-item">
+            <span class="spec-icon">⚡</span>
+            <span>Codium 5.1 Ultra Ajanı</span>
+          </div>
+          <div class="spec-dot">•</div>
+          <div class="spec-item">
+            <span class="spec-icon">🔒</span>
+            <span>OTP'siz Hızlı Giriş</span>
+          </div>
+        </div>
       </div>
 
-      <!-- Uygulama Arayüz Önizlemesi (Mockup) -->
-      <div class="app-mockup-wrapper">
-        <div class="mockup-header">
-          <div class="mockup-dots">
-            <span></span><span></span><span></span>
+      <!-- INTERACTIVE APP WORKSPACE SHOWCASE (MOCKUP) -->
+      <div class="workspace-showcase-card" id="workspace">
+        
+        <!-- Mockup Top Bar with Mode Switcher -->
+        <div class="showcase-header">
+          <div class="mockup-window-dots">
+            <span class="dot dot-red"></span>
+            <span class="dot dot-yellow"></span>
+            <span class="dot dot-green"></span>
           </div>
-          <div class="mockup-pill">CAGE AI Masaüstü — Çalışma Alanı</div>
+
+          <!-- Interactive Mode Switcher Tabs -->
+          <div class="showcase-mode-switcher">
+            <button class="mode-tab-btn active" id="tabShowcaseChat">
+              <span>💬</span>
+              <span>Sohbet Alanı</span>
+            </button>
+            <button class="mode-tab-btn" id="tabShowcaseCode">
+              <span>⚡</span>
+              <span>Kodlama Stüdyosu</span>
+              <span class="code-pill-badge">Çift Panel</span>
+            </button>
+          </div>
+
+          <div class="header-user-status">
+            <span class="status-indicator"></span>
+            <span>Kullanıcı • Free Plan</span>
+          </div>
         </div>
-        <div class="mockup-screen">
-          <div class="mockup-sidebar">
-            <div class="mockup-new">+ Yeni Sohbet</div>
-            <div class="mockup-item">🔍 Arama</div>
-            <div class="mockup-item">📁 Projelerim</div>
-            <div class="mockup-item">📄 Kod Çıktıları</div>
-            <div class="mockup-item active">🛒 Market &amp; Paketler</div>
-            <div class="mockup-item">🎫 Destek Talepleri</div>
-            <div class="mockup-spacer"></div>
-            <div class="mockup-user">
-              <span class="m-avatar">C</span>
-              <span>CAGE AI Kullanıcısı • Aktif</span>
+
+        <!-- VIEW A: SOHBET MODU ÖNİZLEMESİ -->
+        <div class="showcase-view-panel" id="panelShowcaseChat">
+          <div class="mockup-inner-layout">
+            <div class="mockup-sidebar">
+              <div class="mockup-btn-new">+ Yeni Sohbet</div>
+              <div class="mockup-history-group">
+                <span class="hist-label">GEÇMİŞ SOHBETLER</span>
+                <div class="hist-item active">✦ Proje Mimarisi Planlama</div>
+                <div class="hist-item">✦ Algoritma Karmaşıklığı Analizi</div>
+                <div class="hist-item">✦ Veritabanı Şeması Tasarımı</div>
+              </div>
+              <div class="mockup-nav-group">
+                <div class="m-nav-item">🛒 Market &amp; Abonelikler</div>
+                <div class="m-nav-item">🎫 Destek Talepleri</div>
+              </div>
             </div>
-          </div>
-          <div class="mockup-center">
-            <div class="mockup-welcome">
-              <span class="m-emblem">⬡</span>
-              <span class="m-title">CAGE AI</span>
-            </div>
-            <div class="mockup-input">
-              <span class="m-placeholder">Bugün ne geliştirmek veya sormak istersiniz?</span>
-              <div class="m-toolbar">
-                <span class="m-tag">+ Dosya Ekle</span>
-                <span class="m-model-tag">Cage Codium 5.1 Ultra ⌵</span>
+
+            <div class="mockup-chat-body">
+              <div class="mockup-message-row user">
+                <div class="m-bubble user-bubble">
+                  Yapay zeka modellerinin mimarisi ve CAGE AI'ın dosya yetkilendirme güvenliği nasıl işliyor?
+                </div>
+              </div>
+
+              <div class="mockup-message-row ai">
+                <div class="m-ai-header">
+                  <span class="m-ai-emblem">⬡</span>
+                  <strong>CAGE AI</strong>
+                  <span class="m-model-pill">Cage AI Premium</span>
+                </div>
+                <div class="m-bubble ai-bubble">
+                  <p><strong>CAGE AI Ekosistemi</strong> iki temel prensip üzerine inşa edilmiştir:</p>
+                  <ul>
+                    <li><strong>💬 Sohbet Katmanı:</strong> Derin metin analizi, fikir üretimi ve dil modelleri ile sınırsız etkileşim sağlar.</li>
+                    <li><strong>⚡ Codium Ajanı &amp; Dosya Güvenliği:</strong> Ajan bilgisayarınızdaki dosyalarda okuma veya yazma yapmadan önce ekranda açık onay penceresi çıkartır. Yönetici haklarıyla onaylanan işlemler güvenle diske kaydedilir.</li>
+                  </ul>
+                  <p style="margin-top: 8px; color: #a1a09c; font-size: 12px;">Kod yazımı ve proje yönetimi için yukarıdaki <strong>Kod Stüdyosu</strong> sekmesine geçiş yapabilirsiniz.</p>
+                </div>
+              </div>
+
+              <div class="mockup-input-bar">
+                <span class="input-placeholder">CAGE AI'ya bir soru sorun veya konu açın...</span>
+                <div class="input-actions">
+                  <span class="tag-model">Cage AI Free ⌵</span>
+                  <div class="btn-send-mock">↑</div>
+                </div>
               </div>
             </div>
           </div>
         </div>
+
+        <!-- VIEW B: KOD STÜDYOSU ÖNİZLEMESİ (ÇİFT PANEL) -->
+        <div class="showcase-view-panel hidden" id="panelShowcaseCode">
+          <div class="mockup-dual-studio">
+            
+            <!-- Left Side: Codium Agent Chat -->
+            <div class="studio-left-chat">
+              <div class="studio-sub-header">
+                <div class="panel-badge-code">
+                  <span>⚡</span>
+                  <strong>Codium 5.1 Ultra Ajanı</strong>
+                </div>
+                <span class="studio-timer-pill">⏱️ 58:24 Kalan Seans</span>
+              </div>
+
+              <div class="studio-messages-scroll">
+                <div class="mockup-message-row user">
+                  <div class="m-bubble user-bubble">
+                    src/auth/service.js dosyasını oku, şifre hashleme algoritmasını güçlendir ve doğrudan dosyayı güncelle.
+                  </div>
+                </div>
+
+                <div class="mockup-message-row ai">
+                  <div class="m-ai-header">
+                    <span class="m-ai-emblem" style="background: rgba(59, 130, 246, 0.2); color: #60a5fa;">⚡</span>
+                    <strong>Codium Agent</strong>
+                    <span class="m-model-pill" style="border-color: #3b82f6; color: #93c5fd;">Dosya Yetkisi: Aktif</span>
+                  </div>
+                  <div class="m-bubble ai-bubble">
+                    <p>Dosya analiz edildi. Güvenli PBKDF2/Argon2id entegrasyonu sağlandı. Kod sağ paneldeki canlı editöre aktarıldı ve dosyaya yazmak için yönetici onayı istendi.</p>
+                    <div class="file-action-badge">
+                      <span>💾 Hedef: <code>C:\Projects\app\src\auth\service.js</code></span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="mockup-input-bar">
+                <span class="input-placeholder">Ajanınıza kod yazdırın, refactor ettirin...</span>
+                <div class="input-actions">
+                  <span class="tag-model" style="color: #60a5fa;">Codium 5.1 Ultra ⌵</span>
+                  <div class="btn-send-mock" style="background: #2563eb;">⚡</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right Side: Live Code Studio Editor & Syntax Viewer -->
+            <div class="studio-right-editor">
+              <div class="editor-sub-header">
+                <div class="editor-file-tab">
+                  <span class="file-dot"></span>
+                  <span>auth-service.js</span>
+                  <span class="file-lang">JavaScript</span>
+                </div>
+                <div class="editor-tools">
+                  <button class="editor-tool-btn" id="btnMockCopy">📋 Kopyala</button>
+                  <button class="editor-tool-btn highlight">💾 Diske Yaz (Admin)</button>
+                </div>
+              </div>
+
+              <div class="editor-code-canvas">
+                <pre><code class="code-highlight"><span class="c-keyword">import</span> crypto <span class="c-keyword">from</span> <span class="c-string">'node:crypto'</span>;
+
+<span class="c-comment">// CAGE AI — Codium 5.1 Ultra Otonom Güvenlik Katmanı</span>
+<span class="c-keyword">export class</span> <span class="c-class">AuthenticationService</span> {
+  <span class="c-keyword">constructor</span>(secretKey, iterations = 100_000) {
+    <span class="c-keyword">this</span>.saltLength = 32;
+    <span class="c-keyword">this</span>.keyLength = 64;
+    <span class="c-keyword">this</span>.iterations = iterations;
+    <span class="c-keyword">this</span>.digest = <span class="c-string">'sha512'</span>;
+  }
+
+  <span class="c-keyword">async</span> <span class="c-func">hashPassword</span>(password) {
+    <span class="c-keyword">const</span> salt = crypto.randomBytes(<span class="c-keyword">this</span>.saltLength).toString(<span class="c-string">'hex'</span>);
+    <span class="c-keyword">const</span> hash = crypto.pbkdf2Sync(
+      password, salt, <span class="c-keyword">this</span>.iterations, <span class="c-keyword">this</span>.keyLength, <span class="c-keyword">this</span>.digest
+    ).toString(<span class="c-string">'hex'</span>);
+    <span class="c-keyword">return</span> `${salt}:${hash}`;
+  }
+}</code></pre>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
       </div>
 
+    </div>
+  </section>
+
+  <!-- Öne Çıkan Yetenekler / Features Grid -->
+  <section class="section features-section" id="features">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">GÜÇLÜ MİMARİ</span>
+        <h2>Masaüstü Ekosistemi İçin Baştan Sona Tasarlandı</h2>
+        <p>CAGE AI, basit bir sohbet aracı değil; Windows dosya sisteminizle doğrudan haberleşen otonom bir geliştirici istasyonudur.</p>
+      </div>
+
+      <div class="features-grid-6">
+        
+        <!-- Feature 1: Admin File Access -->
+        <div class="feature-card">
+          <div class="f-icon-box f-orange">
+            <span>🛡️</span>
+          </div>
+          <h3>Yönetici (Admin) Düzeyinde Dosya Erişimi</h3>
+          <p>Uygulama Windows Yönetici izniyle çalışır. Ajan bilgisayarınızdaki dizinleri okur, yeni dosyalar oluşturur ve değişiklikleri diske doğrudan uygular.</p>
+          <div class="f-footer-tag">Tam Sistem Entegrasyonu</div>
+        </div>
+
+        <!-- Feature 2: Dual-Pane Code Studio -->
+        <div class="feature-card">
+          <div class="f-icon-box f-blue">
+            <span>⚡</span>
+          </div>
+          <h3>Bağımsız Çift Panelli Kod Stüdyosu</h3>
+          <p>Genel sohbetle kodlama alanını birbirinden ayırdık. Sol tarafta Codium ajanıyla konuşun, sağ taraftaki canlı editörde kodları inceleyip tek tıkla dosyanıza aktarın.</p>
+          <div class="f-footer-tag">Code Studio Workspace</div>
+        </div>
+
+        <!-- Feature 3: No OTP Fast Auth -->
+        <div class="feature-card">
+          <div class="f-icon-box f-green">
+            <span>🔒</span>
+          </div>
+          <h3>Sıfır OTP — Kolay ve Hızlı Giriş</h3>
+          <p>E-postaya doğrulama kodu bekleme karmaşasına son verdik. Sadece e-posta, kullanıcı adı ve şifrenizle anında hesap açıp oturum başlatabilirsiniz.</p>
+          <div class="f-footer-tag">Zahmetsiz Güvenlik</div>
+        </div>
+
+        <!-- Feature 4: Quota & Reset Timers -->
+        <div class="feature-card">
+          <div class="f-icon-box f-amber">
+            <span>⏱️</span>
+          </div>
+          <h3>Akıllı Seans &amp; Geri Sayım Sayaçları</h3>
+          <p>Codium Free modelinde 2 saat arayla günde 2 kez kotanızı sıfırlayabilirsiniz. Ultra modellerinde ise seans bazlı aktif oturum sayaçları devrededir.</p>
+          <div class="f-footer-tag">Kullanım Şeffaflığı</div>
+        </div>
+
+        <!-- Feature 5: Safety Auditing -->
+        <div class="feature-card">
+          <div class="f-icon-box f-purple">
+            <span>🚨</span>
+          </div>
+          <h3>Otomatik Güvenlik &amp; Tehlike Denetimi</h3>
+          <p>Zararlı veya tehlikeli işlem teşebbüsleri sistem sözleşmesi gereği anında işaretlenir ve sistem yöneticisinin denetim paneline şeffafça iletilir.</p>
+          <div class="f-footer-tag">Denetlenebilir Mimari</div>
+        </div>
+
+        <!-- Feature 6: Auto-Update System -->
+        <div class="feature-card">
+          <div class="f-icon-box f-teal">
+            <span>🚀</span>
+          </div>
+          <h3>Zorunlu Otomatik Güncelleme Kalkanı</h3>
+          <p>Yönetici yeni bir kararlı sürüm yayınladığında, kullanıcı ekranlarında zorunlu güncelleme sihirbazı devreye girer ve sürüm bütünlüğü korunur.</p>
+          <div class="f-footer-tag">Sürekli Güncel</div>
+        </div>
+
+      </div>
     </div>
   </section>
 
@@ -103,62 +343,75 @@
   <section class="section models-section" id="models">
     <div class="container">
       <div class="section-header">
-        <h2>Yapay Zeka &amp; Codium Modelleri</h2>
-        <p>İhtiyaçlarınıza özel sohbet ve otonom kodlama seviyeleri.</p>
+        <span class="section-tag">KATMANLI ZEKA</span>
+        <h2>Yapay Zeka &amp; Codium Model Ailesi</h2>
+        <p>İhtiyaçlarınıza özel sohbet ve otonom yazılım geliştirme kapasiteleri.</p>
       </div>
 
       <div class="models-grid">
         
         <!-- Model 1: Cage AI Free -->
         <div class="model-card">
-          <div class="model-type">SOHBET KATMANI</div>
+          <div class="model-badge-top">SOHBET ODAKLI</div>
           <h3>Cage AI Free</h3>
           <p class="model-desc">Genel sohbet, fikir üretimi, dil desteği ve metin analizi.</p>
           <div class="model-feature-list">
-            <div class="m-feat">💬 Sadece sohbet odaklıdır</div>
-            <div class="m-feat strike">🚫 Kodlama ve script üretemez</div>
-            <div class="m-feat">⚡ Anında ve akıcı yanıtlar</div>
+            <div class="m-feat">✓ Sadece akıllı sohbet odaklıdır</div>
+            <div class="m-feat strike">✕ Kodlama ve script üretemez</div>
+            <div class="m-feat">✓ Akıcı ve kesintisiz yanıtlar</div>
+            <div class="m-feat">✓ Ayrı sohbet geçmişi saklama</div>
           </div>
-          <span class="model-pricing-tag">Ücretsiz</span>
+          <div class="model-card-footer">
+            <span class="model-pricing-tag">Ücretsiz</span>
+          </div>
         </div>
 
         <!-- Model 2: Cage Codium Free -->
         <div class="model-card highlight-border">
-          <div class="model-type code-type">GÜNLÜK KODLAMA</div>
+          <div class="model-badge-top code-badge">GÜNLÜK KODLAMA</div>
           <h3>Cage Codium Free</h3>
           <p class="model-desc">Hızlı kodlama çözümleri, hata ayıklama ve script oluşturma.</p>
           <div class="model-feature-list">
-            <div class="m-feat">⏱️ Günlük 10 dakika erişim hakkı</div>
-            <div class="m-feat">🔄 2 saat arayla günde 2 kez limit sıfırlama</div>
-            <div class="m-feat">📂 Ajan dosya yazma ve düzenleme desteği</div>
+            <div class="m-feat">⏱️ Günlük 10 dakika aktif erişim</div>
+            <div class="m-feat">🔄 2 saat arayla günde 2 kez sıfırlama</div>
+            <div class="m-feat">📂 Ajan dosya yazma ve düzenleme</div>
+            <div class="m-feat">⚡ Kod Stüdyosu canlı önizleme</div>
           </div>
-          <span class="model-pricing-tag">Ücretsiz / Kotalı</span>
+          <div class="model-card-footer">
+            <span class="model-pricing-tag">Ücretsiz / Kotalı</span>
+          </div>
         </div>
 
         <!-- Model 3: Cage AI Premium & Ultra -->
         <div class="model-card">
-          <div class="model-type pro-type">BİRLEŞİK GÜÇ</div>
+          <div class="model-badge-top pro-badge">BİRLEŞİK GÜÇ</div>
           <h3>Cage AI Premium &amp; Ultra</h3>
           <p class="model-desc">Sınırsız sohbet ve güçlü 30 dakikalık kodlama oturumları tek pakette.</p>
           <div class="model-feature-list">
-            <div class="m-feat">💬 Cage AI Premium: Sınırsız sohbet (kodlamasız)</div>
-            <div class="m-feat">⏱️ Codium Ultra: Günde 3 seans (30'ar dakika)</div>
-            <div class="m-feat">⏳ Aktif oturum geri sayım sayacı</div>
+            <div class="m-feat">💬 Sınırsız derin sohbet (kodlamasız)</div>
+            <div class="m-feat">⏱️ Günde 3 oturum x 30 dakika kodlama</div>
+            <div class="m-feat">⏳ Aktif geri sayım sayacı</div>
+            <div class="m-feat">📁 Yerel dosya okuma ve refactoring</div>
           </div>
-          <span class="model-pricing-tag">30 USD / Ay</span>
+          <div class="model-card-footer">
+            <span class="model-pricing-tag">30 USD / Ay</span>
+          </div>
         </div>
 
         <!-- Model 4: Cage Codium 5.1 Ultra -->
         <div class="model-card ultra-card">
-          <div class="model-type ultra-type">EN GELİŞMİŞ AJAN</div>
+          <div class="model-badge-top ultra-badge">EN GELİŞMİŞ AJAN</div>
           <h3>Cage Codium 5.1 Ultra</h3>
           <p class="model-desc">Büyük yazılım mimarileri ve otonom proje geliştirme için zirve araç.</p>
           <div class="model-feature-list">
             <div class="m-feat">🚀 En gelişmiş akıl yürütme motoru</div>
-            <div class="m-feat">⏱️ Günde 5 tam seans (60'ar dakika)</div>
-            <div class="m-feat">🛡️ Çoklu dosya refactoring ve otonom yazılım</div>
+            <div class="m-feat">⏱️ Günde 5 tam seans x 60 dakika</div>
+            <div class="m-feat">🛡️ Yönetici yetkili çoklu dosya yazımı</div>
+            <div class="m-feat">📞 Öncelikli 7/24 Admin &amp; Destek hattı</div>
           </div>
-          <span class="model-pricing-tag">50 USD / Ay</span>
+          <div class="model-card-footer">
+            <span class="model-pricing-tag">50 USD / Ay</span>
+          </div>
         </div>
 
       </div>
@@ -169,8 +422,9 @@
   <section class="section pricing-section" id="pricing">
     <div class="container">
       <div class="section-header">
-        <h2>Şeffaf Market &amp; Abonelik Paketleri</h2>
-        <p>Yıllık alımlarda aylık ücretlerde net %25 indirim kazanın.</p>
+        <span class="section-tag">ŞEFFAF MARKET</span>
+        <h2>Abonelik Paketleri &amp; İndirimler</h2>
+        <p>Yıllık ödeme tercihinde aylık fiyatlarda doğrudan %25 tasarruf sağlayın.</p>
       </div>
 
       <!-- Aylık / Yıllık Geçiş Düğmesi -->
@@ -189,7 +443,7 @@
         <div class="price-box-card">
           <div class="p-header">
             <h3>Cage AI Premium &amp; Cage Codium Ultra</h3>
-            <p>Sınırsız sohbet ve günlük 3 adet 30 dakikalık kodlama seansı.</p>
+            <p>Sınırsız sohbet ve günlük 3 adet 30 dakikalık Codium Ultra kodlama oturumu.</p>
           </div>
           <div class="p-amount">
             <span class="currency">$</span>
@@ -199,10 +453,10 @@
           <span class="p-billed" id="webBilledNote1">Aylık olarak faturalandırılır</span>
           <ul class="p-list">
             <li>✓ Cage AI Premium: Sınırsız sohbet botu (kod yazamaz)</li>
-            <li>✓ Cage Codium Ultra: Günde 3 oturum x 30 dakika</li>
-            <li>✓ Geri sayım sayaç göstergesi</li>
+            <li>✓ Cage Codium Ultra: Günde 3 seans x 30 dakika</li>
+            <li>✓ Aktif sayaç göstergesi ve oturum yönetimi</li>
             <li>✓ Ajan yerel dosya oluşturma ve düzenleme</li>
-            <li>✓ Uygulama içinden Destek Talebi ile anında aktivasyon</li>
+            <li>✓ Uygulama içi Destek Talebi ile anında aktivasyon</li>
           </ul>
           <a href="#download" class="btn btn-card-primary">Uygulamadan Satın Al</a>
         </div>
@@ -212,7 +466,7 @@
           <div class="p-badge">EN ÇOK TERCİH EDİLEN</div>
           <div class="p-header">
             <h3>Cage Codium 5.1 Ultra</h3>
-            <p>Profesyonel geliştiriciler için en gelişmiş otonom kodlama aracı.</p>
+            <p>Büyük mimariler ve otonom yazılım geliştiricileri için zirve performans.</p>
           </div>
           <div class="p-amount">
             <span class="currency">$</span>
@@ -223,8 +477,8 @@
           <ul class="p-list">
             <li>✓ En gelişmiş Codium 5.1 otonom kodlama motoru</li>
             <li>✓ Günde 5 tam seans x 60 dakika (toplam 300 dk)</li>
-            <li>✓ Kod çıktıları &amp; Canlı Artifacts önizleme</li>
-            <li>✓ Otonom çoklu dosya mimarisi ve refactoring</li>
+            <li>✓ Canlı Kod Stüdyosu &amp; Syntax editör paneli</li>
+            <li>✓ Yönetici haklarıyla otonom çoklu dosya refactoring</li>
             <li>✓ Öncelikli sunucu yanıt hızı ve 7/24 destek hattı</li>
           </ul>
           <a href="#download" class="btn btn-card-ultra">Uygulamadan Satın Al</a>
@@ -233,46 +487,138 @@
       </div>
 
       <!-- Promosyon Kodu Çağrısı -->
-      <div class="promo-callout">
-        <h4>🎁 Bir Promosyon Kodunuz mu Var?</h4>
-        <p>Yönetici (Admin) tarafından sağlanan özel kupon kodlarınızı CAGE AI masaüstü uygulamasının Market ekranından girerek anında ücretsiz veya indirimli kullanım sağlayabilirsiniz.</p>
+      <div class="promo-callout-card">
+        <div class="promo-text-col">
+          <h4>🎁 Bir Promosyon Kodunuz mu Var?</h4>
+          <p>Yöneticiniz veya kampanyalar tarafından sağlanan indirim kuponlarını masaüstü uygulamasının Market ekranından girerek hemen aktifleştirebilirsiniz.</p>
+        </div>
+        <div class="promo-coupon-badge" id="couponBox" title="Kodu Kopyala">
+          <span class="coupon-lbl">Örnek VIP Kupon:</span>
+          <strong class="coupon-code">CAGEVIP</strong>
+          <span class="coupon-copy-btn">Kopyala</span>
+        </div>
       </div>
 
     </div>
   </section>
 
-  <!-- Güvenlik & Yasal Sözleşme Bölümü -->
+  <!-- Güvenlik & İzinler Bölümü -->
   <section class="section security-section" id="security">
     <div class="container">
       <div class="section-header">
-        <h2>Güvenlik, İzinler ve Yasal Sorumluluk Reddi</h2>
-        <p>Kullanıcı kontrollü, şeffaf ve denetlenebilir sistem mimarisi.</p>
+        <span class="section-tag">ŞEFFAFLIK &amp; HUKUK</span>
+        <h2>Güvenlik, Yönetici İzinleri ve Yasal Sorumluluk Reddi</h2>
+        <p>Kullanıcı kontrollü, açık onay gerektiren ve denetlenebilir sistem mimarisi.</p>
       </div>
 
-      <div class="security-grid">
+      <div class="security-grid-4">
+        <div class="sec-card">
+          <div class="s-icon">🛡️</div>
+          <h4>Yönetici (Administrator) İzni</h4>
+          <p>CAGE AI, kod dosyalarınıza doğrudan müdahale edebilmek, sistem dizinlerindeki projelerinizi derlemek ve bağımlılıkları yönetebilmek için Windows yönetici izni talep eder.</p>
+        </div>
+
+        <div class="sec-card">
+          <div class="s-icon">📂</div>
+          <h4>Açık Kullanıcı Onayı</h4>
+          <p>Ajan diskinizdeki bir dosyaya yazma yapmadan önce işlem türünü, dosya yolunu ve içerik önizlemesini göstererek sizden açık onay ister.</p>
+        </div>
+
         <div class="sec-card">
           <div class="s-icon">⚠️</div>
-          <h4>Sorumluluk Reddi</h4>
+          <h4>Yasal Sorumluluk Reddi</h4>
           <p>CAGE AI; kullanıcıların yapacağı eylemler, üreteceği kodlar ve satın alımlar için ASLA hukuki veya mali sorumluluk kabul etmez. Tüm sorumluluk kullanıcıya aittir.</p>
         </div>
 
         <div class="sec-card">
-          <div class="s-icon">🤖</div>
-          <h4>Yapay Zeka Hata Payı</h4>
-          <p>Yapay zeka modelleri olasılıksal çalışır; hata yapabilir veya yanıtları değişebilir. Sağlayıcı modelleri önceden bildirmeksizin güncelleme hakkını saklı tutar.</p>
+          <div class="s-icon">🚨</div>
+          <h4>Tehlikeli Durum Bildirimi</h4>
+          <p>Sistem ve kullanıcı güvenliğini tehdit eden veya kötüye kullanım içeren komutlar sözleşme gereği kaydedilir ve yetkili admin tarafından incelenir.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Sıkça Sorulan Sorular / FAQ Accordion -->
+  <section class="section faq-section" id="faq">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">YARDIM &amp; BİLGİ</span>
+        <h2>Sıkça Sorulan Sorular</h2>
+        <p>CAGE AI masaüstü uygulaması ve özellikleri hakkında merak edilenler.</p>
+      </div>
+
+      <div class="faq-accordion-list">
+        
+        <div class="faq-item">
+          <button class="faq-question">
+            <span>Uygulama neden Windows Yönetici (Administrator) izni ister?</span>
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-answer">
+            <p>Codium kodlama ajanının bilgisayarınızdaki proje dosyalarını okuyabilmesi, yeni kod dosyaları oluşturabilmesi ve yaptığınız geliştirmeleri doğrudan diske kaydedebilmesi için Windows dosya sistemi yönetici yetkisi gereklidir. Bu yetki sayesinde izin verdiğiniz dosyalar anında güncellenir.</p>
+          </div>
         </div>
 
-        <div class="sec-card">
-          <div class="s-icon">📁</div>
-          <h4>Ajan Dosya İzin Sistemi</h4>
-          <p>Codium ajanı dosyalara müdahale etmeden önce kullanıcıdan açık onay ister. Kullanıcı izin vererek riskleri kabul eder.</p>
+        <div class="faq-item">
+          <button class="faq-question">
+            <span>OTP kodu olmadan nasıl giriş yapabilirim?</span>
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-answer">
+            <p>Kullanıcı deneyimini hızlandırmak amacıyla e-posta doğrulama kodu (OTP) adımı tamamen kaldırılmıştır. Uygulama açılışında Kullanıcı Adı, E-Posta ve Şifrenizle tek adımda kayıt olabilir veya doğrudan giriş yapabilirsiniz.</p>
+          </div>
         </div>
 
-        <div class="sec-card">
-          <div class="s-icon">🛡️</div>
-          <h4>Tehlikeli Durum Tespiti</h4>
-          <p>Sistem tehlikeli veya zararlı içerik algıladığında durumu otomatik raporlar; yetkili admin bu sohbeti güvenlik denetimi için inceleyebilir.</p>
+        <div class="faq-item">
+          <button class="faq-question">
+            <span>Codium Free sürem dolduğunda ne yapmalıyım?</span>
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-answer">
+            <p>Cage Codium Free günlük 10 dakika erişim sağlar. Süreniz bittiğinde, 2 saat arayla günde 2 kez üst bardaki "Sıfırla" düğmesine tıklayarak kotanızı ücretsiz olarak yenileyebilirsiniz.</p>
+          </div>
         </div>
+
+        <div class="faq-item">
+          <button class="faq-question">
+            <span>Sohbet alanı ile Kod Stüdyosu arasındaki fark nedir?</span>
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-answer">
+            <p>Sohbet alanı yalnızca genel fikir alışverişi ve metin tabanlı etkileşimler içindir (kod yazmaz). Kod Stüdyosu ise çift panelli özel bir ortamdır; sol panelde Codium ajanıyla kod geliştirirken sağ panelde üretilen dosyaları canlı editörde görüp diske yazabilirsiniz.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">
+            <span>Uygulama güncellemeleri nasıl gerçekleşir?</span>
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-answer">
+            <p>Yönetici yeni bir sürüm yayınladığında, uygulama açılışında zorunlu güncelleme kalkanı devreye girer. Güncelleme sihirbazı otomatik olarak yeni dosyaları indirir ve sisteminizi kesintisiz olarak güncel tutar.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- Alt İndirme Çağrısı / Floating Bottom CTA Banner -->
+  <section class="bottom-cta-banner">
+    <div class="container cta-banner-inner">
+      <div class="cta-col-left">
+        <span class="cta-emblem">⬡</span>
+        <div>
+          <h3>CAGE AI'yı Hemen Şimdi Deneyimleyin</h3>
+          <p>Windows 10 ve 11 için optimize edilmiş, yönetici yetkili otonom kodlama ekosistemi.</p>
+        </div>
+      </div>
+      <div class="cta-col-right">
+        <a href="/CAGE_AI_Setup.exe" class="btn btn-hero-primary" download="CAGE_AI_Setup.exe">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+          <span>Hemen İndir (.exe)</span>
+        </a>
       </div>
     </div>
   </section>
@@ -282,18 +628,20 @@
     <div class="container footer-content">
       <div class="f-left">
         <div class="brand">
+          <span class="brand-logo-icon">⬡</span>
           <span class="brand-name">CAGE AI</span>
         </div>
         <p>© 2026 CAGE AI Technologies. Tüm Hakları Saklıdır.</p>
       </div>
       <div class="f-right">
-        <span>Windows Masaüstü Sürümü v1.0.0</span>
+        <span class="footer-spec-badge">Windows Masaüstü Sürümü v1.0.0 (x64)</span>
       </div>
     </div>
   </footer>
 
+  <!-- Website Interactive Scripts -->
   <script>
-    // Canlı Yıllık / Aylık Geçiş Hesaplayıcısı
+    // 1. Canlı Yıllık / Aylık Fiyatlandırma Hesaplayıcısı
     const toggle = document.getElementById('webBillingToggle');
     const p1 = document.getElementById('webPrice1');
     const p2 = document.getElementById('webPrice2');
@@ -302,23 +650,87 @@
     const lblMonthly = document.getElementById('webMonthlyLabel');
     const lblYearly = document.getElementById('webYearlyLabel');
 
-    toggle.addEventListener('change', () => {
-      if (toggle.checked) {
-        lblMonthly.classList.remove('active');
-        lblYearly.classList.add('active');
-        p1.textContent = '22.50';
-        p2.textContent = '37.50';
-        note1.textContent = 'Yıllık 270 USD tek seferde tahsil edilir (%25 Tasarruf)';
-        note2.textContent = 'Yıllık 450 USD tek seferde tahsil edilir (%25 Tasarruf)';
-      } else {
-        lblMonthly.classList.add('active');
-        lblYearly.classList.remove('active');
-        p1.textContent = '30';
-        p2.textContent = '50';
-        note1.textContent = 'Aylık olarak faturalandırılır';
-        note2.textContent = 'Aylık olarak faturalandırılır';
-      }
+    if (toggle) {
+      toggle.addEventListener('change', () => {
+        if (toggle.checked) {
+          lblMonthly.classList.remove('active');
+          lblYearly.classList.add('active');
+          p1.textContent = '22.50';
+          p2.textContent = '37.50';
+          note1.textContent = 'Yıllık 270 USD tek seferde tahsil edilir (%25 Tasarruf)';
+          note2.textContent = 'Yıllık 450 USD tek seferde tahsil edilir (%25 Tasarruf)';
+        } else {
+          lblMonthly.classList.add('active');
+          lblYearly.classList.remove('active');
+          p1.textContent = '30';
+          p2.textContent = '50';
+          note1.textContent = 'Aylık olarak faturalandırılır';
+          note2.textContent = 'Aylık olarak faturalandırılır';
+        }
+      });
+    }
+
+    // 2. Showcase Mockup Mod Değiştirici (Sohbet vs Kod Stüdyosu)
+    const tabChat = document.getElementById('tabShowcaseChat');
+    const tabCode = document.getElementById('tabShowcaseCode');
+    const panelChat = document.getElementById('panelShowcaseChat');
+    const panelCode = document.getElementById('panelShowcaseCode');
+
+    if (tabChat && tabCode) {
+      tabChat.addEventListener('click', () => {
+        tabChat.classList.add('active');
+        tabCode.classList.remove('active');
+        panelChat.classList.remove('hidden');
+        panelCode.classList.add('hidden');
+      });
+
+      tabCode.addEventListener('click', () => {
+        tabCode.classList.add('active');
+        tabChat.classList.remove('active');
+        panelCode.classList.remove('hidden');
+        panelChat.classList.add('hidden');
+      });
+    }
+
+    // 3. Kupon Kopyalama Etkileşimi
+    const couponBox = document.getElementById('couponBox');
+    if (couponBox) {
+      couponBox.addEventListener('click', () => {
+        navigator.clipboard.writeText('CAGEVIP');
+        const originalText = couponBox.querySelector('.coupon-copy-btn').textContent;
+        couponBox.querySelector('.coupon-copy-btn').textContent = '✓ Kopyalandı!';
+        setTimeout(() => {
+          couponBox.querySelector('.coupon-copy-btn').textContent = originalText;
+        }, 2000);
+      });
+    }
+
+    // 4. FAQ Accordion Aç/Kapa
+    document.querySelectorAll('.faq-question').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const item = btn.closest('.faq-item');
+        const isOpen = item.classList.contains('active');
+        
+        document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('active'));
+        
+        if (!isOpen) {
+          item.classList.add('active');
+        }
+      });
     });
+
+    // 5. Kod Kopyalama Butonu Mock
+    const btnMockCopy = document.getElementById('btnMockCopy');
+    if (btnMockCopy) {
+      btnMockCopy.addEventListener('click', () => {
+        const code = document.querySelector('.code-highlight').innerText;
+        navigator.clipboard.writeText(code);
+        btnMockCopy.textContent = '✓ Kopyalandı!';
+        setTimeout(() => {
+          btnMockCopy.textContent = '📋 Kopyala';
+        }, 2000);
+      });
+    }
   </script>
 </body>
 </html>

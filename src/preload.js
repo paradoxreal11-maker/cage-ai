@@ -20,6 +20,11 @@ contextBridge.exposeInMainWorld('cageAI', {
   saveChat: (chat) => ipcRenderer.invoke('save-chat', chat),
   deleteChat: (chatId) => ipcRenderer.invoke('delete-chat', chatId),
 
+  // Code Studio Dedicated Chats
+  getCodeChats: () => ipcRenderer.invoke('get-code-chats'),
+  saveCodeChat: (chat) => ipcRenderer.invoke('save-code-chat', chat),
+  deleteCodeChat: (chatId) => ipcRenderer.invoke('delete-code-chat', chatId),
+
   // Codium Session & Quota
   startSession: (modelKey) => ipcRenderer.invoke('start-session', modelKey),
   tickSession: (modelKey, seconds) => ipcRenderer.invoke('tick-session', modelKey, seconds),
@@ -35,9 +40,9 @@ contextBridge.exposeInMainWorld('cageAI', {
   redeemPromoCode: (code) => ipcRenderer.invoke('redeem-promo-code', code),
   createTicket: (ticket) => ipcRenderer.invoke('create-ticket', ticket),
 
-  // Auth & OTP
-  authSendCode: (email) => ipcRenderer.invoke('auth-send-code', email),
-  authVerifyCode: (email, code, username) => ipcRenderer.invoke('auth-verify-code', { email, code, username }),
+  // Simple Auth (No OTP, Email + Username + Password)
+  authLogin: (credentials) => ipcRenderer.invoke('auth-login', credentials),
+  authRegister: (userData) => ipcRenderer.invoke('auth-register', userData),
   authLogout: () => ipcRenderer.invoke('auth-logout'),
 
   // Admin
@@ -48,6 +53,18 @@ contextBridge.exposeInMainWorld('cageAI', {
   adminUpdateTicketStatus: (ticketId, status, newPlan) => ipcRenderer.invoke('admin-update-ticket-status', { ticketId, status, newPlan }),
   adminResolveIncident: (incidentId, notes) => ipcRenderer.invoke('admin-resolve-incident', { incidentId, notes }),
   adminPublishUpdate: (updateData) => ipcRenderer.invoke('admin-publish-update', updateData),
+
+  // Administrator Privileges & Elevation
+  checkAdminStatus: () => ipcRenderer.invoke('check-admin-status'),
+  requestAdminRelaunch: () => ipcRenderer.invoke('request-admin-relaunch'),
+
+  // Direct File Access & Editing Operations
+  openFileDialog: (options) => ipcRenderer.invoke('open-file-dialog', options),
+  openFolderDialog: (options) => ipcRenderer.invoke('open-folder-dialog', options),
+  saveFileDialog: (options) => ipcRenderer.invoke('save-file-dialog', options),
+  fsReadFile: (filePath) => ipcRenderer.invoke('fs-read-file', filePath),
+  fsWriteFile: (payload) => ipcRenderer.invoke('fs-write-file', payload),
+  fsListDirectory: (dirPath) => ipcRenderer.invoke('fs-list-directory', dirPath),
 
   // Auto-Update & Lock System
   checkForUpdates: () => ipcRenderer.invoke('check-for-updates'),

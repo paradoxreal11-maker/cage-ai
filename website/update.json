@@ -2,8 +2,8 @@
   "currentVersion": "1.0.0",
   "latestVersion": "1.0.0",
   "minRequiredVersion": "1.0.0",
-  "forceUpdate": true,
-  "releaseNotes": "CAGE AI 1.0.0 resmi sürüm.",
+  "forceUpdate": false,
+  "releaseNotes": "CAGE AI 1.0.0 resmi sürüm. Windows Yönetici yetkili dosya sistemi, otonom Codium 5.1 Ultra kodlama motoru ve sıfır OTP kolaylığı aktif.",
   "downloadUrl": "https://cage-ai.vercel.app",
-  "lastPublishedAt": "2026-11-18T00:00:00.000Z"
+  "lastPublishedAt": "2026-11-18T15:00:00.000Z"
 }

@@ -110,7 +110,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   async function startInstallation() {
     const installSteps = [
       { pct: 15, text: 'Kurulum paketleri açılıyor...', log: 'CAGE AI Core binaryleri ve modülleri doğrulanıyor.' },
-      { pct: 35, text: 'Yapay zeka modelleri ve Codium motoru entegre ediliyor...', log: 'Gemini 3.5 & Codium 5.1 Ultra runtime hazırlandı.' },
+      { pct: 35, text: 'Yapay zeka modelleri ve Codium motoru entegre ediliyor...', log: 'CAGE Core & Codium 5.1 Ultra runtime hazırlandı.' },
       { pct: 60, text: 'Agent dosya erişim güvenlik katmanı yapılandırılıyor...', log: 'Güvenlik filtreleri ve izin kontrol mekanizması kaydedildi.' },
       { pct: 80, text: 'Kullanıcı veritabanı ve yerel şifrelenmiş depo oluşturuluyor...', log: 'AppData\\Roaming\\CageAI dizini oluşturuldu.' },
       { pct: 95, text: 'Masaüstüne CAGE AI Uygulama Kısayolu oluşturuluyor...', log: 'Masaüstü kısayolu (CAGE AI.lnk) masaüstüne bağlandı.' },

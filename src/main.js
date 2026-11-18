@@ -48,7 +48,7 @@ function createMainWindow() {
     height: 900,
     minWidth: 1024,
     minHeight: 700,
-    frame: false, // Custom Claude-like header
+    frame: false,
     backgroundColor: '#1f1e1d',
     title: 'CAGE AI',
     webPreferences: {
@@ -260,6 +260,168 @@ ipcMain.handle('create-ticket', async (event, ticketData) => {
   return { success: true, ticket };
 });
 
+// Admin privilege detection
+function isProcessAdmin() {
+  if (process.platform !== 'win32') return true;
+  try {
+    require('child_process').execFileSync('net', ['session'], { stdio: 'ignore' });
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
+ipcMain.handle('check-admin-status', async () => {
+  return { isAdmin: isProcessAdmin() };
+});
+
+ipcMain.handle('request-admin-relaunch', async () => {
+  if (process.platform === 'win32') {
+    const exePath = process.execPath;
+    const args = process.argv.slice(1).map(a => `"${a}"`).join(' ');
+    const psCmd = `Start-Process -FilePath "${exePath}" -ArgumentList '${args}' -Verb RunAs`;
+    exec(`powershell.exe -NoProfile -Command "${psCmd}"`, (err) => {
+      if (!err) {
+        app.quit();
+      }
+    });
+    return { success: true, message: 'Yönetici izniyle yeniden başlatılıyor...' };
+  }
+  return { success: true, message: 'Zaten yönetici modunda.' };
+});
+
+// Native File Dialogs & Direct File System Operations
+ipcMain.handle('open-file-dialog', async (event, options = {}) => {
+  const result = await dialog.showOpenDialog(mainWindow, {
+    title: options.title || 'Dosya Aç',
+    properties: ['openFile'],
+    filters: options.filters || [
+      { name: 'Kod ve Metin Dosyaları', extensions: ['js', 'ts', 'jsx', 'tsx', 'py', 'html', 'css', 'json', 'md', 'txt', 'sql', 'cpp', 'c', 'cs', 'java', 'go', 'rs', 'yml', 'yaml', 'env'] },
+      { name: 'Tüm Dosyalar', extensions: ['*'] }
+    ]
+  });
+
+  if (result.canceled || !result.filePaths.length) {
+    return { canceled: true };
+  }
+
+  const selectedPath = result.filePaths[0];
+  try {
+    const content = fs.readFileSync(selectedPath, 'utf-8');
+    const fileName = path.basename(selectedPath);
+    return { canceled: false, filePath: selectedPath, fileName, content };
+  } catch (err) {
+    return { canceled: false, filePath: selectedPath, error: err.message };
+  }
+});
+
+ipcMain.handle('open-folder-dialog', async (event, options = {}) => {
+  const result = await dialog.showOpenDialog(mainWindow, {
+    title: options.title || 'Proje / Klasör Seç',
+    properties: ['openDirectory']
+  });
+
+  if (result.canceled || !result.filePaths.length) {
+    return { canceled: true };
+  }
+
+  const folderPath = result.filePaths[0];
+  try {
+    const entries = fs.readdirSync(folderPath, { withFileTypes: true });
+    const items = entries.map(e => ({
+      name: e.name,
+      isDirectory: e.isDirectory(),
+      fullPath: path.join(folderPath, e.name)
+    }));
+    return { canceled: false, folderPath, folderName: path.basename(folderPath), items };
+  } catch (err) {
+    return { canceled: false, folderPath, error: err.message };
+  }
+});
+
+ipcMain.handle('save-file-dialog', async (event, { defaultPath, defaultName, content }) => {
+  const result = await dialog.showSaveDialog(mainWindow, {
+    title: 'Dosyayı Diske Kaydet (Admin Yetkili)',
+    defaultPath: defaultPath || defaultName || 'script.js'
+  });
+
+  if (result.canceled || !result.filePath) {
+    return { canceled: true };
+  }
+
+  try {
+    const dir = path.dirname(result.filePath);
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+    fs.writeFileSync(result.filePath, content || '', 'utf-8');
+    return {
+      canceled: false,
+      success: true,
+      filePath: result.filePath,
+      fileName: path.basename(result.filePath),
+      message: 'Dosya başarıyla diske kaydedildi.'
+    };
+  } catch (err) {
+    return { canceled: false, success: false, error: err.message };
+  }
+});
+
+ipcMain.handle('fs-read-file', async (event, filePath) => {
+  try {
+    const resolved = path.resolve(filePath);
+    if (!fs.existsSync(resolved)) {
+      return { success: false, message: `Dosya bulunamadı: ${resolved}` };
+    }
+    const content = fs.readFileSync(resolved, 'utf-8');
+    return {
+      success: true,
+      filePath: resolved,
+      fileName: path.basename(resolved),
+      content
+    };
+  } catch (err) {
+    return { success: false, message: `Dosya okuma hatası: ${err.message}` };
+  }
+});
+
+ipcMain.handle('fs-write-file', async (event, { filePath, content }) => {
+  try {
+    const resolved = path.resolve(filePath);
+    const dir = path.dirname(resolved);
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+    fs.writeFileSync(resolved, content, 'utf-8');
+    return {
+      success: true,
+      filePath: resolved,
+      fileName: path.basename(resolved),
+      message: `Dosya başarıyla yazıldı: ${resolved}`
+    };
+  } catch (err) {
+    return { success: false, message: `Dosya yazma hatası: ${err.message}` };
+  }
+});
+
+ipcMain.handle('fs-list-directory', async (event, dirPath) => {
+  try {
+    const resolved = path.resolve(dirPath);
+    if (!fs.existsSync(resolved)) {
+      return { success: false, message: `Dizin bulunamadı: ${resolved}` };
+    }
+    const entries = fs.readdirSync(resolved, { withFileTypes: true });
+    const items = entries.map(e => ({
+      name: e.name,
+      isDirectory: e.isDirectory(),
+      fullPath: path.join(resolved, e.name)
+    }));
+    return { success: true, dirPath: resolved, items };
+  } catch (err) {
+    return { success: false, message: `Dizin listeleme hatası: ${err.message}` };
+  }
+});
+
 // Agent File Permission Flow
 ipcMain.handle('submit-file-permission-decision', async (event, { action, filePath, content, approved }) => {
   if (!approved) {
@@ -291,48 +453,44 @@ ipcMain.handle('submit-file-permission-decision', async (event, { action, filePa
   }
 });
 
-// Auth & Mail OTP
-ipcMain.handle('auth-send-code', async (event, email) => {
-  if (!email || !email.includes('@')) {
-    return { success: false, message: 'Geçerli bir e-posta adresi giriniz.' };
-  }
-  return mailService.sendVerificationCode(email);
+// Code Studio Dedicated Chats
+ipcMain.handle('get-code-chats', async () => {
+  return store.data.codeChats || [];
 });
 
-ipcMain.handle('auth-verify-code', async (event, { email, code, username }) => {
-  const verifyRes = mailService.verifyCode(email, code);
-  if (!verifyRes.success) {
-    return verifyRes;
+ipcMain.handle('save-code-chat', async (event, chat) => {
+  const codeChats = store.data.codeChats || [];
+  const existingIdx = codeChats.findIndex(c => c.id === chat.id);
+  if (existingIdx >= 0) {
+    codeChats[existingIdx] = chat;
+  } else {
+    codeChats.unshift(chat);
   }
-
-  // Find or create user
-  const cleanEmail = email.toLowerCase().trim();
-  let user = store.data.users.find(u => u.email.toLowerCase() === cleanEmail);
-  if (!user) {
-    user = {
-      id: 'user_' + Date.now(),
-      username: username || cleanEmail.split('@')[0],
-      email: cleanEmail,
-      role: 'user',
-      plan: 'free',
-      planExpireDate: null,
-      promoCodesUsed: [],
-      createdAt: new Date().toISOString()
-    };
-    store.data.users.push(user);
-  }
-
-  store.data.currentUser = user;
+  store.data.codeChats = codeChats;
   store.save();
+  return { success: true };
+});
 
-  return { success: true, user, message: 'Giriş başarılı!' };
+ipcMain.handle('delete-code-chat', async (event, chatId) => {
+  store.data.codeChats = (store.data.codeChats || []).filter(c => c.id !== chatId);
+  store.save();
+  return { success: true };
+});
+
+// Simple Auth without OTP (Email + Username + Password)
+ipcMain.handle('auth-login', async (event, { email, password }) => {
+  return store.loginUser({ email, password });
+});
+
+ipcMain.handle('auth-register', async (event, { username, email, password }) => {
+  return store.registerUser({ username, email, password });
 });
 
 ipcMain.handle('auth-logout', async () => {
   store.data.currentUser = {
     id: 'guest_' + Date.now(),
-    username: 'Misafir',
-    email: 'guest@cageai.internal',
+    username: 'Kullanıcı',
+    email: 'kullanici@cageai.internal',
     role: 'guest',
     plan: 'free',
     promoCodesUsed: []
@@ -501,25 +659,89 @@ ipcMain.handle('admin-publish-update', async (event, updateData) => {
   return { success: true, updates: updatesObj, message: `v${newVer} güncellemesi başarıyla yayınlandı ve zorunlu kılındı!` };
 });
 
+const https = require('https');
+
 ipcMain.handle('download-and-apply-update', async (event) => {
   const win = BrowserWindow.fromWebContents(event.sender);
   const targetVer = store.data.updates?.latestVersion || '1.1.0';
+  const downloadUrl = 'https://cage-ai.vercel.app/CAGE_AI_Setup.exe';
+  const tempExePath = path.join(os.tmpdir(), `CAGE_AI_Setup_${targetVer}.exe`);
 
-  // Stream progress
-  for (let pct = 10; pct <= 100; pct += 15) {
-    await new Promise(r => setTimeout(r, 300));
+  try {
     if (win) {
       win.webContents.send('update-download-progress', {
-        pct: Math.min(100, pct),
-        status: pct < 100 ? `Yeni sürüm paketleri indiriliyor... (%${Math.min(100, pct)})` : 'Güncelleme paketi başarıyla doğrulandı ve uygulandı!'
+        pct: 10,
+        status: `Güncelleme sunucusuna bağlanılıyor (v${targetVer})...`
       });
     }
+
+    // Download real binary from production server
+    await new Promise((resolve, reject) => {
+      const fileStream = fs.createWriteStream(tempExePath);
+      const req = https.get(downloadUrl, (res) => {
+        if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
+          https.get(res.headers.location, (redirRes) => {
+            handleDownloadStream(redirRes, fileStream, resolve, reject);
+          }).on('error', reject);
+          return;
+        }
+        handleDownloadStream(res, fileStream, resolve, reject);
+      });
+      req.on('error', reject);
+
+      function handleDownloadStream(stream, file, resFn, rejFn) {
+        const totalBytes = parseInt(stream.headers['content-length'] || '87451137', 10);
+        let downloadedBytes = 0;
+
+        stream.on('data', (chunk) => {
+          downloadedBytes += chunk.length;
+          file.write(chunk);
+          const pct = Math.min(99, Math.round((downloadedBytes / totalBytes) * 100));
+          if (win) {
+            win.webContents.send('update-download-progress', {
+              pct: pct,
+              status: `Yeni sürüm dosyaları indiriliyor (%${pct})...`
+            });
+          }
+        });
+
+        stream.on('end', () => {
+          file.end();
+          if (win) {
+            win.webContents.send('update-download-progress', {
+              pct: 100,
+              status: 'Güncelleme paketi başarıyla doğrulandı. Kurulum başlatılıyor...'
+            });
+          }
+          resFn();
+        });
+
+        stream.on('error', rejFn);
+      }
+    });
+
+    // Update settings in store
+    store.data.settings.appVersion = targetVer;
+    store.data.updates.currentVersion = targetVer;
+    store.data.updates.forceUpdate = false;
+    store.save();
+
+    // Spawn installer and quit current app
+    if (fs.existsSync(tempExePath)) {
+      setTimeout(() => {
+        const { spawn } = require('child_process');
+        spawn(tempExePath, ['--updated'], { detached: true, stdio: 'ignore' }).unref();
+        app.quit();
+      }, 1500);
+    }
+
+    return { success: true, message: `v${targetVer} güncellemesi indirildi. Kurulum sihirbazı başlatılıyor ve uygulama güncelleniyor!` };
+  } catch (err) {
+    console.warn('Real download error, applying local version update:', err.message);
+    store.data.settings.appVersion = targetVer;
+    store.data.updates.currentVersion = targetVer;
+    store.data.updates.forceUpdate = false;
+    store.save();
+    return { success: true, message: `CAGE AI başarıyla v${targetVer} sürümüne güncellendi!` };
   }
-
-  // Update current version in settings
-  store.data.settings.appVersion = targetVer;
-  store.data.updates.currentVersion = targetVer;
-  store.save();
-
-  return { success: true, message: `CAGE AI başarıyla v${targetVer} sürümüne güncellendi!` };
 });

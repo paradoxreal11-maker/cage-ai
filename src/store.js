@@ -36,8 +36,8 @@ class Store {
       },
       currentUser: {
         id: 'user_default',
-        username: 'PARADOX',
-        email: 'paradox@cageai.internal',
+        username: 'Kullanıcı',
+        email: 'kullanici@cageai.internal',
         role: 'user',
         plan: 'free', // 'free', 'premium_ultra', 'codium_5_1_ultra'
         planExpireDate: null,
@@ -48,6 +48,7 @@ class Store {
           id: 'admin_root',
           username: 'cage_admin',
           email: 'admin@cageai.internal',
+          password: 'CageAdmin#2026!SecuredVault',
           role: 'admin',
           plan: 'codium_5_1_ultra',
           planExpireDate: '2099-12-31',
@@ -55,8 +56,9 @@ class Store {
         },
         {
           id: 'user_default',
-          username: 'PARADOX',
-          email: 'paradox@cageai.internal',
+          username: 'Kullanıcı',
+          email: 'kullanici@cageai.internal',
+          password: '123',
           role: 'user',
           plan: 'free',
           planExpireDate: null,
@@ -113,7 +115,8 @@ class Store {
           remainingSeconds: 3600 // 60 min per session
         }
       },
-      chats: []
+      chats: [],
+      codeChats: [] // Dedicated coding studio conversations
     };
   }
 
@@ -125,6 +128,13 @@ class Store {
         const merged = { ...this.getDefaultData(), ...parsed };
         if (!merged.settings.appVersion) merged.settings.appVersion = '1.0.0';
         if (!merged.updates) merged.updates = this.getDefaultData().updates;
+        if (!merged.codeChats) merged.codeChats = [];
+        
+        // Ensure user is 'Kullanıcı' if previously set to 'PARADOX'
+        if (merged.currentUser && merged.currentUser.username === 'PARADOX') {
+          merged.currentUser.username = 'Kullanıcı';
+          merged.currentUser.email = 'kullanici@cageai.internal';
+        }
         return merged;
       }
     } catch (err) {
@@ -145,6 +155,63 @@ class Store {
     } catch (err) {
       console.error('Store save error:', err);
     }
+  }
+
+  // User Auth (Password based, OTP removed)
+  registerUser({ username, email, password }) {
+    const cleanEmail = (email || '').toLowerCase().trim();
+    const cleanUser = (username || '').trim() || 'Kullanıcı';
+
+    if (!cleanEmail || !cleanEmail.includes('@')) {
+      return { success: false, message: 'Lütfen geçerli bir e-posta adresi girin.' };
+    }
+    if (!password || password.length < 3) {
+      return { success: false, message: 'Şifre en az 3 karakter olmalıdır.' };
+    }
+
+    const existing = this.data.users.find(u => u.email.toLowerCase() === cleanEmail);
+    if (existing) {
+      return { success: false, message: 'Bu e-posta adresiyle zaten kayıtlı bir hesap var. Lütfen giriş yapın.' };
+    }
+
+    const newUser = {
+      id: 'user_' + Date.now(),
+      username: cleanUser,
+      email: cleanEmail,
+      password: password,
+      role: 'user',
+      plan: 'free',
+      planExpireDate: null,
+      promoCodesUsed: [],
+      createdAt: new Date().toISOString()
+    };
+
+    this.data.users.push(newUser);
+    this.data.currentUser = newUser;
+    this.save();
+
+    return { success: true, user: newUser, message: 'Hesabınız başarıyla oluşturuldu ve giriş yapıldı!' };
+  }
+
+  loginUser({ email, password }) {
+    const cleanEmail = (email || '').toLowerCase().trim();
+    if (!cleanEmail || !password) {
+      return { success: false, message: 'Lütfen e-posta ve şifrenizi girin.' };
+    }
+
+    const user = this.data.users.find(u => u.email.toLowerCase() === cleanEmail);
+    if (!user) {
+      return { success: false, message: 'Bu e-posta adresiyle kayıtlı kullanıcı bulunamadı.' };
+    }
+
+    if (user.password && user.password !== password) {
+      return { success: false, message: 'Girdiğiniz şifre hatalı. Lütfen tekrar deneyin.' };
+    }
+
+    this.data.currentUser = user;
+    this.save();
+
+    return { success: true, user: user, message: 'Giriş başarılı! Hoş geldiniz.' };
   }
 
   // Session timer management & limits
@@ -191,7 +258,6 @@ class Store {
     }
   }
 
-  // Reset Codium Free quota (Allowed 2 times a day with 2 hours between each reset)
   resetCodiumFreeQuota() {
     this.checkAndResetDailyQuotas();
     const session = this.data.sessions.codium_free;
@@ -207,7 +273,7 @@ class Store {
         const remainingMinutes = Math.ceil((2 - elapsedHours) * 60);
         return {
           success: false,
-          message: `Limit sıfırlamaları arasında en az 2 saat olmalıdır. Kalan süre: ${remainingMinutes} dakika.`
+          message: `Limit sıfırlamaları arasında en az 2 saat olmalıdır. Kalan bekleme süresi: ${remainingMinutes} dakika.`
         };
       }
     }
@@ -228,7 +294,7 @@ class Store {
   startSession(modelKey) {
     this.checkAndResetDailyQuotas();
 
-    if (modelKey === 'codium_free') {
+    if (modelKey === 'codium_free' || modelKey === 'cage-codium-free') {
       const s = this.data.sessions.codium_free;
       if (s.dailySecondsUsed >= 600) {
         return { success: false, reason: 'QUOTA_EXCEEDED', message: 'Günlük 10 dakikalık Cage Codium Free süreniz doldu! 2 saatte bir sıfırlayabilir veya Codium Ultra paketine geçebilirsiniz.' };
@@ -239,7 +305,7 @@ class Store {
       return { success: true, remainingSeconds: 600 - s.dailySecondsUsed, session: s };
     }
 
-    if (modelKey === 'codium_ultra') {
+    if (modelKey === 'codium_ultra' || modelKey === 'cage-premium-ultra') {
       const s = this.data.sessions.codium_ultra;
       if (!s.active) {
         if (s.sessionsUsed >= 3) {
@@ -248,13 +314,13 @@ class Store {
         s.active = true;
         s.sessionsUsed += 1;
         s.sessionStartTime = Date.now();
-        s.remainingSeconds = 1800; // 30 mins
+        s.remainingSeconds = 1800; // 30 min
       }
       this.save();
       return { success: true, remainingSeconds: s.remainingSeconds, session: s };
     }
 
-    if (modelKey === 'codium_5_1') {
+    if (modelKey === 'codium_5_1' || modelKey === 'cage-codium-5-1-ultra') {
       const s = this.data.sessions.codium_5_1;
       if (!s.active) {
         if (s.sessionsUsed >= 5) {
@@ -263,7 +329,7 @@ class Store {
         s.active = true;
         s.sessionsUsed += 1;
         s.sessionStartTime = Date.now();
-        s.remainingSeconds = 3600; // 60 mins
+        s.remainingSeconds = 3600; // 60 min
       }
       this.save();
       return { success: true, remainingSeconds: s.remainingSeconds, session: s };
@@ -275,7 +341,7 @@ class Store {
   tickSession(modelKey, elapsedSeconds = 1) {
     this.checkAndResetDailyQuotas();
 
-    if (modelKey === 'codium_free') {
+    if (modelKey === 'codium_free' || modelKey === 'cage-codium-free') {
       const s = this.data.sessions.codium_free;
       if (s.active) {
         s.dailySecondsUsed = Math.min(600, s.dailySecondsUsed + elapsedSeconds);
@@ -287,7 +353,7 @@ class Store {
       }
     }
 
-    if (modelKey === 'codium_ultra') {
+    if (modelKey === 'codium_ultra' || modelKey === 'cage-premium-ultra') {
       const s = this.data.sessions.codium_ultra;
       if (s.active) {
         s.remainingSeconds = Math.max(0, s.remainingSeconds - elapsedSeconds);
@@ -299,7 +365,7 @@ class Store {
       }
     }
 
-    if (modelKey === 'codium_5_1') {
+    if (modelKey === 'codium_5_1' || modelKey === 'cage-codium-5-1-ultra') {
       const s = this.data.sessions.codium_5_1;
       if (s.active) {
         s.remainingSeconds = Math.max(0, s.remainingSeconds - elapsedSeconds);
@@ -352,7 +418,7 @@ class Store {
 
     return {
       success: true,
-      message: `Tebrikler! ${promo.description || promo.code} başarıyla hesabınıza uygulandı!`,
+      message: `Tebrikler! ${promo.description || promo.code} başarıyla hesabınıza tanımlandı!`,
       user
     };
   }
@@ -363,17 +429,16 @@ class Store {
       id: 'incident_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
       timestamp: new Date().toISOString(),
       userId: this.data.currentUser?.id || 'anon',
-      userEmail: this.data.currentUser?.email || 'anon@cageai.internal',
+      userEmail: this.data.currentUser?.email || 'kullanici@cageai.internal',
       prompt: incident.prompt,
       model: incident.model,
       reason: incident.reason || 'Kritik zararlı/tehlikeli içerik veya siber saldırı tespiti',
       severity: incident.severity || 'HIGH',
-      status: 'PENDING_REVIEW', // PENDING_REVIEW, RESOLVED, DISMISSED
+      status: 'PENDING_REVIEW',
       adminNotes: ''
     };
 
     this.data.safetyIncidents.unshift(item);
-    // Keep max 200 incidents
     if (this.data.safetyIncidents.length > 200) {
       this.data.safetyIncidents.pop();
     }
