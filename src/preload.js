@@ -57,6 +57,7 @@ contextBridge.exposeInMainWorld('cageAI', {
   fsReadFile: (filePath) => ipcRenderer.invoke('fs-read-file', filePath),
   fsWriteFile: (payload) => ipcRenderer.invoke('fs-write-file', payload),
   fsListDirectory: (dirPath) => ipcRenderer.invoke('fs-list-directory', dirPath),
+  runSystemCommand: (cmd, cwd) => ipcRenderer.invoke('run-system-command', { cmd, cwd }),
 
   // Auto-Update & Lock System
   checkForUpdates: () => ipcRenderer.invoke('check-for-updates'),

@@ -93,6 +93,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   const promptInputChat = document.getElementById('promptInputChat');
   const btnSendChat = document.getElementById('btnSendChat');
   const btnAttachmentChat = document.getElementById('btnAttachmentChat');
+  const chatAttachmentArea = document.getElementById('chatAttachmentArea');
+  const inputChatFile = document.getElementById('inputChatFile');
   const btnModelSelectChat = document.getElementById('btnModelSelectChat');
   const modelDropdownChat = document.getElementById('modelDropdownChat');
   const selectedModelLabelChat = document.getElementById('selectedModelLabelChat');
@@ -102,6 +104,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   const promptInputCode = document.getElementById('promptInputCode');
   const btnSendCode = document.getElementById('btnSendCode');
   const btnAttachmentCode = document.getElementById('btnAttachmentCode');
+  const codeAttachmentArea = document.getElementById('codeAttachmentArea');
+  const inputCodeFile = document.getElementById('inputCodeFile');
   const btnModelSelectCode = document.getElementById('btnModelSelectCode');
   const modelDropdownCode = document.getElementById('modelDropdownCode');
   const selectedModelLabelCode = document.getElementById('selectedModelLabelCode');
@@ -113,7 +117,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   const btnOpenFolder = document.getElementById('btnOpenFolder');
   const btnCopyCodeStudio = document.getElementById('btnCopyCodeStudio');
   const btnSaveToFile = document.getElementById('btnSaveToFile');
+  const btnRunCodeOnPC = document.getElementById('btnRunCodeOnPC');
   const lblActiveFullPath = document.getElementById('lblActiveFullPath');
+
+  // Attachments State (Görsel ve Dosya Yüklemeleri / Yapıştırmaları)
+  let chatAttachments = [];
+  let codeAttachments = [];
   const headerAdminPill = document.getElementById('headerAdminPill');
   const headerAdminDot = document.getElementById('headerAdminDot');
   const headerAdminText = document.getElementById('headerAdminText');
@@ -573,23 +582,193 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
 
+  // ATTACHMENT HANDLING FUNCTIONS (Görsel ve Dosya Yükleme / Yapıştırma / Önizleme)
+  function formatFileSize(bytes) {
+    if (!bytes) return '0 B';
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+  }
+
+  function renderAttachmentsUI(mode = 'chat') {
+    const list = mode === 'chat' ? chatAttachments : codeAttachments;
+    const container = mode === 'chat' ? chatAttachmentArea : codeAttachmentArea;
+    if (!container) return;
+
+    if (list.length === 0) {
+      container.classList.add('hidden');
+      container.innerHTML = '';
+      return;
+    }
+
+    container.classList.remove('hidden');
+    container.innerHTML = list.map((item, idx) => {
+      if (item.type === 'image') {
+        return `
+          <div class="attached-item-card">
+            <img src="${item.dataUrl}" class="attached-img-thumb" alt="${escapeHtml(item.name)}" />
+            <div class="attached-info">
+              <strong title="${escapeHtml(item.name)}">${escapeHtml(item.name)}</strong>
+              <small>${item.size} • Görsel</small>
+            </div>
+            <button class="btn-remove-attachment" data-idx="${idx}" data-mode="${mode}">✕</button>
+          </div>
+        `;
+      } else {
+        return `
+          <div class="attached-item-card">
+            <span style="font-size: 22px;">📁</span>
+            <div class="attached-info">
+              <strong title="${escapeHtml(item.name)}">${escapeHtml(item.name)}</strong>
+              <small>${item.size} • Dosya</small>
+            </div>
+            <button class="btn-remove-attachment" data-idx="${idx}" data-mode="${mode}">✕</button>
+          </div>
+        `;
+      }
+    }).join('');
+
+    container.querySelectorAll('.btn-remove-attachment').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const i = parseInt(btn.getAttribute('data-idx'));
+        const m = btn.getAttribute('data-mode');
+        if (m === 'chat') {
+          chatAttachments.splice(i, 1);
+          renderAttachmentsUI('chat');
+        } else {
+          codeAttachments.splice(i, 1);
+          renderAttachmentsUI('code');
+        }
+      });
+    });
+  }
+
+  function handleFilesSelected(files, mode = 'chat') {
+    if (!files || !files.length) return;
+    Array.from(files).forEach(file => {
+      const isImage = file.type.startsWith('image/');
+      const reader = new FileReader();
+      if (isImage) {
+        reader.onload = (e) => {
+          const item = {
+            name: file.name || 'görsel.png',
+            size: formatFileSize(file.size),
+            type: 'image',
+            dataUrl: e.target.result
+          };
+          if (mode === 'chat') {
+            chatAttachments.push(item);
+            renderAttachmentsUI('chat');
+          } else {
+            codeAttachments.push(item);
+            renderAttachmentsUI('code');
+          }
+        };
+        reader.readAsDataURL(file);
+      } else {
+        reader.onload = (e) => {
+          const item = {
+            name: file.name || 'dosya.txt',
+            size: formatFileSize(file.size),
+            type: 'file',
+            content: e.target.result
+          };
+          if (mode === 'chat') {
+            chatAttachments.push(item);
+            renderAttachmentsUI('chat');
+          } else {
+            codeAttachments.push(item);
+            renderAttachmentsUI('code');
+          }
+        };
+        reader.readAsText(file);
+      }
+    });
+  }
+
+  function handlePasteEvent(e, mode = 'chat') {
+    if (!e.clipboardData || !e.clipboardData.items) return;
+    const items = e.clipboardData.items;
+    for (let i = 0; i < items.length; i++) {
+      if (items[i].type.indexOf('image') !== -1) {
+        const file = items[i].getAsFile();
+        if (file) {
+          e.preventDefault();
+          handleFilesSelected([file], mode);
+          showToast('📷 Fotoğraf panodan yapıştırıldı ve eklendi!');
+          return;
+        }
+      }
+    }
+  }
+
+  if (inputChatFile) {
+    inputChatFile.addEventListener('change', (e) => {
+      handleFilesSelected(e.target.files, 'chat');
+      inputChatFile.value = '';
+    });
+  }
+
+  if (inputCodeFile) {
+    inputCodeFile.addEventListener('change', (e) => {
+      handleFilesSelected(e.target.files, 'code');
+      inputCodeFile.value = '';
+    });
+  }
+
+  if (btnAttachmentChat && inputChatFile) {
+    btnAttachmentChat.addEventListener('click', () => inputChatFile.click());
+  }
+
+  if (btnAttachmentCode && inputCodeFile) {
+    btnAttachmentCode.addEventListener('click', () => inputCodeFile.click());
+  }
+
+  if (promptInputChat) {
+    promptInputChat.addEventListener('paste', (e) => handlePasteEvent(e, 'chat'));
+  }
+
+  if (promptInputCode) {
+    promptInputCode.addEventListener('paste', (e) => handlePasteEvent(e, 'code'));
+  }
+
   // SEND MESSAGE: CHAT MODE
   async function handleSendChatMessage() {
     const text = promptInputChat.value.trim();
-    if (!text) return;
+    const attachmentsToSend = [...chatAttachments];
+    if (!text && attachmentsToSend.length === 0) return;
 
     promptInputChat.value = '';
     promptInputChat.style.height = 'auto';
+    chatAttachments = [];
+    renderAttachmentsUI('chat');
 
     welcomeContainerChat.classList.add('hidden');
     messagesContainerChat.classList.remove('hidden');
 
-    const userMsg = { role: 'user', content: text };
+    let fullPrompt = text;
+    let bubbleHtml = escapeHtml(text);
+
+    if (attachmentsToSend.length > 0) {
+      const attachNotes = attachmentsToSend.map(a => `[Ekli ${a.type === 'image' ? 'Fotoğraf/Görsel' : 'Dosya'}: ${a.name} (${a.size})]`).join('\n');
+      fullPrompt = `${text ? text + '\n\n' : ''}${attachNotes}`;
+      
+      const thumbs = attachmentsToSend.map(a => {
+        if (a.type === 'image') {
+          return `<img src="${a.dataUrl}" class="message-attached-img" alt="${escapeHtml(a.name)}" />`;
+        } else {
+          return `<div class="message-attached-file">📁 <strong>${escapeHtml(a.name)}</strong> (${a.size})</div>`;
+        }
+      }).join('');
+      bubbleHtml = `${bubbleHtml ? bubbleHtml + '<br/>' : ''}${thumbs}`;
+    }
+
+    const userMsg = { role: 'user', content: fullPrompt };
     currentChat.messages.push(userMsg);
     if (currentChat.title === 'Yeni Sohbet') {
-      currentChat.title = text.length > 28 ? text.substring(0, 28) + '...' : text;
+      currentChat.title = text ? (text.length > 28 ? text.substring(0, 28) + '...' : text) : (attachmentsToSend[0].name);
     }
-    renderChatMessageBubble('user', text);
+    renderChatMessageBubble('user', bubbleHtml);
 
     const thinkingHtml = `
       <div class="thinking-container">
@@ -607,7 +786,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     try {
       const res = await window.cageAI.sendChatMessage({
         modelKey: currentChatModel,
-        userPrompt: text,
+        userPrompt: fullPrompt,
         history: currentChat.messages.slice(0, -1)
       });
 
@@ -656,7 +835,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const bubble = document.createElement('div');
     bubble.className = 'message-bubble';
-    bubble.innerHTML = role === 'user' ? escapeHtml(content) : (content.includes('thinking-container') ? content : formatMarkdown(content));
+    bubble.innerHTML = role === 'user' 
+      ? (content.includes('<img') || content.includes('<div') ? content : escapeHtml(content))
+      : (content.includes('thinking-container') ? content : formatMarkdown(content));
     row.appendChild(bubble);
 
     messagesContainerChat.appendChild(row);
@@ -666,17 +847,37 @@ document.addEventListener('DOMContentLoaded', async () => {
   // SEND MESSAGE: CODE STUDIO MODE
   async function handleSendCodeMessage() {
     const text = promptInputCode.value.trim();
-    if (!text) return;
+    const attachmentsToSend = [...codeAttachments];
+    if (!text && attachmentsToSend.length === 0) return;
 
     promptInputCode.value = '';
     promptInputCode.style.height = 'auto';
+    codeAttachments = [];
+    renderAttachmentsUI('code');
 
-    const userMsg = { role: 'user', content: text };
+    let fullPrompt = text;
+    let bubbleHtml = escapeHtml(text);
+
+    if (attachmentsToSend.length > 0) {
+      const attachNotes = attachmentsToSend.map(a => `[Ekli ${a.type === 'image' ? 'Fotoğraf/Görsel' : 'Dosya'}: ${a.name} (${a.size})]`).join('\n');
+      fullPrompt = `${text ? text + '\n\n' : ''}${attachNotes}`;
+      
+      const thumbs = attachmentsToSend.map(a => {
+        if (a.type === 'image') {
+          return `<img src="${a.dataUrl}" class="message-attached-img" alt="${escapeHtml(a.name)}" />`;
+        } else {
+          return `<div class="message-attached-file">📁 <strong>${escapeHtml(a.name)}</strong> (${a.size})</div>`;
+        }
+      }).join('');
+      bubbleHtml = `${bubbleHtml ? bubbleHtml + '<br/>' : ''}${thumbs}`;
+    }
+
+    const userMsg = { role: 'user', content: fullPrompt };
     currentCodeChat.messages.push(userMsg);
     if (currentCodeChat.title === 'Yeni Kodlama Projesi') {
-      currentCodeChat.title = text.length > 28 ? text.substring(0, 28) + '...' : text;
+      currentCodeChat.title = text ? (text.length > 28 ? text.substring(0, 28) + '...' : text) : (attachmentsToSend[0].name);
     }
-    renderCodeMessageBubble('user', text);
+    renderCodeMessageBubble('user', bubbleHtml);
 
     const thinkingCodeHtml = `
       <div class="thinking-container">
@@ -694,7 +895,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     try {
       const res = await window.cageAI.sendChatMessage({
         modelKey: currentCodeModel,
-        userPrompt: text,
+        userPrompt: fullPrompt,
         history: currentCodeChat.messages.slice(0, -1)
       });
 
@@ -767,7 +968,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const bubble = document.createElement('div');
     bubble.className = 'message-bubble';
-    bubble.innerHTML = role === 'user' ? escapeHtml(content) : (content.includes('thinking-container') ? content : formatMarkdown(content));
+    bubble.innerHTML = role === 'user' 
+      ? (content.includes('<img') || content.includes('<div') ? content : escapeHtml(content))
+      : (content.includes('thinking-container') ? content : formatMarkdown(content));
     row.appendChild(bubble);
 
     messagesContainerCode.appendChild(row);
@@ -896,6 +1099,42 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
+  // Live Editor: Run Code Directly on PC / Terminal
+  if (btnRunCodeOnPC) {
+    btnRunCodeOnPC.addEventListener('click', async () => {
+      const code = codeStudioView ? codeStudioView.value.trim() : '';
+      if (!code) {
+        showToast('Çalıştırılacak kod bulunamadı.', true);
+        return;
+      }
+      showToast('⚡ Kod bilgisayarınızda çalıştırılıyor...');
+
+      const fileName = activeFileTitle ? activeFileTitle.textContent : 'script.js';
+      const isPython = fileName.endsWith('.py') || code.includes('import ') || code.includes('def ') || code.includes('print(');
+
+      // Escape code safely for powershell one-liner or run via node/python
+      let cmd = '';
+      if (isPython) {
+        // Save to temporary solution or run python
+        cmd = `python -c "${code.replace(/"/g, '`"').replace(/\n/g, '; ')}"`;
+      } else {
+        cmd = `node -e "${code.replace(/"/g, '`"').replace(/\n/g, '; ')}"`;
+      }
+
+      if (window.cageAI && window.cageAI.runSystemCommand) {
+        const res = await window.cageAI.runSystemCommand(cmd);
+        if (res.success) {
+          showToast('Kod başarıyla çalıştırıldı!');
+          renderCodeMessageBubble('ai', `▶️ **Kod Çalıştırma Çıktısı (${isPython ? 'Python' : 'Node.js'}):**\n\`\`\`\n${res.stdout || '(Kod başarıyla tamamlandı, çıktı üretilmedi)'}\n\`\`\``);
+        } else {
+          showToast('Çalıştırma hatası oluştu', true);
+          renderCodeMessageBubble('ai', `❌ **Çalıştırma Hatası:**\n\`\`\`\n${res.stderr || res.error || 'Hata'}\n\`\`\``);
+        }
+        messagesContainerCode.scrollTop = messagesContainerCode.scrollHeight;
+      }
+    });
+  }
+
   // Markdown Formatter (Pure CAGE AI - No external dependencies)
   function formatMarkdown(text) {
     let html = escapeHtml(text);
@@ -968,12 +1207,21 @@ document.addEventListener('DOMContentLoaded', async () => {
     promptInputCode.style.height = Math.min(200, promptInputCode.scrollHeight) + 'px';
   });
 
-  // AGENT FILE PERMISSION WORKFLOW (Explicit User Risk Acceptance)
+  // AGENT FILE & COMMAND EXECUTION PERMISSION WORKFLOW
   function showFilePermissionDialog(action) {
     pendingFilePerm = action;
-    permActionType.textContent = action.action || 'YAZMA / DÜZENLEME';
-    permFilePath.textContent = action.filePath || 'Bilinmeyen Dosya';
-    permFileContent.textContent = action.content || '(İçerik boş veya okunuyor)';
+    const isCmd = action.action === 'COMMAND' || action.action === 'INSTALL';
+    if (permActionType) {
+      permActionType.textContent = isCmd ? '⚡ SİSTEM & KURULUM EYLEMİ' : (action.action || 'YAZMA / DÜZENLEME');
+    }
+    if (permFilePath) {
+      permFilePath.textContent = isCmd ? (action.command || action.content) : (action.filePath || 'Bilinmeyen Dosya');
+    }
+    if (permFileContent) {
+      permFileContent.textContent = isCmd 
+        ? `Çalıştırılacak Komut / Kurulum:\n${action.command || action.content}\n\nBu işlem bilgisayarınızda kütüphaneleri yükleyecek, ortamı ayarlayacak veya projeyi başlatacaktır.`
+        : (action.content || '(İçerik boş veya okunuyor)');
+    }
     filePermissionModal.classList.remove('hidden');
   }
 
@@ -988,12 +1236,20 @@ document.addEventListener('DOMContentLoaded', async () => {
       approved: true
     });
 
-    const successMsg = `✅ **Agent Dosya İşlemi Onaylandı:**\n${result.message || 'Dosya başarıyla yazıldı/güncellendi.'}`;
+    const isCmd = pendingFilePerm.action === 'COMMAND' || pendingFilePerm.action === 'INSTALL';
+    const successMsg = isCmd
+      ? `⚡ **Otonom Sistem & Kurulum İşlemi Tamamlandı:**\n${result.message || 'Komut çalıştırıldı.'}\n\n${result.output ? '```\n' + result.output + '\n```' : ''}`
+      : `✅ **Agent Dosya İşlemi Tamamlandı:**\n${result.message || 'Dosya başarıyla yazıldı/güncellendi.'}`;
+
     if (activeMode === 'code') {
       renderCodeMessageBubble('ai', successMsg);
+      if (pendingFilePerm.content && !isCmd) {
+        codeStudioView.value = pendingFilePerm.content;
+      }
     } else {
       renderChatMessageBubble('ai', successMsg);
     }
+    showToast('Sistem işlemi başarıyla uygulandı!');
     pendingFilePerm = null;
   });
 

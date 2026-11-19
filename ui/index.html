@@ -288,16 +288,20 @@
 
         <!-- Prompt Area -->
         <div class="prompt-container">
+          <!-- Chat Attachment Preview Area (Görsel veya Dosya Önizlemesi) -->
+          <div class="attachment-preview-area hidden" id="chatAttachmentArea"></div>
+          <input type="file" id="inputChatFile" class="hidden" multiple accept="image/*,.js,.ts,.jsx,.tsx,.py,.html,.css,.json,.md,.txt,.sql,.cpp,.c,.cs,.java,.go,.rs,.zip,.pdf" />
+
           <div class="prompt-box">
             <textarea 
               id="promptInputChat" 
-              placeholder="CAGE AI'ya bir soru sorun veya konu açın..." 
+              placeholder="CAGE AI'ya bir soru sorun, fotoğraf yapıştırın (Ctrl+V) veya konu açın..." 
               rows="1"
             ></textarea>
 
             <div class="prompt-toolbar">
               <div class="toolbar-left">
-                <button class="tool-btn" id="btnAttachmentChat" title="Dosya Ekle">
+                <button class="tool-btn" id="btnAttachmentChat" title="Fotoğraf veya Dosya Yükle (+)">
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
                 </button>
                 <div class="mode-tag-pill">
@@ -397,18 +401,22 @@
 
           <!-- Code Prompt Box -->
           <div class="code-prompt-wrapper">
+            <!-- Code Attachment Preview Area (Görsel veya Dosya Önizlemesi) -->
+            <div class="attachment-preview-area hidden" id="codeAttachmentArea"></div>
+            <input type="file" id="inputCodeFile" class="hidden" multiple accept="image/*,.js,.ts,.jsx,.tsx,.py,.html,.css,.json,.md,.txt,.sql,.cpp,.c,.cs,.java,.go,.rs,.zip,.pdf" />
+
             <div class="prompt-box code-box">
               <textarea 
                 id="promptInputCode" 
-                placeholder="Kod yazdırın, hata ayıklatın veya dosya işlemi isteyin..." 
+                placeholder="Kod yazdırın, bilgisayara proje kurun, hata ayıklatın veya fotoğraf yapıştırın (Ctrl+V)..." 
                 rows="2"
               ></textarea>
               <div class="prompt-toolbar">
                 <div class="toolbar-left">
-                  <button class="tool-btn" id="btnAttachmentCode" title="Kod Dosyası Ekle">
+                  <button class="tool-btn" id="btnAttachmentCode" title="Fotoğraf veya Kod Dosyası Yükle (+)">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
                   </button>
-                  <span style="font-size: 11px; color: #a3a29e;">Agent Dosya Yetkisi Aktif</span>
+                  <span style="font-size: 11px; color: #a3a29e;">Agent Dosya &amp; Kurulum Yetkisi Aktif</span>
                 </div>
                 <div class="toolbar-right">
                   <button class="send-btn active" id="btnSendCode" title="Çalıştır &amp; Kod Üret (Enter)">
@@ -442,6 +450,9 @@
               </button>
               <button class="editor-action-btn highlight" id="btnSaveToFile" title="Diske Kaydet">
                 💾 Diske Kaydet
+              </button>
+              <button class="editor-action-btn run-btn" id="btnRunCodeOnPC" title="Kodu Bilgisayarda Çalıştır / Kur">
+                ▶️ Bilgisayarda Çalıştır
               </button>
             </div>
           </div>
@@ -741,45 +752,45 @@ function welcomeToCageCodium() {
     </div>
   </div>
 
-  <!-- 3. Agent File Permission Modal -->
+  <!-- 3. Agent File & Command Execution Permission Modal -->
   <div class="modal-backdrop hidden" id="filePermissionModal">
     <div class="modal-window permission-window">
       <div class="modal-header permission-header">
         <div class="perm-title">
-          <span class="perm-icon">⚠️</span>
-          <h2>CAGE AI Agent Dosya İşlem İzni İstiyor</h2>
+          <span class="perm-icon">⚡</span>
+          <h2 id="permModalTitle">CAGE AI Otonom Ajan Sistem &amp; Dosya İzni İstiyor</h2>
         </div>
       </div>
       <div class="modal-body">
-        <p class="perm-desc">
-          Yapay zeka ajanı bilgisayarınızdaki bir dosyada işlem gerçekleştirmek istiyor.
+        <p class="perm-desc" id="permDescText">
+          Yapay zeka ajanı bilgisayarınızda bir dosya oluşturmak, düzenlemek veya kurulum komutu çalıştırmak istiyor.
         </p>
 
         <div class="perm-details-card">
           <div class="perm-row">
             <strong>İşlem Türü:</strong>
-            <span id="permActionType" class="badge-action">YAZMA / DEĞİŞTİRME</span>
+            <span id="permActionType" class="badge-action">DOSYA OLUŞTURMA / KURULUM</span>
           </div>
           <div class="perm-row">
-            <strong>Hedef Dosya:</strong>
+            <strong id="lblPermTarget">Hedef / Komut:</strong>
             <code id="permFilePath">C:\Users\...</code>
           </div>
           <div class="perm-preview">
-            <strong>İçerik Önizlemesi:</strong>
+            <strong id="lblPermPreview">İçerik / Çıktı Önizlemesi:</strong>
             <pre><code id="permFileContent">...</code></pre>
           </div>
         </div>
 
         <div class="perm-warning-box">
-          <strong>Kullanıcı Sözleşmesi ve Yasal Beyan:</strong>
+          <strong>Kullanıcı Onayı &amp; Güvenlik Beyanı:</strong>
           <p>
-            "İzin Ver" butonuna tıklayarak yapay zekanın bu dosyaya erişebildiğini, değişiklik yapabileceğini ve doğabilecek tüm risk ile sorumluluğun kendinize ait olduğunu kabul edersiniz. CAGE AI hiçbir veri kaybından ötürü sorumluluk kabul etmez.
+            "İzin Ver &amp; Çalıştır" butonuna tıklayarak yapay zekanın bu işlemi bilgisayarınızda (dosya oluşturma, kütüphane kurma veya çalıştırma) gerçekleştirmesine izin vermiş olursunuz.
           </p>
         </div>
 
         <div class="perm-actions">
-          <button class="btn btn-secondary" id="btnRejectFilePerm">Reddet</button>
-          <button class="btn btn-primary" id="btnApproveFilePerm">İzin Ver &amp; Çalıştır (Sorumluluğu Kabul Ediyorum)</button>
+          <button class="btn btn-secondary" id="btnRejectFilePerm">İptal Et</button>
+          <button class="btn btn-primary" id="btnApproveFilePerm">⚡ İzin Ver &amp; Bilgisayarda Uygula</button>
         </div>
       </div>
     </div>

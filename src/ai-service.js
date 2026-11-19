@@ -65,13 +65,13 @@ class AIService {
   }
 
   detectAgentFileAction(prompt, responseText) {
-    // Check if the prompt or response proposes creating/modifying a file
+    // 1. File write/create action: ```file:path ... ``` or [FILE_ACTION: WRITE ...]
     const fileMatch = responseText.match(/```(?:file|write|create):([^\n\r]+)[\r\n]+([\s\S]*?)```/i) ||
                       responseText.match(/\[FILE_ACTION:\s*(READ|WRITE|MODIFY)\s*\|\s*PATH:\s*([^\s\|]+)(?:\s*\|\s*CONTENT:\s*([\s\S]*?))?\]/i);
 
     if (fileMatch) {
       if (fileMatch[1] && fileMatch[2] && !fileMatch[3]) {
-        // Format 1: ```file:path ... ```
+        // Format: ```file:path ... ```
         return {
           requiresPermission: true,
           action: 'WRITE',
@@ -86,6 +86,31 @@ class AIService {
           content: fileMatch[3] ? fileMatch[3].trim() : ''
         };
       }
+    }
+
+    // 2. Command run / library setup action: ```command:cmd ... ``` or ```setup:cmd ... ```
+    const cmdMatch = responseText.match(/```(?:command|run|setup|install):([^\n\r]+)[\r\n]*([\s\S]*?)```/i) ||
+                     responseText.match(/\[COMMAND_ACTION:\s*([^\n\r\]]+)\]/i);
+    if (cmdMatch) {
+      const commandStr = (cmdMatch[2] && cmdMatch[2].trim()) ? (cmdMatch[1].trim() + '\n' + cmdMatch[2].trim()) : cmdMatch[1].trim();
+      return {
+        requiresPermission: true,
+        action: 'COMMAND',
+        command: commandStr,
+        filePath: 'Terminal / PowerShell',
+        content: commandStr
+      };
+    }
+
+    // 3. File read action: ```read:path ... ```
+    const readMatch = responseText.match(/```(?:read|view):([^\n\r]+)```/i);
+    if (readMatch) {
+      return {
+        requiresPermission: true,
+        action: 'READ',
+        filePath: readMatch[1].trim(),
+        content: ''
+      };
     }
 
     return null;
@@ -168,11 +193,20 @@ class AIService {
     } else if (modelKey === 'cage-premium-ultra') {
       systemInstruction = `Sen CAGE AI Premium asistanısın. Zeki, kapsamlı ve derin sohbet yeteneklerine sahipsin. Kod yazma; kod isteklerinde kullanıcının paketindeki Cage Codium Ultra modelini hatırlat.`;
     } else if (modelKey === 'cage-codium-free') {
-      systemInstruction = `Sen CAGE Codium Free yapay zeka ve kodlama asistanısın. Uygulama Windows Yönetici (Administrator) yetkileriyle çalışmaktadır. Bilgisayardaki dosyalara doğrudan erişebilir, okuyabilir, yeni dosyalar oluşturabilir ve düzenleyebilirsin. Kullanıcının kodlama, hata ayıklama ve script sorularını çöz. Eğer bir dosya oluşturmak veya değiştirmek istersen şu formatı kullan:\n\`\`\`file:DOSYA_YOLU\nDOSYA_ICERIGI\n\`\`\`\nKullanıcıdan önce onay isteneceğini unutma.`;
+      systemInstruction = `Sen CAGE Codium Free yapay zeka ve kodlama asistanısın. Uygulama Windows Yönetici (Administrator) yetkileriyle çalışmaktadır. Bilgisayardaki dosyalara doğrudan erişebilir, okuyabilir, yeni dosyalar ve projeler kurabilir, kütüphaneleri yükleyebilir ve ayar yapabilirsin. SADECE KOD VERMEKLE KALMA; kullanıcının bilgisayarında projeyi kurmak ve çalıştırmak için gerekli eylemleri başlat!
+Dosya yazmak için: \`\`\`file:DOSYA_YOLU\\nICERIK\`\`\`
+Kurulum veya terminal komutu çalıştırmak için (örn: pip install, npm install, python vb.): \`\`\`command:KOMUT\`\`\`
+Dosya okumak için: \`\`\`read:DOSYA_YOLU\`\`\` formatını kullan.`;
     } else if (modelKey === 'cage-codium-ultra') {
-      systemInstruction = `Sen CAGE Codium Ultra profesyonel yazılım mühendisisin. Uygulama Windows Yönetici (Administrator) yetkileriyle çalışmaktadır. Bilgisayardaki dosyalara tam erişim hakkın vardır. Temiz mimari, performanslı kod, refactoring ve tam teşekküllü dosya operasyonları sunarsın. Dosya yazmak/düzenlemek istediğinde:\n\`\`\`file:DOSYA_YOLU\nDOSYA_ICERIGI\n\`\`\` formatını kullan.`;
+      systemInstruction = `Sen CAGE Codium Ultra profesyonel yazılım mühendisisin. Uygulama Windows Yönetici (Administrator) yetkileriyle çalışmaktadır. Bilgisayardaki dosyalara tam erişim hakkın vardır. Sadece kod vermekle kalmaz; bilgisayardaki dosyaları düzenler, projeleri kurar, paketleri yükler ve ayarları yapılandırırsın.
+Dosya yazmak için: \`\`\`file:DOSYA_YOLU\\nICERIK\`\`\`
+Kurulum veya komut çalıştırmak için: \`\`\`command:KOMUT\`\`\`
+Dosya okumak için: \`\`\`read:DOSYA_YOLU\`\`\` formatını kullan.`;
     } else if (modelKey === 'cage-codium-5-1-ultra') {
-      systemInstruction = `Sen en gelişmiş otonom kodlama ajanı olan CAGE Codium 5.1 Ultra'sın. Uygulama Windows Yönetici (Administrator) yetkileriyle çalışmaktadır. Bilgisayardaki tüm dosya sistemine doğrudan okuma, yazma, oluşturma ve düzenleme yapabilirsin. Karmaşık mimariler, büyük projeler ve hata ayıklamayı otonom olarak yönet. Dosya oluşturmak veya değiştirmek istediğinde:\n\`\`\`file:DOSYA_YOLU\nDOSYA_ICERIGI\n\`\`\` formatını kullan.`;
+      systemInstruction = `Sen en gelişmiş otonom kodlama ve sistem mühendisi CAGE Codium 5.1 Ultra'sın. Uygulama Windows Yönetici (Administrator) yetkileriyle çalışmaktadır. Bilgisayardaki tüm dosya sistemine doğrudan okuma, yazma, oluşturma, proje kurma, paket yükleme ve ortam ayarı yapma yetkisine sahipsin. SADECE KOD VERMEKLE KALMA; projeyi kullanıcının bilgisayarına kur, ayarları yap ve çalıştır!
+Dosya yazmak/oluşturmak için: \`\`\`file:DOSYA_YOLU\\nICERIK\`\`\`
+Paket kurmak veya komut yürütmek için: \`\`\`command:KOMUT\`\`\`
+Dosya okumak için: \`\`\`read:DOSYA_YOLU\`\`\` formatını kullan.`;
     }
 
     // Prepare contents

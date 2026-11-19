@@ -36,6 +36,7 @@ function createInstallerWindow() {
   });
 
   installerWindow.loadFile(path.join(__dirname, '..', 'ui', 'installer.html'));
+  installerWindow.setContentProtection(false);
 
   installerWindow.on('closed', () => {
     installerWindow = null;
@@ -57,6 +58,9 @@ function createMainWindow() {
       contextIsolation: true
     }
   });
+
+  // Ekran resmi ve kayıt alma izinlerini açık tut (Windows DisplayAffinity serbest)
+  mainWindow.setContentProtection(false);
 
   mainWindow.loadFile(path.join(__dirname, '..', 'ui', 'index.html'));
 
@@ -436,13 +440,35 @@ ipcMain.handle('fs-list-directory', async (event, dirPath) => {
   }
 });
 
-// Agent File Permission Flow
+// Agent File & Command Permission Flow (Dosya yazma, okuma, kütüphane kurma ve komut çalıştırma)
 ipcMain.handle('submit-file-permission-decision', async (event, { action, filePath, content, approved }) => {
   if (!approved) {
-    return { success: false, message: 'Kullanıcı dosya işlem iznini reddetti.' };
+    return { success: false, message: 'Kullanıcı işlem iznini reddetti.' };
   }
 
   try {
+    if (action === 'COMMAND' || action === 'INSTALL') {
+      const { exec } = require('child_process');
+      const cmdToRun = content || filePath;
+      return new Promise((resolve) => {
+        exec(cmdToRun, { shell: 'powershell.exe', cwd: process.env.USERPROFILE || process.cwd() }, (err, stdout, stderr) => {
+          if (err) {
+            resolve({
+              success: false,
+              message: `Komut çalıştırma hatası: ${err.message}`,
+              output: stderr || err.message
+            });
+          } else {
+            resolve({
+              success: true,
+              message: `Kurulum / Komut başarıyla tamamlandı!`,
+              output: stdout || 'Komut başarıyla yürütüldü (çıktı yok).'
+            });
+          }
+        });
+      });
+    }
+
     const resolvedPath = path.resolve(filePath);
     if (action === 'WRITE' || action === 'MODIFY') {
       const dir = path.dirname(resolvedPath);
@@ -465,6 +491,30 @@ ipcMain.handle('submit-file-permission-decision', async (event, { action, filePa
   } catch (err) {
     return { success: false, message: `Dosya işlem hatası: ${err.message}` };
   }
+});
+
+// Run System Command Directly (Agent veya Kullanıcı)
+ipcMain.handle('run-system-command', async (event, { cmd, cwd }) => {
+  const { exec } = require('child_process');
+  return new Promise((resolve) => {
+    exec(cmd, { shell: 'powershell.exe', cwd: cwd || process.env.USERPROFILE || process.cwd() }, (err, stdout, stderr) => {
+      if (err) {
+        resolve({
+          success: false,
+          error: err.message,
+          stdout: stdout || '',
+          stderr: stderr || ''
+        });
+      } else {
+        resolve({
+          success: true,
+          stdout: stdout || '',
+          stderr: stderr || '',
+          message: 'Komut başarıyla çalıştırıldı.'
+        });
+      }
+    });
+  });
 });
 
 // Code Studio Dedicated Chats

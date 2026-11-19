@@ -24,6 +24,57 @@
   padding: 0;
 }
 
+/* ==========================================================================
+   GLOBAL CUSTOM SLEEK SCROLLBAR WITH SMOOTH ANIMATIONS & AMBER GLOW
+   ========================================================================== */
+html, body, *, *::before, *::after {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(217, 119, 6, 0.45) transparent;
+  scroll-behavior: smooth;
+}
+
+::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 8px;
+}
+
+::-webkit-scrollbar-track:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(140, 137, 132, 0.35);
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background-clip: padding-box;
+  transition: background 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease, transform 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #d97706, #fbbf24);
+  box-shadow: 0 0 12px rgba(217, 119, 6, 0.65);
+}
+
+::-webkit-scrollbar-thumb:active {
+  background: #b45309;
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* KESİNLİKLE NATIVE BEYAZ OKLARI VE BUTONLARI KALDIR */
+::-webkit-scrollbar-button {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
 body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   background-color: var(--bg-primary);
@@ -2703,4 +2754,132 @@ input:checked + .slider:before { transform: translateX(20px); }
   font-size: 38px;
   margin-bottom: 10px;
   display: block;
+}
+
+/* ==========================================================================
+   ATTACHMENT PREVIEW AREA & IMAGE / FILE CARDS (CHAT & KODLAMA)
+   ========================================================================== */
+.attachment-preview-area {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 10px 14px;
+  background: rgba(22, 21, 20, 0.95);
+  border: 1px dashed rgba(217, 119, 6, 0.4);
+  border-bottom: none;
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+  animation: slideDownFade 0.25s ease-out forwards;
+}
+
+@keyframes slideDownFade {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.attached-item-card {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #252422;
+  border: 1px solid #3c3a37;
+  border-radius: 8px;
+  padding: 6px 10px;
+  max-width: 280px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  transition: border-color 0.2s ease, transform 0.2s ease;
+}
+
+.attached-item-card:hover {
+  border-color: #d97706;
+  transform: translateY(-1px);
+}
+
+.attached-img-thumb {
+  width: 44px;
+  height: 44px;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 1px solid rgba(251, 191, 36, 0.3);
+}
+
+.attached-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.attached-info strong {
+  display: block;
+  font-size: 12px;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.attached-info small {
+  font-size: 10.5px;
+  color: #9ca3af;
+  font-family: 'Fira Code', monospace;
+}
+
+.btn-remove-attachment {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #383633;
+  border: none;
+  color: #bbb;
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.btn-remove-attachment:hover {
+  background: #ef4444;
+  color: #fff;
+}
+
+/* User Message Bubble Attachment Displays */
+.message-attached-img {
+  max-width: 320px;
+  max-height: 240px;
+  border-radius: 10px;
+  border: 1px solid rgba(217, 119, 6, 0.35);
+  margin-top: 8px;
+  display: block;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+  cursor: pointer;
+}
+
+.message-attached-file {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 12.5px;
+  color: #e5e7eb;
+  margin-top: 6px;
+}
+
+/* Run Code Button in Editor Header */
+.editor-action-btn.run-btn {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: #fff;
+  border-color: #10b981;
+  font-weight: 700;
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.25);
+}
+
+.editor-action-btn.run-btn:hover {
+  background: linear-gradient(135deg, #34d399, #10b981);
+  box-shadow: 0 0 16px rgba(16, 185, 129, 0.45);
 }
