@@ -167,6 +167,12 @@ ipcMain.handle('complete-install', async (event, options) => {
 // Store & State
 ipcMain.handle('get-store-data', async () => {
   store.checkAndResetDailyQuotas();
+  const cUser = store.data.currentUser;
+  const userTickets = (store.data.tickets || []).filter(t => {
+    if (!cUser) return false;
+    return t.userId === cUser.id || t.userEmail === cUser.email || (cUser.role === 'admin');
+  });
+
   return {
     currentUser: store.data.currentUser,
     sessions: store.data.sessions,
@@ -177,6 +183,7 @@ ipcMain.handle('get-store-data', async () => {
       validUntil: p.validUntil,
       description: p.description
     })),
+    tickets: userTickets,
     settings: store.data.settings
   };
 });
@@ -240,21 +247,28 @@ ipcMain.handle('redeem-promo-code', async (event, code) => {
 
 // Tickets
 ipcMain.handle('create-ticket', async (event, ticketData) => {
+  const cUser = store.data.currentUser;
+  const ticketCode = 'TCK-' + Math.floor(1000 + Math.random() * 9000);
   const ticket = {
     id: 'ticket_' + Date.now(),
-    userId: store.data.currentUser?.id || 'anon',
-    userEmail: store.data.currentUser?.email || ticketData.email,
-    username: store.data.currentUser?.username || ticketData.username,
-    packageId: ticketData.packageId,
-    packageName: ticketData.packageName,
-    billingCycle: ticketData.billingCycle, // 'monthly' | 'yearly'
-    price: ticketData.price,
+    ticketCode: ticketCode,
+    userId: cUser?.id || 'anon',
+    userEmail: ticketData.email || cUser?.email || 'anon@cageai.internal',
+    username: cUser?.nickname || cUser?.username || ticketData.username || 'Kullanıcı',
+    category: ticketData.category || 'Genel Destek',
+    subject: ticketData.subject || ticketData.packageName || 'Destek Talebi',
+    priority: ticketData.priority || 'Normal',
+    packageId: ticketData.packageId || null,
+    packageName: ticketData.packageName || null,
+    billingCycle: ticketData.billingCycle || 'monthly', // 'monthly' | 'yearly'
+    price: ticketData.price || 'Standart',
     paymentMethod: ticketData.paymentMethod || 'Havale/EFT/Kripto',
     notes: ticketData.notes || '',
     status: 'PENDING', // 'PENDING' | 'APPROVED' | 'REJECTED'
     createdAt: new Date().toISOString()
   };
 
+  if (!store.data.tickets) store.data.tickets = [];
   store.data.tickets.unshift(ticket);
   store.save();
   return { success: true, ticket };

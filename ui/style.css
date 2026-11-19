@@ -1603,119 +1603,360 @@ input:checked + .slider:before { transform: translateX(20px); }
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
+  transform: scale(1.04);
+  transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.splash-ambient-glow {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.splash-ambient-glow.glow-top {
+  width: 380px;
+  height: 380px;
+  top: -100px;
+  background: radial-gradient(circle, rgba(217, 119, 6, 0.28) 0%, rgba(217, 119, 6, 0) 70%);
+  animation: ambientFloat 8s ease-in-out infinite alternate;
+}
+
+.splash-ambient-glow.glow-bottom {
+  width: 320px;
+  height: 320px;
+  bottom: -60px;
+  background: radial-gradient(circle, rgba(16, 185, 129, 0.18) 0%, rgba(16, 185, 129, 0) 70%);
+  animation: ambientFloat 10s ease-in-out infinite alternate-reverse;
+}
+
+.splash-grid-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: 
+    linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+  background-size: 32px 32px;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.6;
 }
 
 .splash-content {
+  position: relative;
+  z-index: 2;
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
-  max-width: 440px;
+  max-width: 480px;
   padding: 30px;
 }
 
-.splash-logo-wrapper {
+/* ==========================================================================
+   ADVANCED MULTI-RING ORBIT LOGO ANIMATION
+   ========================================================================== */
+.splash-logo-container {
   position: relative;
-  width: 90px;
-  height: 90px;
+  width: 130px;
+  height: 130px;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 22px;
+  margin-bottom: 24px;
 }
 
-.splash-glow {
+.splash-pulse-halo {
   position: absolute;
   width: 100%;
   height: 100%;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(217, 119, 6, 0.45) 0%, rgba(217, 119, 6, 0) 70%);
-  animation: splashPulse 2.4s ease-in-out infinite alternate;
+  background: radial-gradient(circle, rgba(251, 191, 36, 0.25) 0%, rgba(217, 119, 6, 0.05) 60%, transparent 80%);
+  animation: splashHaloPulse 2.4s ease-in-out infinite alternate;
 }
 
-.splash-hex-ring {
+.splash-orbit-outer {
   position: absolute;
-  width: 86px;
-  height: 86px;
-  border-radius: 24px;
-  border: 2px dashed rgba(251, 191, 36, 0.6);
-  animation: splashSpin 9s linear infinite;
-  box-shadow: 0 0 25px rgba(217, 119, 6, 0.3);
+  width: 124px;
+  height: 124px;
+  border-radius: 50%;
+  border: 1.5px dashed rgba(251, 191, 36, 0.45);
+  animation: splashSpinClockwise 12s linear infinite;
+  box-shadow: 0 0 20px rgba(217, 119, 6, 0.2);
+}
+
+.splash-orbit-mid {
+  position: absolute;
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(217, 119, 6, 0.3);
+  animation: splashSpinCounter 7s linear infinite;
+}
+
+.splash-node {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #fbbf24;
+  box-shadow: 0 0 10px #fbbf24, 0 0 16px #d97706;
+}
+
+.splash-node.node-1 {
+  top: -4px;
+  left: calc(50% - 4px);
+}
+
+.splash-node.node-2 {
+  bottom: 8px;
+  left: 6px;
+}
+
+.splash-node.node-3 {
+  bottom: 8px;
+  right: 6px;
+}
+
+.splash-orbit-inner {
+  position: absolute;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  border: 1.5px dotted rgba(52, 211, 153, 0.6);
+  animation: splashSpinClockwise 5s linear infinite;
+}
+
+.splash-core-shield {
+  position: relative;
+  width: 58px;
+  height: 58px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3;
+  animation: splashCoreBreathe 2.2s ease-in-out infinite alternate;
 }
 
 .splash-emblem {
-  font-size: 52px;
+  font-size: 54px;
   color: #fbbf24;
-  text-shadow: 0 0 24px rgba(251, 191, 36, 0.8), 0 0 45px rgba(217, 119, 6, 0.5);
-  animation: splashBreathe 2.4s ease-in-out infinite alternate;
-  z-index: 2;
+  text-shadow: 0 0 25px rgba(251, 191, 36, 0.9), 0 0 50px rgba(217, 119, 6, 0.6);
+  transition: all 0.3s;
 }
 
-@keyframes splashSpin {
+.splash-core-symbol {
+  position: absolute;
+  font-size: 19px;
+  color: #ffffff;
+  text-shadow: 0 0 12px #fbbf24;
+  animation: symbolFloat 1.8s ease-in-out infinite alternate;
+}
+
+@keyframes splashSpinClockwise {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
 
-@keyframes splashPulse {
-  0% { transform: scale(0.85); opacity: 0.4; }
-  100% { transform: scale(1.35); opacity: 0.9; }
+@keyframes splashSpinCounter {
+  0% { transform: rotate(360deg); }
+  100% { transform: rotate(0deg); }
 }
 
-@keyframes splashBreathe {
-  0% { transform: scale(0.95); filter: drop-shadow(0 0 8px #d97706); }
-  100% { transform: scale(1.08); filter: drop-shadow(0 0 25px #fbbf24); }
+@keyframes splashHaloPulse {
+  0% { transform: scale(0.9); opacity: 0.5; }
+  100% { transform: scale(1.25); opacity: 0.95; }
+}
+
+@keyframes splashCoreBreathe {
+  0% { transform: scale(0.96); filter: drop-shadow(0 0 10px #d97706); }
+  100% { transform: scale(1.08); filter: drop-shadow(0 0 30px #fbbf24); }
+}
+
+@keyframes symbolFloat {
+  0% { transform: translateY(-1px) scale(0.95); opacity: 0.85; }
+  100% { transform: translateY(1px) scale(1.1); opacity: 1; }
+}
+
+@keyframes ambientFloat {
+  0% { transform: translate(0, 0) scale(1); }
+  100% { transform: translate(25px, 20px) scale(1.15); }
+}
+
+/* ==========================================================================
+   SPLASH TITLES & STATUS BOX
+   ========================================================================== */
+.splash-title-wrapper {
+  margin-bottom: 12px;
 }
 
 .splash-title {
   font-family: 'Outfit', sans-serif;
-  font-size: 32px;
+  font-size: 34px;
   font-weight: 800;
-  letter-spacing: 3px;
-  color: #ffffff;
-  margin: 0 0 10px 0;
-  text-shadow: 0 4px 18px rgba(0, 0, 0, 0.8);
+  letter-spacing: 4px;
+  background: linear-gradient(135deg, #ffffff 0%, #fef3c7 40%, #fbbf24 75%, #d97706 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin: 0;
+  filter: drop-shadow(0 2px 14px rgba(217, 119, 6, 0.4));
+  animation: titleGlow 3s ease-in-out infinite alternate;
+}
+
+@keyframes titleGlow {
+  0% { filter: drop-shadow(0 2px 10px rgba(217, 119, 6, 0.3)); }
+  100% { filter: drop-shadow(0 2px 25px rgba(251, 191, 36, 0.7)); }
+}
+
+.splash-badge-online {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  color: #34d399;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  padding: 3px 10px;
+  border-radius: 12px;
+  margin-top: 6px;
+}
+
+.online-indicator-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #34d399;
+  box-shadow: 0 0 8px #34d399;
+  animation: dotBlink 1.4s ease-in-out infinite alternate;
+}
+
+@keyframes dotBlink {
+  0% { opacity: 0.4; }
+  100% { opacity: 1; }
+}
+
+.splash-status-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  margin: 10px 0 16px 0;
+  min-height: 48px;
+}
+
+.splash-step-pill {
+  font-family: 'Fira Code', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  color: #fbbf24;
+  background: rgba(217, 119, 6, 0.16);
+  border: 1px solid rgba(217, 119, 6, 0.35);
+  padding: 2px 10px;
+  border-radius: 10px;
+  letter-spacing: 0.5px;
 }
 
 .splash-status-text {
   font-size: 13.5px;
-  color: #9ca3af;
-  margin: 0 0 18px 0;
-  font-weight: 400;
-  min-height: 20px;
-  transition: color 0.3s;
+  color: #d1d5db;
+  margin: 0;
+  font-weight: 500;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
+  transition: opacity 0.25s, transform 0.25s;
 }
 
+/* ==========================================================================
+   SPLASH PROGRESS TRACK & SHIMMER
+   ========================================================================== */
 .splash-progress-track {
-  width: 280px;
-  height: 5px;
-  background-color: #232220;
-  border-radius: 4px;
+  width: 330px;
+  height: 6px;
+  background-color: #1f1e1c;
+  border: 1px solid #33312e;
+  border-radius: 6px;
   overflow: hidden;
-  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.6);
+  box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.8);
+  position: relative;
 }
 
 .splash-progress-bar {
   width: 0%;
   height: 100%;
-  background: linear-gradient(90deg, #d97706, #fbbf24, #10b981);
-  border-radius: 4px;
-  box-shadow: 0 0 12px rgba(251, 191, 36, 0.6);
+  background: linear-gradient(90deg, #d97706, #fbbf24 60%, #10b981 100%);
+  border-radius: 6px;
+  box-shadow: 0 0 15px rgba(251, 191, 36, 0.7);
   transition: width 0.15s ease-out;
+  position: relative;
+  overflow: hidden;
+}
+
+.splash-shimmer-sweep {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.6) 50%, transparent 100%);
+  animation: shimmerGlide 1.6s infinite linear;
+}
+
+@keyframes shimmerGlide {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(200%); }
+}
+
+.splash-metrics-row {
+  width: 330px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 8px;
+}
+
+.splash-metric-speed {
+  font-family: 'Fira Code', monospace;
+  font-size: 11.5px;
+  color: #8b8883;
 }
 
 .splash-percentage {
   font-family: 'Fira Code', monospace;
-  font-size: 13px;
-  font-weight: 600;
+  font-size: 14px;
+  font-weight: 700;
   color: #fbbf24;
-  margin-top: 10px;
-  letter-spacing: 0.5px;
+  text-shadow: 0 0 10px rgba(251, 191, 36, 0.5);
+}
+
+.splash-terminal-preview {
+  margin-top: 14px;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid #282624;
+  border-radius: 6px;
+  padding: 5px 12px;
+  width: 330px;
+  text-align: left;
+}
+
+.log-line-item {
+  font-family: 'Fira Code', monospace;
+  font-size: 11px;
+  color: #9ca3af;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
 }
 
 .splash-footer-note {
-  margin-top: 32px;
+  margin-top: 24px;
   font-size: 11px;
-  color: #555452;
+  color: #63615e;
   letter-spacing: 0.5px;
 }
 
@@ -2019,4 +2260,447 @@ input:checked + .slider:before { transform: translateX(20px); }
   line-height: 1.55;
   color: #9ca3af;
   margin: 0;
+}
+
+/* ==========================================================================
+   SUPPORT & TICKET CENTER (TAMAMEN YENİLENMİŞ DESTEK MERKEZİ)
+   ========================================================================== */
+.ticket-modern-window {
+  max-width: 660px;
+  background-color: #161514;
+  border: 1px solid #363431;
+  border-radius: 16px;
+  box-shadow: 0 24px 75px rgba(0, 0, 0, 0.85), 0 0 40px rgba(217, 119, 6, 0.12);
+  overflow: hidden;
+}
+
+.ticket-modern-header {
+  padding: 20px 24px;
+  background: linear-gradient(90deg, #1b1a18 0%, #24221e 100%);
+  border-bottom: 1px solid #2f2d2a;
+}
+
+.ticket-header-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.ticket-header-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(217, 119, 6, 0.25), rgba(245, 158, 11, 0.1));
+  border: 1px solid rgba(217, 119, 6, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  flex-shrink: 0;
+}
+
+.ticket-modern-header h2 {
+  font-size: 17px;
+  font-weight: 700;
+  color: #fff;
+  margin: 0;
+}
+
+.ticket-header-sub {
+  font-size: 12px;
+  color: #9ca3af;
+  margin: 3px 0 0 0;
+}
+
+/* Tab Navigation */
+.ticket-tabs-bar {
+  display: flex;
+  background-color: #121110;
+  border-bottom: 1px solid #282624;
+  padding: 0 20px;
+  gap: 8px;
+}
+
+.ticket-tab-btn {
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: #8b8883;
+  padding: 12px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ticket-tab-btn:hover {
+  color: #e5e7eb;
+}
+
+.ticket-tab-btn.active {
+  color: #fbbf24;
+  border-bottom-color: #d97706;
+}
+
+.ticket-modern-body {
+  padding: 22px 24px;
+  max-height: 72vh;
+  overflow-y: auto;
+}
+
+.ticket-section-title {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: #fbbf24;
+  margin-bottom: 10px;
+}
+
+/* Category Cards Grid */
+.ticket-categories-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.ticket-cat-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #1c1b18;
+  border: 1px solid #2e2c29;
+  border-radius: 10px;
+  padding: 11px 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.ticket-cat-card:hover {
+  border-color: #4f4b46;
+  background: #22201d;
+  transform: translateY(-1px);
+}
+
+.ticket-cat-card.active {
+  border-color: #d97706;
+  background: rgba(217, 119, 6, 0.12);
+  box-shadow: 0 0 16px rgba(217, 119, 6, 0.15);
+}
+
+.cat-card-icon {
+  font-size: 20px;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  background: #24221f;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.cat-card-body {
+  flex: 1;
+}
+
+.cat-card-body strong {
+  display: block;
+  font-size: 13px;
+  color: #f3f4f6;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.cat-card-body p {
+  font-size: 11px;
+  color: #8e8b85;
+  margin: 0;
+  line-height: 1.35;
+}
+
+.cat-check {
+  font-size: 12px;
+  font-weight: 800;
+  color: #d97706;
+  opacity: 0;
+  transform: scale(0.6);
+  transition: all 0.2s ease;
+}
+
+.ticket-cat-card.active .cat-check {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Package Box (Dynamic) */
+.ticket-package-box {
+  background: #141312;
+  border: 1px solid #2d2b28;
+  border-radius: 10px;
+  padding: 14px;
+  margin-bottom: 16px;
+}
+
+.pkg-box-header {
+  margin-bottom: 10px;
+}
+
+.pkg-box-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: #fbbf24;
+}
+
+.ticket-row-2col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+/* Redesigned Email Card */
+.ticket-email-card {
+  background: linear-gradient(135deg, #191816, #201e1b);
+  border: 1px solid #35332f;
+  border-radius: 12px;
+  padding: 16px 18px;
+  margin-bottom: 16px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
+.email-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.email-card-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #fff;
+}
+
+.email-icon {
+  font-size: 16px;
+}
+
+.email-verified-badge {
+  font-size: 11px;
+  font-weight: 600;
+  color: #34d399;
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+.email-input-wrapper {
+  margin-bottom: 6px;
+}
+
+.email-styled-input {
+  font-size: 13.5px;
+  padding: 11px 14px;
+  background: #121110 !important;
+  border-color: #3d3b37 !important;
+  color: #fff !important;
+}
+
+.email-styled-input:focus {
+  border-color: #d97706 !important;
+  box-shadow: 0 0 12px rgba(217, 119, 6, 0.3) !important;
+}
+
+.email-help-hint {
+  display: block;
+  font-size: 11px;
+  color: #807d78;
+  margin-bottom: 12px;
+}
+
+/* Priority Selector */
+.ticket-priority-selector {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding-top: 10px;
+  border-top: 1px solid #2b2926;
+}
+
+.priority-label {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #a8a29e;
+}
+
+.priority-options {
+  display: flex;
+  gap: 8px;
+}
+
+.priority-chip {
+  background: #171615;
+  border: 1px solid #33312e;
+  color: #b5b1aa;
+  padding: 5px 12px;
+  border-radius: 16px;
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.priority-chip:hover {
+  border-color: #4f4b46;
+  color: #fff;
+}
+
+.priority-chip.active {
+  background: rgba(217, 119, 6, 0.16);
+  border-color: #d97706;
+  color: #fbbf24;
+}
+
+.p-dot {
+  font-size: 9px;
+}
+
+.dot-green { color: #10b981; }
+.dot-yellow { color: #f59e0b; }
+.dot-red { color: #ef4444; }
+
+/* My Tickets History View */
+.history-view-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #292825;
+}
+
+.history-view-header h3 {
+  font-size: 15px;
+  font-weight: 700;
+  color: #fff;
+  margin: 0;
+}
+
+.history-count-badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 10px;
+  border-radius: 12px;
+  background: rgba(217, 119, 6, 0.15);
+  color: #fbbf24;
+  border: 1px solid rgba(217, 119, 6, 0.3);
+}
+
+.my-tickets-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ticket-item-card {
+  background: #1a1917;
+  border: 1px solid #2d2b28;
+  border-radius: 10px;
+  padding: 14px 16px;
+  transition: border-color 0.2s ease;
+}
+
+.ticket-item-card:hover {
+  border-color: #42403c;
+}
+
+.ticket-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.ticket-code-tag {
+  font-family: 'Fira Code', monospace;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #fbbf24;
+  background: rgba(217, 119, 6, 0.15);
+  padding: 2px 8px;
+  border-radius: 6px;
+}
+
+.ticket-badges-group {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.ticket-status-pill {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+.status-pending {
+  background: rgba(245, 158, 11, 0.12);
+  color: #f59e0b;
+  border: 1px solid rgba(245, 158, 11, 0.25);
+}
+
+.status-approved {
+  background: rgba(16, 185, 129, 0.12);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.25);
+}
+
+.ticket-subject-text {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #f3f4f6;
+  margin: 0 0 6px 0;
+}
+
+.ticket-notes-snippet {
+  font-size: 12px;
+  color: #9ca3af;
+  line-height: 1.5;
+  margin: 0 0 8px 0;
+  white-space: pre-wrap;
+}
+
+.ticket-meta-footer {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: #716e69;
+  border-top: 1px solid #232220;
+  padding-top: 6px;
+}
+
+.empty-tickets-notice {
+  text-align: center;
+  padding: 40px 20px;
+  color: #8b8883;
+}
+
+.empty-tickets-notice .empty-icon {
+  font-size: 38px;
+  margin-bottom: 10px;
+  display: block;
 }

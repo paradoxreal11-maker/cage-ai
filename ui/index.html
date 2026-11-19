@@ -10,24 +10,67 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@500;600;700;800&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
 </head>
 <body>
-  <!-- SPLASH / LOADING SCREEN (AÇILIŞ YÜKLEME EKRANI - HER AÇILIŞTA 10-15 SN ÇALIŞIR) -->
+  <!-- SPLASH / LOADING SCREEN (AÇILIŞ YÜKLEME EKRANI - HER AÇILIŞTA 10-15 SN ÇALIŞIR - GELİŞMİŞ SİBER ANİMASYONLU) -->
   <div class="splash-screen" id="splashScreen">
+    <!-- Ambient Cyber Glows -->
+    <div class="splash-ambient-glow glow-top"></div>
+    <div class="splash-ambient-glow glow-bottom"></div>
+    
+    <!-- Background Particle Grid Lines -->
+    <div class="splash-grid-bg"></div>
+
     <div class="splash-content">
-      <div class="splash-logo-wrapper">
-        <div class="splash-glow"></div>
-        <div class="splash-hex-ring"></div>
-        <span class="splash-emblem">⬡</span>
+      <!-- High-tech Multi-Ring Orbit Logo -->
+      <div class="splash-logo-container">
+        <div class="splash-pulse-halo"></div>
+        <div class="splash-orbit-outer"></div>
+        <div class="splash-orbit-mid">
+          <div class="splash-node node-1"></div>
+          <div class="splash-node node-2"></div>
+          <div class="splash-node node-3"></div>
+        </div>
+        <div class="splash-orbit-inner"></div>
+        <div class="splash-core-shield">
+          <span class="splash-emblem">⬡</span>
+          <span class="splash-core-symbol">⚡</span>
+        </div>
       </div>
-      <h1 class="splash-title">CAGE AI</h1>
-      <p class="splash-status-text" id="splashStatusText">Ortam oluşturuluyor, lütfen bekleyiniz...</p>
+
+      <!-- App Title with Shimmer -->
+      <div class="splash-title-wrapper">
+        <h1 class="splash-title">CAGE AI</h1>
+        <div class="splash-badge-online">
+          <span class="online-indicator-dot"></span>
+          <span>CODIUM CORE 5.1 ENGINE</span>
+        </div>
+      </div>
+
+      <!-- Live Step Counter & Dynamic Status Message -->
+      <div class="splash-status-box">
+        <div class="splash-step-pill" id="splashStepPill">ADIM 1 / 6</div>
+        <p class="splash-status-text" id="splashStatusText">Ortam hazırlanıyor, sistem çekirdeği başlatılıyor...</p>
+      </div>
       
+      <!-- Progress Track with Neon Shimmer Bar -->
       <div class="splash-progress-track">
-        <div class="splash-progress-bar" id="splashProgressBar"></div>
+        <div class="splash-progress-bar" id="splashProgressBar">
+          <div class="splash-shimmer-sweep"></div>
+        </div>
       </div>
-      <div class="splash-percentage" id="splashPercentage">0%</div>
+
+      <!-- Percentage Counter & Metrics -->
+      <div class="splash-metrics-row">
+        <span class="splash-metric-speed" id="splashSpeedLabel">⚡ 480 MB/s • Çekirdek Aktif</span>
+        <span class="splash-percentage" id="splashPercentage">0%</span>
+      </div>
+
+      <!-- Terminal Diagnostics Log Preview -->
+      <div class="splash-terminal-preview" id="splashTerminalLog">
+        <span class="log-line-item">• [SİSTEM] Windows Yönetici Yetkileri Doğrulandı</span>
+      </div>
 
       <div class="splash-footer-note">
-        <span>v1.0.1 • Gelişmiş Yapay Zeka &amp; Codium Ajanı</span>
+        <span>CAGE AI v1.0.1 • Otonom Geliştirici Kodlama Platformu</span>
       </div>
     </div>
   </div>
@@ -511,45 +554,189 @@ function welcomeToCageCodium() {
     </div>
   </div>
 
-  <!-- 2. Support / Ticket Modal -->
+  <!-- 2. Support / Ticket Modal (TAMAMEN YENİLENMİŞ KATEGORİLİ & MODERN DESTEK MERKEZİ) -->
   <div class="modal-backdrop hidden" id="ticketModal">
-    <div class="modal-window">
-      <div class="modal-header">
-        <h2 id="ticketModalTitle">Destek &amp; Satın Alım Talebi Oluştur</h2>
+    <div class="modal-window ticket-modern-window">
+      <div class="modal-header ticket-modern-header">
+        <div class="ticket-header-left">
+          <div class="ticket-header-icon">🎧</div>
+          <div>
+            <h2 id="ticketModalTitle">CAGE AI Destek &amp; Çözüm Merkezi</h2>
+            <p class="ticket-header-sub">Satın alım onayı, Codium ajan kotaları ve teknik sorunlar için 7/24 yanınızdayız.</p>
+          </div>
+        </div>
         <button class="modal-close" id="btnCloseTicket">✕</button>
       </div>
-      <div class="modal-body">
-        <div class="ticket-form">
-          <div class="form-group">
-            <label>Seçilen Paket:</label>
-            <input type="text" id="txtTicketPackage" readonly class="form-control" />
+
+      <!-- Ticket Navigation Tabs -->
+      <div class="ticket-tabs-bar">
+        <button class="ticket-tab-btn active" id="tabCreateTicket">
+          <span>✍️ Yeni Destek Talebi Oluştur</span>
+        </button>
+        <button class="ticket-tab-btn" id="tabMyTickets">
+          <span>📋 Taleplerim &amp; Takip (<span id="lblMyTicketsCount">0</span>)</span>
+        </button>
+      </div>
+
+      <div class="modal-body ticket-modern-body">
+        <!-- TAB 1: YENİ TALEP OLUŞTURMA -->
+        <div id="ticketCreateView" class="ticket-view-pane">
+          
+          <!-- Kategoriler (Ayrı Ayrı Kartlar Halinde) -->
+          <div class="ticket-section-title">
+            <span>1. Destek Kategorisi Seçiniz:</span>
           </div>
-          <div class="form-group">
-            <label>Fiyat &amp; Faturalandırma:</label>
-            <input type="text" id="txtTicketPrice" readonly class="form-control" />
+
+          <div class="ticket-categories-grid" id="ticketCategoriesGrid">
+            <div class="ticket-cat-card active" data-cat="Satın Alım &amp; Ödeme">
+              <div class="cat-card-icon">💳</div>
+              <div class="cat-card-body">
+                <strong>Satın Alım &amp; Paket</strong>
+                <p>Plan yükseltme, havale/kripto ödeme onayı, lisans</p>
+              </div>
+              <span class="cat-check">✓</span>
+            </div>
+
+            <div class="ticket-cat-card" data-cat="Codium Kodlama Ajanı">
+              <div class="cat-card-icon">⚡</div>
+              <div class="cat-card-body">
+                <strong>Codium Ajanı &amp; Kota</strong>
+                <p>Ajan süresi, çalışma alanı, otonom düzenleme desteği</p>
+              </div>
+              <span class="cat-check">✓</span>
+            </div>
+
+            <div class="ticket-cat-card" data-cat="Teknik Destek &amp; Hata">
+              <div class="cat-card-icon">🐞</div>
+              <div class="cat-card-body">
+                <strong>Teknik Destek &amp; Hata</strong>
+                <p>Windows izinleri, dosya erişimi, servis kesintileri</p>
+              </div>
+              <span class="cat-check">✓</span>
+            </div>
+
+            <div class="ticket-cat-card" data-cat="Hesap &amp; Güvenlik">
+              <div class="cat-card-icon">🔒</div>
+              <div class="cat-card-body">
+                <strong>Hesap &amp; Giriş Güvenliği</strong>
+                <p>Şifre yenileme, e-posta doğrulama, hesap sorunları</p>
+              </div>
+              <span class="cat-check">✓</span>
+            </div>
+
+            <div class="ticket-cat-card" data-cat="Öneri &amp; Özellik Talebi">
+              <div class="cat-card-icon">💡</div>
+              <div class="cat-card-body">
+                <strong>Öneri &amp; Yeni Özellik</strong>
+                <p>Arayüz tavsiyesi, yeni model istekleri, geliştirme fikirleri</p>
+              </div>
+              <span class="cat-check">✓</span>
+            </div>
           </div>
-          <div class="form-group">
-            <label>Ödeme Yöntemi Tercihi:</label>
-            <select id="selPaymentMethod" class="form-control">
-              <option value="Kripto (USDT / BTC / ETH)">Kripto (USDT / BTC / ETH)</option>
-              <option value="Havale / EFT / Fast">Banka Havale / EFT / Fast</option>
-              <option value="Kredi Kartı / Online Ödeme">Kredi Kartı / Güvenli Online Link</option>
-              <option value="Diğer / Kurumsal Fatura">Diğer / Kurumsal Fatura Talebi</option>
-            </select>
+          <input type="hidden" id="txtSelectedCategory" value="Satın Alım &amp; Ödeme" />
+
+          <!-- Dinamik Paket / Ödeme Bilgisi (Yalnızca Satın Alım Seçildiğinde Görünür) -->
+          <div id="ticketPackageBox" class="ticket-package-box">
+            <div class="pkg-box-header">
+              <span class="pkg-box-title">📦 Seçilen Paket ve Ödeme Tercihi</span>
+            </div>
+            <div class="ticket-row-2col">
+              <div class="form-group">
+                <label>Seçili Paket:</label>
+                <input type="text" id="txtTicketPackage" readonly class="form-control" placeholder="Genel Destek" />
+              </div>
+              <div class="form-group">
+                <label>Fiyat &amp; Faturalandırma:</label>
+                <input type="text" id="txtTicketPrice" readonly class="form-control" placeholder="Standart" />
+              </div>
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+              <label>Ödeme Yöntemi Tercihi:</label>
+              <select id="selPaymentMethod" class="form-control">
+                <option value="Kripto (USDT TRC20 / BTC / ETH)">Kripto (USDT TRC20 / BTC / ETH)</option>
+                <option value="Banka Havale / EFT / Fast">Banka Havale / EFT / Fast (Anında Onay)</option>
+                <option value="Kredi Kartı / Güvenli Online Link">Kredi Kartı / Güvenli 3D Secure Online Link</option>
+                <option value="Kurumsal Fatura / Şirket Hesabı">Kurumsal Fatura / Şirket Hesabı</option>
+              </select>
+            </div>
           </div>
-          <div class="form-group">
-            <label>İletişim E-Postanız:</label>
-            <input type="email" id="txtTicketEmail" class="form-control" placeholder="adiniz@ornek.com" />
+
+          <!-- 2. İletişim E-Postası (Yenilenmiş & Daha Şık Tasarım) -->
+          <div class="ticket-section-title" style="margin-top: 18px;">
+            <span>2. İletişim &amp; Yanıt Bilgileri:</span>
           </div>
-          <div class="form-group">
-            <label>Ek Notlar / Açıklama:</label>
-            <textarea id="txtTicketNotes" class="form-control" rows="3" placeholder="Ödeme tercihi veya sorularınızı buraya ekleyebilirsiniz..."></textarea>
+
+          <div class="ticket-email-card">
+            <div class="email-card-header">
+              <div class="email-card-title">
+                <span class="email-icon">✉️</span>
+                <strong>Yetkili İletişim E-Postanız</strong>
+              </div>
+              <span class="email-verified-badge">✓ Yanıtlar Bu Adrese İletilir</span>
+            </div>
+            <div class="email-input-wrapper">
+              <input type="email" id="txtTicketEmail" class="form-control email-styled-input" placeholder="adiniz@ornek.com veya iletisim@sirket.com" />
+            </div>
+            <small class="email-help-hint">
+              Destek ekibimizin çözüm mesajı ve talep durumu doğrudan bu adrese ve uygulama bildirimlerinize gönderilecektir.
+            </small>
+
+            <!-- Öncelik Seçimi -->
+            <div class="ticket-priority-selector">
+              <span class="priority-label">Talep Önceliği:</span>
+              <div class="priority-options">
+                <button type="button" class="priority-chip active" data-priority="Normal">
+                  <span class="p-dot dot-green">●</span> Normal (2-4 Saat)
+                </button>
+                <button type="button" class="priority-chip" data-priority="Yüksek">
+                  <span class="p-dot dot-yellow">●</span> Yüksek (1 Saat)
+                </button>
+                <button type="button" class="priority-chip" data-priority="Acil / VIP">
+                  <span class="p-dot dot-red">●</span> 🔥 Acil / VIP
+                </button>
+              </div>
+              <input type="hidden" id="txtSelectedPriority" value="Normal" />
+            </div>
           </div>
+
+          <!-- 3. Talep Detayı -->
+          <div class="ticket-section-title" style="margin-top: 18px;">
+            <span>3. Talep Detayları:</span>
+          </div>
+
+          <div class="form-group">
+            <label>Konu Başlığı:</label>
+            <input type="text" id="txtTicketSubject" class="form-control" placeholder="Örn: CAGE AI Codium ajan süresi / Havale ödeme dekontu hk." />
+          </div>
+
+          <div class="form-group">
+            <label>Talebinizin Açıklaması:</label>
+            <textarea id="txtTicketNotes" class="form-control" rows="3" placeholder="Lütfen karşılaştığınız sorunu, ödeme bilgilerinizi veya önerinizi detaylıca açıklayınız..."></textarea>
+          </div>
+
           <div class="ticket-info-alert">
-            ℹ️ Talebiniz oluşturulduğunda destek ekibimiz tarafından incelenir ve onaylandığında paketiniz doğrudan hesabınıza tanımlanır.
+            <span class="alert-ico">🛡️</span>
+            <div>
+              <strong>7/24 Kesintisiz Güvence:</strong> Talebiniz oluşturulduğunda sistem mühendislerimiz tarafından incelenir ve hızlıca geri dönüş sağlanır.
+            </div>
           </div>
-          <button class="btn btn-primary btn-block" id="btnSubmitTicket">Talebi Gönder</button>
+
+          <button class="btn btn-primary btn-block" id="btnSubmitTicket" style="padding: 13px; font-size: 15px; font-weight: 700; margin-top: 14px;">
+            🚀 Destek Talebini Oluştur ve Gönder
+          </button>
         </div>
+
+        <!-- TAB 2: GEÇMİŞ TALEPLERİM & DURUM TAKİBİ -->
+        <div id="ticketHistoryView" class="ticket-view-pane hidden">
+          <div class="history-view-header">
+            <h3>Geçmiş Destek Talepleriniz</h3>
+            <span class="history-count-badge" id="lblHistoryTotalBadge">0 Talep</span>
+          </div>
+          <div class="my-tickets-list" id="myTicketsList">
+            <!-- Dynamic Ticket Cards -->
+          </div>
+        </div>
+
       </div>
     </div>
   </div>
@@ -813,10 +1000,6 @@ function welcomeToCageCodium() {
               <p>CAGE Codium Free günlük 10 dakika erişim imkanı tanır; süre dolduğunda sayaç mekanizmasıyla adil kullanım kalkanı devreye girer. Yükseltme paketleri (Premium &amp; Ultra) ek ajan çalışma süresi ve öncelikli destek imkanı sağlar.</p>
             </div>
           </div>
-        </div>
-
-        <div style="margin-top: 20px; text-align: right;">
-          <button class="btn btn-primary" id="btnAcknowledgeLegal" style="padding: 10px 24px;">Okudum ve Onaylıyorum</button>
         </div>
       </div>
     </div>

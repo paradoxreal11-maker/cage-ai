@@ -83,7 +83,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Hukuk & Şeffaflık Modalı Elemanları
   const aboutLegalModal = document.getElementById('aboutLegalModal');
   const btnCloseAboutLegal = document.getElementById('btnCloseAboutLegal');
-  const btnAcknowledgeLegal = document.getElementById('btnAcknowledgeLegal');
   const txtStaticUsername = document.getElementById('txtStaticUsername');
   const txtUpdateNickname = document.getElementById('txtUpdateNickname');
   const btnSaveNickname = document.getElementById('btnSaveNickname');
@@ -133,10 +132,22 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   const ticketModal = document.getElementById('ticketModal');
   const btnCloseTicket = document.getElementById('btnCloseTicket');
+  const tabCreateTicket = document.getElementById('tabCreateTicket');
+  const tabMyTickets = document.getElementById('tabMyTickets');
+  const ticketCreateView = document.getElementById('ticketCreateView');
+  const ticketHistoryView = document.getElementById('ticketHistoryView');
+  const lblMyTicketsCount = document.getElementById('lblMyTicketsCount');
+  const lblHistoryTotalBadge = document.getElementById('lblHistoryTotalBadge');
+  const myTicketsList = document.getElementById('myTicketsList');
+  const ticketCategoriesGrid = document.getElementById('ticketCategoriesGrid');
+  const txtSelectedCategory = document.getElementById('txtSelectedCategory');
+  const ticketPackageBox = document.getElementById('ticketPackageBox');
   const txtTicketPackage = document.getElementById('txtTicketPackage');
   const txtTicketPrice = document.getElementById('txtTicketPrice');
   const selPaymentMethod = document.getElementById('selPaymentMethod');
   const txtTicketEmail = document.getElementById('txtTicketEmail');
+  const txtSelectedPriority = document.getElementById('txtSelectedPriority');
+  const txtTicketSubject = document.getElementById('txtTicketSubject');
   const txtTicketNotes = document.getElementById('txtTicketNotes');
   const btnSubmitTicket = document.getElementById('btnSubmitTicket');
 
@@ -1044,6 +1055,116 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
 
+  // Render My Tickets List
+  function renderMyTickets() {
+    if (!myTicketsList) return;
+    const tickets = storeData?.tickets || [];
+    if (lblMyTicketsCount) lblMyTicketsCount.textContent = tickets.length;
+    if (lblHistoryTotalBadge) lblHistoryTotalBadge.textContent = tickets.length + ' Talep';
+
+    if (tickets.length === 0) {
+      myTicketsList.innerHTML = `
+        <div class="empty-tickets-notice">
+          <span class="empty-icon">📭</span>
+          <p style="font-size: 14px; color: #fff; margin-bottom: 6px; font-weight: 600;">Henüz Destek Talebiniz Bulunmuyor</p>
+          <p style="font-size: 12px; color: #888; margin-bottom: 16px;">Bir sorunuz, ödeme dekontunuz veya öneriniz olduğunda talep oluşturabilirsiniz.</p>
+          <button class="btn btn-secondary btn-sm" id="btnGoCreateTicket">✍️ Yeni Destek Talebi Aç</button>
+        </div>
+      `;
+      const btnGo = document.getElementById('btnGoCreateTicket');
+      if (btnGo) {
+        btnGo.addEventListener('click', () => {
+          if (tabCreateTicket) tabCreateTicket.click();
+        });
+      }
+      return;
+    }
+
+    myTicketsList.innerHTML = tickets.map(t => {
+      const code = t.ticketCode || ('TCK-' + (t.id ? t.id.slice(-4) : '0000'));
+      const cat = t.category || t.packageName || 'Destek';
+      const statusText = t.status === 'APPROVED' ? '✅ Çözümlendi / Onaylandı' : (t.status === 'REJECTED' ? '❌ Kapatıldı' : '⏳ İnceleniyor (Sırada)');
+      const statusClass = t.status === 'APPROVED' ? 'status-approved' : 'status-pending';
+      const dateStr = t.createdAt ? new Date(t.createdAt).toLocaleString('tr-TR', { dateStyle: 'short', timeStyle: 'short' }) : 'Bugün';
+      const priority = t.priority || 'Normal';
+      const subject = t.subject || t.packageName || 'Destek Talebi';
+      const notes = t.notes || 'Detay girilmedi.';
+
+      return `
+        <div class="ticket-item-card">
+          <div class="ticket-item-header">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span class="ticket-code-tag">${code}</span>
+              <span style="font-size: 12px; color: #d97706; font-weight: 600;">${escapeHtml(cat)}</span>
+            </div>
+            <div class="ticket-badges-group">
+              <span class="ticket-status-pill ${statusClass}">${statusText}</span>
+            </div>
+          </div>
+          <h4 class="ticket-subject-text">${escapeHtml(subject)}</h4>
+          <p class="ticket-notes-snippet">${escapeHtml(notes)}</p>
+          <div class="ticket-meta-footer">
+            <span>Öncelik: <strong style="color: #fbbf24;">${escapeHtml(priority)}</strong></span>
+            <span>Tarih: ${dateStr}</span>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function selectTicketCategory(catName) {
+    if (txtSelectedCategory) txtSelectedCategory.value = catName;
+    document.querySelectorAll('.ticket-cat-card').forEach(c => {
+      if (c.getAttribute('data-cat') === catName) {
+        c.classList.add('active');
+      } else {
+        c.classList.remove('active');
+      }
+    });
+
+    if (ticketPackageBox) {
+      if (catName.includes('Satın Alım') || catName.includes('Ödeme')) {
+        ticketPackageBox.style.display = 'block';
+      } else {
+        ticketPackageBox.style.display = 'none';
+      }
+    }
+  }
+
+  document.querySelectorAll('.ticket-cat-card').forEach(c => {
+    c.addEventListener('click', () => {
+      const cat = c.getAttribute('data-cat');
+      selectTicketCategory(cat);
+    });
+  });
+
+  document.querySelectorAll('.priority-chip').forEach(p => {
+    p.addEventListener('click', () => {
+      document.querySelectorAll('.priority-chip').forEach(x => x.classList.remove('active'));
+      p.classList.add('active');
+      if (txtSelectedPriority) txtSelectedPriority.value = p.getAttribute('data-priority');
+    });
+  });
+
+  if (tabCreateTicket) {
+    tabCreateTicket.addEventListener('click', () => {
+      tabCreateTicket.classList.add('active');
+      if (tabMyTickets) tabMyTickets.classList.remove('active');
+      if (ticketCreateView) ticketCreateView.classList.remove('hidden');
+      if (ticketHistoryView) ticketHistoryView.classList.add('hidden');
+    });
+  }
+
+  if (tabMyTickets) {
+    tabMyTickets.addEventListener('click', () => {
+      tabMyTickets.classList.add('active');
+      if (tabCreateTicket) tabCreateTicket.classList.remove('active');
+      if (ticketHistoryView) ticketHistoryView.classList.remove('hidden');
+      if (ticketCreateView) ticketCreateView.classList.add('hidden');
+      renderMyTickets();
+    });
+  }
+
   // Buy Buttons -> Open Ticket Modal
   document.querySelectorAll('.btn-buy').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -1053,43 +1174,90 @@ document.addEventListener('DOMContentLoaded', async () => {
       const basePrice = btn.getAttribute('data-price');
       const finalPrice = isYearlyBilling ? (basePrice * 0.75).toFixed(2) + ' USD / Ay (Yıllık %25 İndirimli)' : basePrice + ' USD / Ay';
 
-      txtTicketPackage.value = pkgName;
-      txtTicketPackage.setAttribute('data-pkg-id', pkgId);
-      txtTicketPrice.value = finalPrice;
-      txtTicketEmail.value = storeData?.currentUser?.email || '';
+      selectTicketCategory('Satın Alım & Ödeme');
+      if (txtTicketPackage) {
+        txtTicketPackage.value = pkgName;
+        txtTicketPackage.setAttribute('data-pkg-id', pkgId);
+      }
+      if (txtTicketPrice) txtTicketPrice.value = finalPrice;
+      if (txtTicketSubject) txtTicketSubject.value = pkgName + ' Satın Alım Onayı';
+      
+      const cUser = storeData?.currentUser;
+      if (txtTicketEmail) {
+        txtTicketEmail.value = (cUser && cUser.email && !cUser.email.endsWith('@cageai.internal')) ? cUser.email : '';
+      }
 
+      if (tabCreateTicket) tabCreateTicket.click();
       ticketModal.classList.remove('hidden');
+      renderMyTickets();
     });
   });
 
   // Ticket Modal Handlers
   navTickets.addEventListener('click', () => {
-    txtTicketPackage.value = 'Genel Destek / Satın Alım';
-    txtTicketPackage.setAttribute('data-pkg-id', 'support_general');
-    txtTicketPrice.value = 'Standart';
-    txtTicketEmail.value = storeData?.currentUser?.email || '';
+    selectTicketCategory('Satın Alım & Ödeme');
+    if (txtTicketPackage) {
+      txtTicketPackage.value = 'Genel Destek / Danışmanlık';
+      txtTicketPackage.setAttribute('data-pkg-id', 'support_general');
+    }
+    if (txtTicketPrice) txtTicketPrice.value = 'Ücretsiz Destek';
+    if (txtTicketSubject) txtTicketSubject.value = '';
+    if (txtTicketNotes) txtTicketNotes.value = '';
+    
+    const cUser = storeData?.currentUser;
+    if (txtTicketEmail) {
+      txtTicketEmail.value = (cUser && cUser.email && !cUser.email.endsWith('@cageai.internal')) ? cUser.email : '';
+    }
+
+    if (tabCreateTicket) tabCreateTicket.click();
     ticketModal.classList.remove('hidden');
+    renderMyTickets();
   });
 
   btnCloseTicket.addEventListener('click', () => ticketModal.classList.add('hidden'));
 
   btnSubmitTicket.addEventListener('click', async () => {
     if (!window.cageAI) return;
+    const cat = txtSelectedCategory ? txtSelectedCategory.value : 'Genel Destek';
+    const email = txtTicketEmail ? txtTicketEmail.value.trim() : '';
+    const subject = txtTicketSubject ? txtTicketSubject.value.trim() : (cat + ' Talebi');
+    const notes = txtTicketNotes ? txtTicketNotes.value.trim() : '';
+    const priority = txtSelectedPriority ? txtSelectedPriority.value : 'Normal';
+
+    if (!email || !email.includes('@')) {
+      showToast('Lütfen geçerli bir yanıt e-posta adresi giriniz.', true);
+      if (txtTicketEmail) txtTicketEmail.focus();
+      return;
+    }
+
+    if (!notes && !subject) {
+      showToast('Lütfen talebinizle ilgili bir konu veya açıklama giriniz.', true);
+      if (txtTicketNotes) txtTicketNotes.focus();
+      return;
+    }
+
     const ticketData = {
-      packageId: txtTicketPackage.getAttribute('data-pkg-id'),
-      packageName: txtTicketPackage.value,
-      price: txtTicketPrice.value,
-      paymentMethod: selPaymentMethod.value,
-      email: txtTicketEmail.value,
-      notes: txtTicketNotes.value,
+      category: cat,
+      subject: subject || cat,
+      packageId: txtTicketPackage ? txtTicketPackage.getAttribute('data-pkg-id') : null,
+      packageName: txtTicketPackage ? txtTicketPackage.value : null,
+      price: txtTicketPrice ? txtTicketPrice.value : 'Standart',
+      paymentMethod: selPaymentMethod ? selPaymentMethod.value : 'Banka Havale / EFT / Fast',
+      email: email,
+      priority: priority,
+      notes: notes,
       billingCycle: isYearlyBilling ? 'yearly' : 'monthly'
     };
 
     const res = await window.cageAI.createTicket(ticketData);
     if (res.success) {
-      showToast('Talebiniz alındı! Yönetici onayladığında paketiniz tanımlanacaktır.');
-      ticketModal.classList.add('hidden');
-      focusActiveInput();
+      showToast('Destek talebiniz başarıyla iletildi! Taleplerim sekmesinden takip edebilirsiniz.');
+      await refreshStoreData();
+      if (txtTicketNotes) txtTicketNotes.value = '';
+      if (txtTicketSubject) txtTicketSubject.value = '';
+      if (tabMyTickets) tabMyTickets.click();
+    } else {
+      showToast('Talep iletilemedi: ' + (res.error || 'Bilinmeyen hata'), true);
     }
   });
 
@@ -1247,14 +1415,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (btnCloseAboutLegal) {
     btnCloseAboutLegal.addEventListener('click', () => {
       if (aboutLegalModal) aboutLegalModal.classList.add('hidden');
-      focusActiveInput();
-    });
-  }
-
-  if (btnAcknowledgeLegal) {
-    btnAcknowledgeLegal.addEventListener('click', () => {
-      if (aboutLegalModal) aboutLegalModal.classList.add('hidden');
-      showToast('Hukuk ve Şeffaflık İlkeleri onaylandı.');
       focusActiveInput();
     });
   }
@@ -1511,22 +1671,62 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   });
 
-  // STARTUP ANIMATED SPLASH SCREEN (10-15s with percentage & status texts)
+  // STARTUP ANIMATED CYBER SPLASH SCREEN (10-15s with dynamic stages, logs & speed counter)
   function runStartupSplashScreen() {
     if (!splashScreen) return;
     
+    const splashStepPill = document.getElementById('splashStepPill');
+    const splashSpeedLabel = document.getElementById('splashSpeedLabel');
+    const splashTerminalLog = document.getElementById('splashTerminalLog');
+
     const totalDurationMs = 12000; // ~12 seconds
     const intervalMs = 100;
     const totalSteps = totalDurationMs / intervalMs;
     let step = 0;
 
     const stages = [
-      { maxPct: 18, text: 'Ortam oluşturuluyor, lütfen bekleyiniz...' },
-      { maxPct: 38, text: 'Sistem çekirdeği ve yapay zeka modülleri doğrulanıyor...' },
-      { maxPct: 62, text: 'Codium kodlama ajan mimarisi hazırlanıyor...' },
-      { maxPct: 84, text: 'Kullanıcı ortamı ve yerel dosya izinleri senkronize ediliyor...' },
-      { maxPct: 98, text: 'Son kontroller tamamlanıyor...' },
-      { maxPct: 100, text: 'Hazır! CAGE AI çalışma alanı açılıyor...' }
+      { 
+        maxPct: 16, 
+        stepName: 'ADIM 1 / 6', 
+        text: 'Ortam hazırlanıyor, sistem çekirdeği başlatılıyor...', 
+        speed: '⚡ 420 MB/s • Çekirdek Aktif',
+        log: '• [SİSTEM] Windows Yönetici Yetkileri Doğrulandı'
+      },
+      { 
+        maxPct: 34, 
+        stepName: 'ADIM 2 / 6', 
+        text: 'CAGE AI model motoru ve bellek alanı tahsis ediliyor...', 
+        speed: '⚡ 580 MB/s • Model Belleği Hazırlanıyor',
+        log: '• [AI MOTORU] CAGE Doğal Dil & Akıl Yürütme Katmanı Aktif'
+      },
+      { 
+        maxPct: 54, 
+        stepName: 'ADIM 3 / 6', 
+        text: 'Codium 5.1 Ultra otonom kodlama ajanı ve alet setleri ısıtılıyor...', 
+        speed: '⚡ 710 MB/s • Otonom Ajan Başlatıldı',
+        log: '• [CODIUM] Otonom Kod Düzenleme ve Analiz Modülü Hazır'
+      },
+      { 
+        maxPct: 75, 
+        stepName: 'ADIM 4 / 6', 
+        text: 'Yerel dosya koruma kalkanı ve onay mekanizması senkronize ediliyor...', 
+        speed: '⚡ 850 MB/s • İzin Protokolü Doğrulandı',
+        log: '• [GÜVENLİK] Kullanıcı Onayı Korumalı Dosya Erişim Kalkanı Aktif'
+      },
+      { 
+        maxPct: 92, 
+        stepName: 'ADIM 5 / 6', 
+        text: 'Geliştirici çalışma alanı ve çift panelli kod stüdyosu derleniyor...', 
+        speed: '⚡ 920 MB/s • Çalışma Alanı Optimize Ediliyor',
+        log: '• [STÜDYO] Kod Editörü, Ajan Paneli ve Arayüz Senkronize'
+      },
+      { 
+        maxPct: 100, 
+        stepName: 'ADIM 6 / 6', 
+        text: 'Sistem hazır! CAGE AI geliştirici ortamı açılıyor...', 
+        speed: '⚡ 1.2 GB/s • Tüm Servisler Çevrimiçi',
+        log: '• [BAŞLATILDI] CAGE AI v1.0.1 Başarıyla Yüklendi!'
+      }
     ];
 
     const timer = setInterval(() => {
@@ -1537,8 +1737,20 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (splashPercentage) splashPercentage.textContent = pct + '%';
 
       const currentStage = stages.find(s => pct <= s.maxPct) || stages[stages.length - 1];
+      if (splashStepPill && splashStepPill.textContent !== currentStage.stepName) {
+        splashStepPill.textContent = currentStage.stepName;
+      }
       if (splashStatusText && splashStatusText.textContent !== currentStage.text) {
         splashStatusText.textContent = currentStage.text;
+      }
+      if (splashSpeedLabel && splashSpeedLabel.textContent !== currentStage.speed) {
+        splashSpeedLabel.textContent = currentStage.speed;
+      }
+      if (splashTerminalLog) {
+        const expectedHtml = `<span class="log-line-item">${currentStage.log}</span>`;
+        if (splashTerminalLog.innerHTML !== expectedHtml) {
+          splashTerminalLog.innerHTML = expectedHtml;
+        }
       }
 
       if (pct >= 100) {
