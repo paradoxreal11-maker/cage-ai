@@ -1914,3 +1914,109 @@ input:checked + .slider:before { transform: translateX(20px); }
   border-color: #f87171;
   color: #fca5a5;
 }
+
+/* ==========================================================================
+   LEGAL & TRANSPARENCY MODAL (HUKUK VE ŞEFFAFLIK BEYANNAMESİ)
+   ========================================================================== */
+.about-legal-window {
+  background-color: #171615;
+  border: 1px solid #3d3b38;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.75), 0 0 30px rgba(217, 119, 6, 0.15);
+}
+
+.legal-badge-header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.legal-ver-pill,
+.legal-date-pill,
+.legal-status-pill {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 12px;
+  letter-spacing: 0.3px;
+}
+
+.legal-ver-pill {
+  background-color: rgba(217, 119, 6, 0.15);
+  color: #fbbf24;
+  border: 1px solid rgba(217, 119, 6, 0.35);
+}
+
+.legal-date-pill {
+  background-color: rgba(255, 255, 255, 0.05);
+  color: #a8a29e;
+  border: 1px solid #333230;
+}
+
+.legal-status-pill {
+  background-color: rgba(16, 185, 129, 0.12);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.legal-intro-text {
+  font-size: 13px;
+  line-height: 1.6;
+  color: #c4c1bc;
+  margin-bottom: 18px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid #282624;
+}
+
+.legal-articles-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.legal-article-card {
+  display: flex;
+  gap: 14px;
+  background: #1c1b18;
+  border: 1px solid #2d2b28;
+  border-radius: 10px;
+  padding: 14px 16px;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.legal-article-card:hover {
+  border-color: #494642;
+  background: #201f1c;
+}
+
+.article-num {
+  font-family: 'Fira Code', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  color: #fbbf24;
+  background: rgba(217, 119, 6, 0.12);
+  border: 1px solid rgba(217, 119, 6, 0.25);
+  padding: 4px 8px;
+  border-radius: 6px;
+  height: fit-content;
+  white-space: nowrap;
+}
+
+.article-content {
+  flex: 1;
+}
+
+.article-content h4 {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #f3f4f6;
+  margin: 0 0 6px 0;
+  letter-spacing: 0.2px;
+}
+
+.article-content p {
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: #9ca3af;
+  margin: 0;
+}

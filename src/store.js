@@ -236,7 +236,7 @@ class Store {
     return { success: true, user: user, message: 'Giriş başarılı! Hoş geldiniz.' };
   }
 
-  updateUserProfile({ username, newPassword }) {
+  updateUserProfile({ nickname, newPassword }) {
     if (!this.data.currentUser || this.data.currentUser.role === 'guest') {
       return { success: false, message: 'Giriş yapılmış bir kullanıcı bulunamadı.' };
     }
@@ -244,10 +244,10 @@ class Store {
     const currentId = this.data.currentUser.id;
     const userInDb = this.data.users.find(u => u.id === currentId || u.email.toLowerCase() === this.data.currentUser.email.toLowerCase());
 
-    if (username && username.trim()) {
-      const cleanName = username.trim();
-      this.data.currentUser.username = cleanName;
-      if (userInDb) userInDb.username = cleanName;
+    if (nickname && nickname.trim()) {
+      const cleanNick = nickname.trim();
+      this.data.currentUser.nickname = cleanNick;
+      if (userInDb) userInDb.nickname = cleanNick;
     }
 
     if (newPassword && newPassword.trim()) {
@@ -261,7 +261,7 @@ class Store {
     this.save();
     return { 
       success: true, 
-      message: 'Profil bilgileriniz başarıyla güncellendi.', 
+      message: 'Nickname ve profil bilgileriniz başarıyla güncellendi.', 
       user: this.data.currentUser 
     };
   }

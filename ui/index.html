@@ -208,16 +208,6 @@
 
               <div class="popover-divider"></div>
 
-              <button class="popover-item" id="menuItemApiKey">
-                <div class="p-item-left">
-                  <span class="p-icon">🔑</span>
-                  <span class="p-text">CAGE API &amp; Token</span>
-                </div>
-                <span class="p-ext-icon">↗</span>
-              </button>
-
-              <div class="popover-divider"></div>
-
               <button class="popover-item danger-item" id="menuItemAuthAction">
                 <div class="p-item-left">
                   <span class="p-icon" id="popoverAuthIcon">🚪</span>
@@ -233,9 +223,6 @@
               <span class="user-name" id="userNameLabel">Kullanıcı</span>
               <span class="user-plan-tag" id="userPlanTag">• Free plan</span>
             </div>
-            <button class="user-menu-btn" title="Kullanıcı Menüsü">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
-            </button>
           </div>
         </div>
       </aside>
@@ -708,12 +695,31 @@ function welcomeToCageCodium() {
           </div>
         </div>
 
-        <!-- Update Username Section -->
+        <!-- Static Username (Cannot be changed) -->
         <div class="settings-form-section">
-          <h4>Kullanıcı Adı Güncelle</h4>
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+            <h4>Kullanıcı Adı (Sistem Giriş Adı)</h4>
+            <span style="font-size: 11px; color: var(--text-dim); display: flex; align-items: center; gap: 4px;">
+              <span>🔒</span> Değiştirilemez
+            </span>
+          </div>
           <div class="settings-input-group">
-            <input type="text" id="txtUpdateUsername" class="form-control" placeholder="Yeni kullanıcı adı giriniz" />
-            <button class="btn btn-primary" id="btnSaveUsername">Kaydet</button>
+            <input type="text" id="txtStaticUsername" class="form-control" readonly disabled style="background: rgba(255, 255, 255, 0.04); cursor: not-allowed; color: var(--text-muted); opacity: 0.85;" />
+          </div>
+          <small style="color: var(--text-dim); font-size: 11px; margin-top: 4px; display: block;">
+            Kullanıcı adı hesap güvenliği ve veritabanı doğrulaması gereği kalıcıdır ve değiştirilemez.
+          </small>
+        </div>
+
+        <!-- Update Nickname Section (Only Nickname can be changed) -->
+        <div class="settings-form-section">
+          <h4>Takma Ad (Nickname) Güncelle</h4>
+          <p style="font-size: 12px; color: var(--text-dim); margin-bottom: 8px;">
+            Sohbetlerde ve sol alttaki profil kartınızda görünecek takma adınızı (nickname) buradan belirleyebilirsiniz.
+          </p>
+          <div class="settings-input-group">
+            <input type="text" id="txtUpdateNickname" class="form-control" placeholder="Yeni nickname giriniz..." />
+            <button class="btn btn-primary" id="btnSaveNickname">Nickname Kaydet</button>
           </div>
         </div>
 
@@ -733,6 +739,85 @@ function welcomeToCageCodium() {
           </button>
         </div>
 
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. CAGE AI HAKKINDA, HUKUK VE ŞEFFAFLIK İLKELERİ MODALI -->
+  <div class="modal-backdrop hidden" id="aboutLegalModal">
+    <div class="modal-window about-legal-window" style="max-width: 620px;">
+      <div class="modal-header">
+        <div class="modal-header-title">
+          <span style="font-size: 22px;">⚖️</span>
+          <h2>CAGE AI — Hukuk, Güvenlik &amp; Şeffaflık Beyannamesi</h2>
+        </div>
+        <button class="modal-close" id="btnCloseAboutLegal">✕</button>
+      </div>
+
+      <div class="modal-body" style="max-height: 70vh; overflow-y: auto; padding: 22px 24px;">
+        <div class="legal-badge-header">
+          <span class="legal-ver-pill">CAGE AI v1.0.1</span>
+          <span class="legal-date-pill">Yürürlük: 2026</span>
+          <span class="legal-status-pill">Resmi Sistem Beyanı</span>
+        </div>
+
+        <p class="legal-intro-text">
+          Bu belge, CAGE AI platformunun mimari işleyişini, veri mahremiyetini, yerel dosya erişim yetkilendirme güvenliğini ve kullanıcı ile sistem arasındaki hukuki şeffaflık ilkelerini güvence altına alır.
+        </p>
+
+        <div class="legal-articles-list">
+          <div class="legal-article-card">
+            <div class="article-num">Madde 1</div>
+            <div class="article-content">
+              <h4>Sistem Mimarisi &amp; Şeffaflık İlkesi</h4>
+              <p>CAGE AI; yerel masaüstü ortamında çalışan, otonom Codium kodlama ajanı ve gelişmiş yapay zeka modelleriyle güçlendirilmiş bağımsız bir geliştirici ekosistemidir. Kullanılan model adları, oturum süreleri, günlük kota sayaçları ve ajan yetkileri arayüzde kullanıcıya eksiksiz ve şeffaf biçimde sunulur.</p>
+            </div>
+          </div>
+
+          <div class="legal-article-card">
+            <div class="article-num">Madde 2</div>
+            <div class="article-content">
+              <h4>Yerel Dosya ve Kod Erişim Güvenliği</h4>
+              <p>CAGE AI Codium Ajanı, kullanıcının bilgisayarındaki projelere ve dosyalara yalnızca kullanıcının açık yönetici izni ve her işlem öncesinde sunduğu onay kutusu (modal) doğrulaması ile erişir. Kullanıcı açık onay vermeden sistem hiçbir dosyada değişiklik yapamaz, dosyayı silemez veya üzerine yazamaz.</p>
+            </div>
+          </div>
+
+          <div class="legal-article-card">
+            <div class="article-num">Madde 3</div>
+            <div class="article-content">
+              <h4>Veri Gizliliği &amp; Mahremiyet Güvencesi</h4>
+              <p>Kullanıcının projeleri, yazdığı kodlar, özel çalışma alanı dosyaları ve sohbet geçmişi üçüncü şahıslarla, reklam ağlarıyla veya veri toplayıcılarla kesinlikle paylaşılmaz. Tüm yapılandırma verileri kullanıcının kendi cihazında güvenli bir şekilde saklanır.</p>
+            </div>
+          </div>
+
+          <div class="legal-article-card">
+            <div class="article-num">Madde 4</div>
+            <div class="article-content">
+              <h4>Fikri Mülkiyet &amp; Üretilen Kod Sahipliği</h4>
+              <p>CAGE AI aracılığıyla üretilen, düzenlenen, optimize edilen veya derlenen tüm kodların, mimarilerin ve projelerin fikri mülkiyet hakları münhasıran kullanıcıya aittir. Kullanıcı bu kodları ticari veya bireysel projelerinde herhangi bir telif veya kısıtlama olmaksızın kullanma hakkına sahiptir.</p>
+            </div>
+          </div>
+
+          <div class="legal-article-card">
+            <div class="article-num">Madde 5</div>
+            <div class="article-content">
+              <h4>Hukuki Sorumluluk Sınırları &amp; Yasal Beyan</h4>
+              <p>Yapay zeka modelleri tarafından sağlanan tüm kod önerileri ve teknik analizler rehberlik niteliğindedir. Kodların kullanıcı tarafından canlı/üretim ortamında çalıştırılmasından, derlenmesinden ve uygulanmasından doğabilecek veri kayıpları, sistem hataları veya aksaklıklardan kullanıcı sorumludur. CAGE AI hiçbir veri kaybından ötürü hukuki sorumluluk kabul etmez.</p>
+            </div>
+          </div>
+
+          <div class="legal-article-card">
+            <div class="article-num">Madde 6</div>
+            <div class="article-content">
+              <h4>Adil Kullanım, Kotalar ve Hizmet Sürekliliği</h4>
+              <p>CAGE Codium Free günlük 10 dakika erişim imkanı tanır; süre dolduğunda sayaç mekanizmasıyla adil kullanım kalkanı devreye girer. Yükseltme paketleri (Premium &amp; Ultra) ek ajan çalışma süresi ve öncelikli destek imkanı sağlar.</p>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top: 20px; text-align: right;">
+          <button class="btn btn-primary" id="btnAcknowledgeLegal" style="padding: 10px 24px;">Okudum ve Onaylıyorum</button>
+        </div>
       </div>
     </div>
   </div>

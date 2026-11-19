@@ -76,10 +76,17 @@ document.addEventListener('DOMContentLoaded', async () => {
   const menuItemAbout = document.getElementById('menuItemAbout');
   const menuItemUpgrade = document.getElementById('menuItemUpgrade');
   const menuItemExtensions = document.getElementById('menuItemExtensions');
-  const menuItemApiKey = document.getElementById('menuItemApiKey');
   const menuItemAuthAction = document.getElementById('menuItemAuthAction');
   const popoverAuthIcon = document.getElementById('popoverAuthIcon');
   const popoverAuthText = document.getElementById('popoverAuthText');
+
+  // Hukuk & Şeffaflık Modalı Elemanları
+  const aboutLegalModal = document.getElementById('aboutLegalModal');
+  const btnCloseAboutLegal = document.getElementById('btnCloseAboutLegal');
+  const btnAcknowledgeLegal = document.getElementById('btnAcknowledgeLegal');
+  const txtStaticUsername = document.getElementById('txtStaticUsername');
+  const txtUpdateNickname = document.getElementById('txtUpdateNickname');
+  const btnSaveNickname = document.getElementById('btnSaveNickname');
 
   // Chat Mode View Elements
   const welcomeContainerChat = document.getElementById('welcomeContainerChat');
@@ -274,9 +281,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (!window.cageAI) return;
     storeData = await window.cageAI.getStoreData();
 
-    // User Profile Display (Always "Kullanıcı" as default, never PARADOX)
+    // User Profile Display (Nickname öncelikli, yoksa Kullanıcı adı)
     const u = storeData.currentUser || {};
-    const displayName = (u.username && u.username !== 'PARADOX') ? u.username : 'Kullanıcı';
+    const displayName = u.nickname || ((u.username && u.username !== 'PARADOX') ? u.username : 'Kullanıcı');
     userNameLabel.textContent = displayName;
     userAvatar.textContent = displayName.charAt(0).toUpperCase();
 
@@ -1097,10 +1104,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   function openAccountSettings() {
     const u = storeData?.currentUser || {};
-    const dName = (u.username && u.username !== 'PARADOX') ? u.username : 'Kullanıcı';
+    const rawUsername = (u.username && u.username !== 'PARADOX') ? u.username : 'Kullanıcı';
+    const displayNick = u.nickname || rawUsername;
     
-    if (accountLargeAvatar) accountLargeAvatar.textContent = dName.charAt(0).toUpperCase();
-    if (accountDisplayUsername) accountDisplayUsername.textContent = dName;
+    if (accountLargeAvatar) accountLargeAvatar.textContent = displayNick.charAt(0).toUpperCase();
+    if (accountDisplayUsername) accountDisplayUsername.textContent = displayNick;
     if (accountDisplayEmail) accountDisplayEmail.textContent = u.email || 'Giriş yapılmadı';
     if (accountDisplayRole) accountDisplayRole.textContent = u.role === 'admin' ? 'Yetkili Hesap' : 'Kullanıcı';
     
@@ -1116,7 +1124,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (accountPlanLabel) accountPlanLabel.textContent = planTitle;
     if (accountCodiumQuota) accountCodiumQuota.textContent = codiumInfo;
 
-    if (txtUpdateUsername) txtUpdateUsername.value = dName;
+    if (txtStaticUsername) txtStaticUsername.value = rawUsername;
+    if (txtUpdateNickname) txtUpdateNickname.value = u.nickname || '';
     if (txtUpdatePassword) txtUpdatePassword.value = '';
 
     accountSettingsModal.classList.remove('hidden');
@@ -1229,7 +1238,24 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (menuItemAbout) {
     menuItemAbout.addEventListener('click', () => {
       closeUserPopover();
-      showToast('CAGE AI v1.0.1 • Windows Yönetici Yetkili Masaüstü Sürümü');
+      if (aboutLegalModal) {
+        aboutLegalModal.classList.remove('hidden');
+      }
+    });
+  }
+
+  if (btnCloseAboutLegal) {
+    btnCloseAboutLegal.addEventListener('click', () => {
+      if (aboutLegalModal) aboutLegalModal.classList.add('hidden');
+      focusActiveInput();
+    });
+  }
+
+  if (btnAcknowledgeLegal) {
+    btnAcknowledgeLegal.addEventListener('click', () => {
+      if (aboutLegalModal) aboutLegalModal.classList.add('hidden');
+      showToast('Hukuk ve Şeffaflık İlkeleri onaylandı.');
+      focusActiveInput();
     });
   }
 
@@ -1244,13 +1270,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     menuItemExtensions.addEventListener('click', () => {
       closeUserPopover();
       if (tabModeCode) tabModeCode.click();
-    });
-  }
-
-  if (menuItemApiKey) {
-    menuItemApiKey.addEventListener('click', () => {
-      closeUserPopover();
-      showToast('CAGE AI Yerel Codium Motoru ve Otonom Ajan API aktif.');
     });
   }
 
@@ -1292,17 +1311,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
-  if (btnSaveUsername) {
-    btnSaveUsername.addEventListener('click', async () => {
-      const newName = txtUpdateUsername.value.trim();
-      if (!newName) {
-        showToast('Lütfen geçerli bir kullanıcı adı girin.', true);
+  if (btnSaveNickname) {
+    btnSaveNickname.addEventListener('click', async () => {
+      const newNick = txtUpdateNickname ? txtUpdateNickname.value.trim() : '';
+      if (!newNick) {
+        showToast('Lütfen geçerli bir takma ad (nickname) giriniz.', true);
         return;
       }
       if (!window.cageAI) return;
-      const res = await window.cageAI.updateUserProfile({ username: newName });
+      const res = await window.cageAI.updateUserProfile({ nickname: newNick });
       if (res.success) {
-        showToast(res.message || 'Kullanıcı adınız güncellendi!');
+        showToast(res.message || 'Nickname başarıyla güncellendi!');
         await refreshStoreData();
         openAccountSettings();
       } else {
