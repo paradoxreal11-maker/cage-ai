@@ -102,7 +102,18 @@ class AIService {
       };
     }
 
-    // 3. File read action: ```read:path ... ```
+    // 3. Folder create action: ```folder:path ... ``` or ```mkdir:path ... ```
+    const folderMatch = responseText.match(/```(?:folder|mkdir):([^\n\r]+)[\r\n]*([\s\S]*?)```/i);
+    if (folderMatch) {
+      return {
+        requiresPermission: true,
+        action: 'MKDIR',
+        filePath: folderMatch[1].trim(),
+        content: folderMatch[2] ? folderMatch[2].trim() : ''
+      };
+    }
+
+    // 4. File read action: ```read:path ... ```
     const readMatch = responseText.match(/```(?:read|view):([^\n\r]+)```/i);
     if (readMatch) {
       return {
@@ -193,20 +204,26 @@ class AIService {
     } else if (modelKey === 'cage-premium-ultra') {
       systemInstruction = `Sen CAGE AI Premium asistanısın. Zeki, kapsamlı ve derin sohbet yeteneklerine sahipsin. Kod yazma; kod isteklerinde kullanıcının paketindeki Cage Codium Ultra modelini hatırlat.`;
     } else if (modelKey === 'cage-codium-free') {
-      systemInstruction = `Sen CAGE Codium Free yapay zeka ve kodlama asistanısın. Uygulama Windows Yönetici (Administrator) yetkileriyle çalışmaktadır. Bilgisayardaki dosyalara doğrudan erişebilir, okuyabilir, yeni dosyalar ve projeler kurabilir, kütüphaneleri yükleyebilir ve ayar yapabilirsin. SADECE KOD VERMEKLE KALMA; kullanıcının bilgisayarında projeyi kurmak ve çalıştırmak için gerekli eylemleri başlat!
-Dosya yazmak için: \`\`\`file:DOSYA_YOLU\\nICERIK\`\`\`
-Kurulum veya terminal komutu çalıştırmak için (örn: pip install, npm install, python vb.): \`\`\`command:KOMUT\`\`\`
-Dosya okumak için: \`\`\`read:DOSYA_YOLU\`\`\` formatını kullan.`;
+      systemInstruction = `Sen CAGE Codium Free yapay zeka ve kodlama asistanısın. Uygulama Windows Yönetici (Administrator) yetkileriyle çalışmaktadır. Bilgisayardaki dosyalara doğrudan erişebilir, okuyabilir, yeni dosyalar, klasörler ve projeler kurabilir, kütüphaneleri yükleyebilir ve ayar yapabilirsin. SADECE KOD VERMEKLE KALMA; kullanıcının bilgisayarında projeyi kurmak ve çalıştırmak için gerekli eylemleri başlat!
+Dosya yazmak/düzenlemek için: \`\`\`file:DOSYA_YOLU\\nICERIK\`\`\`
+Klasör oluşturmak için: \`\`\`folder:KLASOR_YOLU\`\`\`
+Kurulum veya terminal komutu çalıştırmak için (örn: pip install, npm install, python dosya.py vb.): \`\`\`command:KOMUT\`\`\`
+Dosya okumak için: \`\`\`read:DOSYA_YOLU\`\`\` formatını kullan.
+Eğer bir hata ile karşılaşırsan (hata bildirimi geldiğinde), hatanın nedenini net bir şekilde açıkla ve otomatik olarak düzeltilmiş eylem/komut önerisini sunarak sorunu kendi kendine çöz.`;
     } else if (modelKey === 'cage-codium-ultra') {
-      systemInstruction = `Sen CAGE Codium Ultra profesyonel yazılım mühendisisin. Uygulama Windows Yönetici (Administrator) yetkileriyle çalışmaktadır. Bilgisayardaki dosyalara tam erişim hakkın vardır. Sadece kod vermekle kalmaz; bilgisayardaki dosyaları düzenler, projeleri kurar, paketleri yükler ve ayarları yapılandırırsın.
-Dosya yazmak için: \`\`\`file:DOSYA_YOLU\\nICERIK\`\`\`
+      systemInstruction = `Sen CAGE Codium Ultra profesyonel yazılım mühendisisin. Uygulama Windows Yönetici (Administrator) yetkileriyle çalışmaktadır. Bilgisayardaki dosyalara tam erişim hakkın vardır. Sadece kod vermekle kalmaz; bilgisayardaki dosyaları düzenler, klasörleri kurar, paketleri yükler ve ayarları yapılandırırsın.
+Dosya yazmak/düzenlemek için: \`\`\`file:DOSYA_YOLU\\nICERIK\`\`\`
+Klasör oluşturmak için: \`\`\`folder:KLASOR_YOLU\`\`\`
 Kurulum veya komut çalıştırmak için: \`\`\`command:KOMUT\`\`\`
-Dosya okumak için: \`\`\`read:DOSYA_YOLU\`\`\` formatını kullan.`;
+Dosya okumak için: \`\`\`read:DOSYA_YOLU\`\`\` formatını kullan.
+Eğer kod veya komut çalıştırıldığında bir hata oluşursa, hatayı açıkla ve sorunu çözmek için gerekli adımı/komutu hemen başlat.`;
     } else if (modelKey === 'cage-codium-5-1-ultra') {
-      systemInstruction = `Sen en gelişmiş otonom kodlama ve sistem mühendisi CAGE Codium 5.1 Ultra'sın. Uygulama Windows Yönetici (Administrator) yetkileriyle çalışmaktadır. Bilgisayardaki tüm dosya sistemine doğrudan okuma, yazma, oluşturma, proje kurma, paket yükleme ve ortam ayarı yapma yetkisine sahipsin. SADECE KOD VERMEKLE KALMA; projeyi kullanıcının bilgisayarına kur, ayarları yap ve çalıştır!
-Dosya yazmak/oluşturmak için: \`\`\`file:DOSYA_YOLU\\nICERIK\`\`\`
+      systemInstruction = `Sen en gelişmiş otonom kodlama ve sistem mühendisi CAGE Codium 5.1 Ultra'sın. Uygulama Windows Yönetici (Administrator) yetkileriyle çalışmaktadır. Bilgisayardaki tüm dosya sistemine doğrudan okuma, yazma, klasör açma, proje kurma, paket yükleme ve ortam ayarı yapma yetkisine sahipsin. SADECE KOD VERMEKLE KALMA; projeyi kullanıcının bilgisayarına kur, ayarları yap ve çalıştır!
+Dosya yazmak/oluşturmak/düzenlemek için: \`\`\`file:DOSYA_YOLU\\nICERIK\`\`\`
+Klasör oluşturmak için: \`\`\`folder:KLASOR_YOLU\`\`\`
 Paket kurmak veya komut yürütmek için: \`\`\`command:KOMUT\`\`\`
-Dosya okumak için: \`\`\`read:DOSYA_YOLU\`\`\` formatını kullan.`;
+Dosya okumak için: \`\`\`read:DOSYA_YOLU\`\`\` formatını kullan.
+Kod veya komutta hata meydana gelirse (hata geri bildirimi geldiğinde), hatayı analiz et, kullanıcıya açıkla ve projeyi kendi kendine onarmak için derhal doğru komutu/dosyayı uygula.`;
     }
 
     // Prepare contents

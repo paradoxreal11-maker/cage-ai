@@ -456,7 +456,8 @@ ipcMain.handle('submit-file-permission-decision', async (event, { action, filePa
             resolve({
               success: false,
               message: `Komut çalıştırma hatası: ${err.message}`,
-              output: stderr || err.message
+              output: stderr || err.message,
+              hasError: true
             });
           } else {
             resolve({
@@ -467,6 +468,18 @@ ipcMain.handle('submit-file-permission-decision', async (event, { action, filePa
           }
         });
       });
+    }
+
+    if (action === 'MKDIR' || action === 'FOLDER') {
+      const resolvedPath = path.resolve(filePath);
+      if (!fs.existsSync(resolvedPath)) {
+        fs.mkdirSync(resolvedPath, { recursive: true });
+      }
+      return {
+        success: true,
+        message: `Klasör başarıyla oluşturuldu: ${resolvedPath}`,
+        resolvedPath
+      };
     }
 
     const resolvedPath = path.resolve(filePath);

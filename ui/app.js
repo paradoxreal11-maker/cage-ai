@@ -808,7 +808,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       await loadChatHistory();
 
       if (reply.fileAction && reply.fileAction.requiresPermission) {
-        showFilePermissionDialog(reply.fileAction);
+        renderInlineActionCard(reply.fileAction, 'chat');
       }
     } catch (err) {
       aiBubble.innerHTML = `<span style="color: #ef4444;">Bağlantı hatası: ${escapeHtml(err.message)}</span>`;
@@ -941,7 +941,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       await loadCodeChatHistory();
 
       if (reply.fileAction && reply.fileAction.requiresPermission) {
-        showFilePermissionDialog(reply.fileAction);
+        renderInlineActionCard(reply.fileAction, 'code');
       }
     } catch (err) {
       aiBubble.innerHTML = `<span style="color: #ef4444;">Bağlantı hatası: ${escapeHtml(err.message)}</span>`;
@@ -1115,20 +1115,28 @@ document.addEventListener('DOMContentLoaded', async () => {
       // Escape code safely for powershell one-liner or run via node/python
       let cmd = '';
       if (isPython) {
-        // Save to temporary solution or run python
         cmd = `python -c "${code.replace(/"/g, '`"').replace(/\n/g, '; ')}"`;
       } else {
         cmd = `node -e "${code.replace(/"/g, '`"').replace(/\n/g, '; ')}"`;
       }
 
       if (window.cageAI && window.cageAI.runSystemCommand) {
+        const orig = btnRunCodeOnPC.innerHTML;
+        btnRunCodeOnPC.innerHTML = '⏳ Çalışıyor...';
         const res = await window.cageAI.runSystemCommand(cmd);
-        if (res.success) {
+        btnRunCodeOnPC.innerHTML = orig;
+
+        if (res.success && !res.stderr) {
           showToast('Kod başarıyla çalıştırıldı!');
-          renderCodeMessageBubble('ai', `▶️ **Kod Çalıştırma Çıktısı (${isPython ? 'Python' : 'Node.js'}):**\n\`\`\`\n${res.stdout || '(Kod başarıyla tamamlandı, çıktı üretilmedi)'}\n\`\`\``);
+          renderTerminalCard(res.stdout || '(Kod başarıyla tamamlandı, çıktı üretilmedi)', 'code');
         } else {
           showToast('Çalıştırma hatası oluştu', true);
-          renderCodeMessageBubble('ai', `❌ **Çalıştırma Hatası:**\n\`\`\`\n${res.stderr || res.error || 'Hata'}\n\`\`\``);
+          const errorOutput = res.stderr || res.error || res.stdout || 'Hata oluştu';
+          renderErrorGuiCard({
+            error: errorOutput,
+            code,
+            isPython
+          }, 'code');
         }
         messagesContainerCode.scrollTop = messagesContainerCode.scrollHeight;
       }
@@ -1137,32 +1145,82 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Markdown Formatter (Pure CAGE AI - No external dependencies)
   function formatMarkdown(text) {
-    let html = escapeHtml(text);
+    if (!text) return '';
+    const codeBlocks = [];
 
-    // Code blocks ```code```
-    html = html.replace(/```([a-zA-Z0-9_-]*)\n([\s\S]*?)```/g, (match, lang, code) => {
-      return `
-        <div class="code-block-wrapper">
-          <div class="code-header">
-            <span>${lang || 'code'}</span>
-            <button class="btn-copy-code" onclick="navigator.clipboard.writeText(this.closest('.code-block-wrapper').querySelector('code').innerText); alert('Kod panoya kopyalandı!');">Kopyala</button>
+    // 1. Extract and replace code blocks with tokens
+    let processed = text.replace(/```([a-zA-Z0-9_\-\.\/:]*)\n([\s\S]*?)```/g, (match, rawLang, code) => {
+      const cleanLang = (rawLang || '').trim();
+      let badge = cleanLang || 'Kod';
+      let runActionAllowed = true;
+
+      if (cleanLang.startsWith('file:')) {
+        const fname = cleanLang.substring(5).trim();
+        badge = `📄 ${fname}`;
+      } else if (cleanLang.startsWith('folder:') || cleanLang.startsWith('mkdir:')) {
+        const dname = cleanLang.substring(cleanLang.indexOf(':') + 1).trim();
+        badge = `📁 ${dname}`;
+        runActionAllowed = false;
+      } else if (cleanLang.startsWith('command:')) {
+        badge = `⚡ Terminal Komutu`;
+      } else if (cleanLang.startsWith('read:')) {
+        badge = `🔍 Dosya İçeriği`;
+        runActionAllowed = false;
+      }
+
+      const lines = code.trim().split('\n').length;
+      const linesLabel = `${lines} satır`;
+      const placeholder = `__CAGE_CODE_BLOCK_${codeBlocks.length}__`;
+
+      const blockHtml = `
+        <div class="chat-gui-code-card" data-code="${encodeURIComponent(code)}" data-lang="${cleanLang}">
+          <div class="code-card-header">
+            <div class="code-card-tags">
+              <span class="code-lang-badge">${escapeHtml(badge)}</span>
+              <span class="code-lines-badge">${linesLabel}</span>
+            </div>
+            <div class="code-card-actions">
+              <button class="btn-code-action btn-copy-chat-code" title="Kodu Kopyala">
+                <span>📋</span> Kopyala
+              </button>
+              <button class="btn-code-action btn-apply-file" title="Stüdyo Editörüne Aktar">
+                <span>📥</span> Editöre Aktar
+              </button>
+              ${runActionAllowed ? `
+              <button class="btn-code-action btn-run-chat-code" title="Bilgisayarda Çalıştır">
+                <span>▶</span> Çalıştır
+              </button>
+              ` : ''}
+            </div>
           </div>
-          <pre><code>${code}</code></pre>
+          <pre class="code-card-body"><code>${escapeHtml(code)}</code></pre>
         </div>
       `;
+
+      codeBlocks.push(blockHtml);
+      return placeholder;
     });
 
-    // Inline code `...`
+    // 2. Escape HTML for the rest of text
+    let html = escapeHtml(processed);
+
+    // 3. Inline code `...`
     html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
 
-    // Bold **text**
+    // 4. Bold **text**
     html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
 
-    // Bullet lists
+    // 5. Bullet lists
     html = html.replace(/^\* (.*$)/gim, '• $1');
 
-    // Newlines to <br>
+    // 6. Newlines to <br>
     html = html.replace(/\n/g, '<br>');
+
+    // 7. Restore code blocks
+    codeBlocks.forEach((block, idx) => {
+      const placeholder = `__CAGE_CODE_BLOCK_${idx}__`;
+      html = html.replace(placeholder, block);
+    });
 
     return html;
   }
@@ -1207,71 +1265,466 @@ document.addEventListener('DOMContentLoaded', async () => {
     promptInputCode.style.height = Math.min(200, promptInputCode.scrollHeight) + 'px';
   });
 
-  // AGENT FILE & COMMAND EXECUTION PERMISSION WORKFLOW
-  function showFilePermissionDialog(action) {
-    pendingFilePerm = action;
-    const isCmd = action.action === 'COMMAND' || action.action === 'INSTALL';
-    if (permActionType) {
-      permActionType.textContent = isCmd ? '⚡ SİSTEM & KURULUM EYLEMİ' : (action.action || 'YAZMA / DÜZENLEME');
-    }
-    if (permFilePath) {
-      permFilePath.textContent = isCmd ? (action.command || action.content) : (action.filePath || 'Bilinmeyen Dosya');
-    }
-    if (permFileContent) {
-      permFileContent.textContent = isCmd 
-        ? `Çalıştırılacak Komut / Kurulum:\n${action.command || action.content}\n\nBu işlem bilgisayarınızda kütüphaneleri yükleyecek, ortamı ayarlayacak veya projeyi başlatacaktır.`
-        : (action.content || '(İçerik boş veya okunuyor)');
-    }
-    filePermissionModal.classList.remove('hidden');
+  // CHAT-NATIVE TERMINAL OUTPUT CARD
+  function renderTerminalCard(output, mode = 'code') {
+    const container = mode === 'code' ? messagesContainerCode : messagesContainerChat;
+    if (!container || !output) return;
+
+    const card = document.createElement('div');
+    card.className = 'chat-gui-terminal-card';
+    card.innerHTML = `
+      <div class="terminal-card-header">
+        <span>🖥️ PowerShell / Terminal Konsol Çıktısı</span>
+        <span style="color: #10b981; font-size: 11px; font-weight: 600;">✓ Tamamlandı</span>
+      </div>
+      <pre class="terminal-card-body"><code>${escapeHtml(output)}</code></pre>
+    `;
+    container.appendChild(card);
+    container.scrollTop = container.scrollHeight;
   }
 
-  btnApproveFilePerm.addEventListener('click', async () => {
-    if (!pendingFilePerm || !window.cageAI) return;
-    filePermissionModal.classList.add('hidden');
+  // ERROR DIAGNOSIS IN TURKISH (Sıradan textbox yerine zengin Türkçe hata açıklaması)
+  function diagnoseErrorInTurkish(rawError) {
+    const err = (rawError || '').toLowerCase();
+    if (err.includes('no module named')) {
+      const modMatch = rawError.match(/no module named ['"]([^'"]+)['"]/i);
+      const mod = modMatch ? modMatch[1] : 'gerekli';
+      return `Sisteminizde '${mod}' kütüphanesi eksik veya kurulu değil. Codium bu paketi otomatik olarak pip ile kurarak projeyi ayağa kaldıracak.`;
+    }
+    if (err.includes('cannot find module')) {
+      const modMatch = rawError.match(/cannot find module ['"]([^'"]+)['"]/i);
+      const mod = modMatch ? modMatch[1] : 'gerekli';
+      return `Node.js projesinde '${mod}' modülü bulunamadı. Codium eksik paketi npm ile kurmak için hazırlanıyor.`;
+    }
+    if (err.includes('syntaxerror')) {
+      return `Kod sözdiziminde (SyntaxError) bir karakter veya blok hatası tespit edildi. Codium kod yapısını analiz edip otomatik olarak düzeltiyor.`;
+    }
+    if (err.includes('is not recognized') || err.includes('bulunamadı') || err.includes('command not found')) {
+      return `Çalıştırılmak istenen program veya komut sistem PATH ortamında bulunamadı. Codium sistem ortamına uygun alternatif yolu devreye sokuyor.`;
+    }
+    if (err.includes('permission denied') || err.includes('erişim engellendi')) {
+      return `Dosya veya dizine erişim izni kısıtlı. Codium yönetici izinleri eşliğinde dosya erişimini yeniden yapılandırıyor.`;
+    }
+    if (err.includes('filenotfounderror') || err.includes('no such file or directory')) {
+      return `İlgili dosya veya hedef klasör mevcut değil. Codium gerekli dizin yapısını ve dosyayı oluşturuyor.`;
+    }
+    return `Kod veya komut çalıştırılırken bir hata ile karşılaşıldı. Codium otonom analiz sistemi hatanın nedenini tespit edip otomatik olarak çözüyor.`;
+  }
 
-    const result = await window.cageAI.submitFilePermissionDecision({
-      action: pendingFilePerm.action,
-      filePath: pendingFilePerm.filePath,
-      content: pendingFilePerm.content,
-      approved: true
-    });
+  // CHAT-NATIVE ERROR GUI CARD & AUTONOMOUS HEALING TRIGGER
+  function renderErrorGuiCard(errorData, mode = 'code') {
+    const container = mode === 'code' ? messagesContainerCode : messagesContainerChat;
+    if (!container) return;
 
-    const isCmd = pendingFilePerm.action === 'COMMAND' || pendingFilePerm.action === 'INSTALL';
-    const successMsg = isCmd
-      ? `⚡ **Otonom Sistem & Kurulum İşlemi Tamamlandı:**\n${result.message || 'Komut çalıştırıldı.'}\n\n${result.output ? '```\n' + result.output + '\n```' : ''}`
-      : `✅ **Agent Dosya İşlemi Tamamlandı:**\n${result.message || 'Dosya başarıyla yazıldı/güncellendi.'}`;
+    const rawError = typeof errorData === 'string' ? errorData : (errorData.error || errorData.output || 'Bilinmeyen hata');
+    const turkishExplanation = diagnoseErrorInTurkish(rawError);
 
-    if (activeMode === 'code') {
-      renderCodeMessageBubble('ai', successMsg);
-      if (pendingFilePerm.content && !isCmd) {
-        codeStudioView.value = pendingFilePerm.content;
+    const card = document.createElement('div');
+    card.className = 'chat-gui-error-card';
+    card.innerHTML = `
+      <div class="error-card-header">
+        <div class="error-card-title">
+          <span>⚠️</span>
+          <span>Hata Tespit Edildi</span>
+        </div>
+        <div class="healing-status-tag">
+          <span class="dot-bounce" style="background:#fbbf24; width:6px; height:6px; display:inline-block; border-radius:50%;"></span>
+          <span class="status-healing-text">Codium Kendi Kendine Çözüyor...</span>
+        </div>
+      </div>
+      <div class="error-card-explain">
+        ${escapeHtml(turkishExplanation)}
+      </div>
+      <div class="error-card-trace-wrapper">
+        <span class="error-trace-toggle">▼ Hata Logunu Göster</span>
+        <pre class="error-trace-pre hidden"><code>${escapeHtml(rawError)}</code></pre>
+      </div>
+      <div class="error-card-actions">
+        <span style="font-size: 11.5px; color: #9ca3af;">Otonom hata giderme döngüsü başlatıldı.</span>
+        <button class="btn-heal-error">
+          <span>⚡</span> Yeniden Çözmeyi Tetikle
+        </button>
+      </div>
+    `;
+
+    container.appendChild(card);
+    container.scrollTop = container.scrollHeight;
+
+    // Automatically trigger autonomous healing after a brief moment
+    setTimeout(() => {
+      triggerAutonomousSelfHealing(rawError, mode);
+    }, 700);
+  }
+
+  // AUTONOMOUS SELF-HEALING LOOP
+  let isHealingInProgress = false;
+  async function triggerAutonomousSelfHealing(rawError, mode = 'code') {
+    if (isHealingInProgress) return;
+    isHealingInProgress = true;
+
+    const healingPrompt = `[SİSTEM HATA DÜZELTME BİLDİRİMİ]: Az önce çalıştırılan işlemde şu hata oluştu:\n${rawError}\n\nLütfen hatanın nedenini net bir Türkçe ile açıkla, sorunu gidermek için gereken dosya düzenlemesini veya kurulum/çalıştırma komutunu (örn: pip install, npm install, klasör oluşturma veya kod düzeltmesi) derhal başlat ve projeyi kendi kendine çalışır duruma getir.`;
+
+    const chatObj = mode === 'code' ? currentCodeChat : currentChat;
+    const modelKey = mode === 'code' ? currentCodeModel : currentChatModel;
+    const container = mode === 'code' ? messagesContainerCode : messagesContainerChat;
+
+    const thinkingHtml = `
+      <div class="thinking-container">
+        <span class="thinking-label">⚡ Codium Hatayı Otonom Çözüyor</span>
+        <span class="thinking-dots">
+          <span class="dot-bounce"></span>
+          <span class="dot-bounce"></span>
+          <span class="dot-bounce"></span>
+        </span>
+      </div>
+    `;
+
+    const aiBubble = mode === 'code' 
+      ? renderCodeMessageBubble('ai', thinkingHtml)
+      : renderChatMessageBubble('ai', thinkingHtml);
+
+    container.scrollTop = container.scrollHeight;
+
+    try {
+      const res = await window.cageAI.sendChatMessage({
+        modelKey: modelKey,
+        userPrompt: healingPrompt,
+        history: chatObj.messages
+      });
+
+      if (!res.success) {
+        aiBubble.innerHTML = `<span style="color: #ef4444;">Otomatik çözümleme hatası: ${escapeHtml(res.error || 'Bilinmeyen hata')}</span>`;
+        isHealingInProgress = false;
+        return;
       }
-    } else {
-      renderChatMessageBubble('ai', successMsg);
+
+      const reply = res.data;
+      aiBubble.innerHTML = formatMarkdown(reply.text);
+
+      chatObj.messages.push({
+        role: 'model',
+        content: reply.text,
+        flagged: !!reply.flaggedIncident
+      });
+
+      if (mode === 'code') {
+        await window.cageAI.saveCodeChat(currentCodeChat);
+      } else {
+        await window.cageAI.saveChat(currentChat);
+      }
+
+      if (reply.fileAction && reply.fileAction.requiresPermission) {
+        renderInlineActionCard(reply.fileAction, mode);
+      }
+    } catch (err) {
+      aiBubble.innerHTML = `<span style="color: #ef4444;">Otonom çözüm bağlantı hatası: ${escapeHtml(err.message)}</span>`;
+    } finally {
+      isHealingInProgress = false;
+      container.scrollTop = container.scrollHeight;
     }
-    showToast('Sistem işlemi başarıyla uygulandı!');
-    pendingFilePerm = null;
-  });
+  }
 
-  btnRejectFilePerm.addEventListener('click', async () => {
-    if (!pendingFilePerm || !window.cageAI) return;
-    filePermissionModal.classList.add('hidden');
+  // INLINE AGENT ACTION CARD (AYRI PENCERE YERİNE CHAT İÇİ ONAY BARI)
+  function renderInlineActionCard(action, mode = 'code') {
+    const container = mode === 'code' ? messagesContainerCode : messagesContainerChat;
+    if (!container || !action) return;
 
-    await window.cageAI.submitFilePermissionDecision({
-      action: pendingFilePerm.action,
-      filePath: pendingFilePerm.filePath,
-      content: pendingFilePerm.content,
-      approved: false
+    const isCmd = action.action === 'COMMAND' || action.action === 'INSTALL';
+    const isFolder = action.action === 'MKDIR' || action.action === 'FOLDER';
+    const isRead = action.action === 'READ';
+    const isWrite = !isCmd && !isFolder && !isRead;
+
+    let icon = '⚡';
+    let actionSentence = '';
+    let targetLabel = '';
+    let previewText = '';
+
+    if (isCmd) {
+      icon = '⚡';
+      const cmd = action.command || action.content || '';
+      actionSentence = `'${cmd.length > 52 ? cmd.substring(0, 52) + '...' : cmd}' terminal komutu ve kurulumu çalıştırılacak.`;
+      targetLabel = 'Çalıştırılacak Komut:';
+      previewText = cmd;
+    } else if (isFolder) {
+      icon = '📁';
+      const folderPath = action.filePath || 'Yeni Klasör';
+      actionSentence = `'${folderPath}' klasörü oluşturulacak.`;
+      targetLabel = 'Oluşturulacak Klasör Yolu:';
+      previewText = folderPath;
+    } else if (isRead) {
+      icon = '🔍';
+      const filePath = action.filePath || 'Dosya';
+      actionSentence = `'${filePath}' dosyasının içeriği okunacak.`;
+      targetLabel = 'Okunacak Dosya:';
+      previewText = filePath;
+    } else {
+      icon = '📄';
+      const filePath = action.filePath || 'dosya.txt';
+      actionSentence = `'${filePath}' dosyası oluşturulacak / düzenlenecek.`;
+      targetLabel = 'Hedef Dosya Yolu:';
+      previewText = action.content || '(İçerik boş)';
+    }
+
+    const card = document.createElement('div');
+    card.className = 'inline-action-banner';
+    card.innerHTML = `
+      <div class="inline-action-header">
+        <div class="inline-action-summary" title="Detayları görmek veya gizlemek için tıklayın">
+          <span class="action-icon">${icon}</span>
+          <span class="action-text">${escapeHtml(actionSentence)}</span>
+          <span class="action-chevron">▼</span>
+        </div>
+        <div class="inline-action-btns">
+          <button class="btn-inline-approve" title="Eylemi Onayla ve Uygula">
+            <span>✓</span> Onayla
+          </button>
+          <button class="btn-inline-reject" title="Eylemi Reddet">
+            <span>✕</span> Reddet
+          </button>
+        </div>
+      </div>
+      <div class="inline-action-details hidden">
+        <div class="details-target-tag">
+          <strong>${targetLabel}</strong> <code>${escapeHtml(action.filePath || action.command || '')}</code>
+        </div>
+        <pre class="details-code-preview"><code>${escapeHtml(previewText)}</code></pre>
+      </div>
+    `;
+
+    // Toggle details on sentence click
+    const summaryEl = card.querySelector('.inline-action-summary');
+    const detailsEl = card.querySelector('.inline-action-details');
+    summaryEl.addEventListener('click', () => {
+      const isHidden = detailsEl.classList.contains('hidden');
+      if (isHidden) {
+        detailsEl.classList.remove('hidden');
+        summaryEl.classList.add('expanded');
+      } else {
+        detailsEl.classList.add('hidden');
+        summaryEl.classList.remove('expanded');
+      }
     });
 
-    const rejectMsg = `🚫 **Dosya İşlemi Reddedildi:** Kullanıcı dosya değişikliğini onaylamadı.`;
-    if (activeMode === 'code') {
-      renderCodeMessageBubble('ai', rejectMsg);
-    } else {
-      renderChatMessageBubble('ai', rejectMsg);
-    }
-    pendingFilePerm = null;
-  });
+    // Approve button handler
+    const btnApprove = card.querySelector('.btn-inline-approve');
+    const btnReject = card.querySelector('.btn-inline-reject');
+    const btnsContainer = card.querySelector('.inline-action-btns');
+
+    btnApprove.addEventListener('click', async () => {
+      btnsContainer.innerHTML = `<span style="font-size: 11.5px; color: #fbbf24; font-weight: 600; display: inline-flex; align-items: center; gap: 6px;"><span class="dot-bounce" style="background:#fbbf24; width:5px; height:5px; display:inline-block; border-radius:50%;"></span> Uygulanıyor...</span>`;
+
+      try {
+        const result = await window.cageAI.submitFilePermissionDecision({
+          action: action.action,
+          filePath: action.filePath,
+          content: action.content,
+          command: action.command,
+          approved: true
+        });
+
+        if (result && result.success && !result.hasError) {
+          card.innerHTML = `
+            <div class="action-status-banner" style="background: rgba(16, 185, 129, 0.15); border: 1px solid #10b981; color: #34d399; padding: 10px 14px; border-radius: 8px; font-size: 12.5px; display: flex; align-items: center; gap: 8px;">
+              <span>✅</span>
+              <span><strong>Başarılı:</strong> ${escapeHtml(result.message || 'İşlem uygulandı.')}</span>
+            </div>
+          `;
+
+          if (result.output && result.output.trim().length > 0) {
+            renderTerminalCard(result.output, mode);
+          }
+
+          if (isWrite && action.content && codeStudioView) {
+            codeStudioView.value = action.content;
+            currentCodeChat.codeContent = action.content;
+            if (activeFileTitle && action.filePath) {
+              activeFileTitle.textContent = action.filePath.split(/[\\/]/).pop();
+            }
+          }
+          showToast('Sistem işlemi başarıyla uygulandı!');
+        } else {
+          // Execution failed or error returned
+          const errMsg = (result && (result.error || result.output || result.message)) || 'Komut çalıştırılırken hata oluştu';
+          card.innerHTML = `
+            <div class="action-status-banner" style="background: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444; color: #f87171; padding: 10px 14px; border-radius: 8px; font-size: 12.5px; display: flex; align-items: center; gap: 8px;">
+              <span>❌</span>
+              <span><strong>İşlem Başarısız:</strong> ${escapeHtml(result ? result.message : 'Komut hata ile sonlandı.')}</span>
+            </div>
+          `;
+          renderErrorGuiCard({
+            error: errMsg,
+            action: action,
+            mode: mode
+          }, mode);
+        }
+      } catch (err) {
+        renderErrorGuiCard({
+          error: err.message,
+          action: action,
+          mode: mode
+        }, mode);
+      }
+    });
+
+    btnReject.addEventListener('click', async () => {
+      btnsContainer.innerHTML = `<span style="font-size: 11.5px; color: #ef4444; font-weight: 600;">Reddedildi</span>`;
+      await window.cageAI.submitFilePermissionDecision({
+        action: action.action,
+        filePath: action.filePath,
+        content: action.content,
+        command: action.command,
+        approved: false
+      });
+      setTimeout(() => {
+        card.innerHTML = `
+          <div class="action-status-banner" style="background: rgba(239, 68, 68, 0.12); border: 1px solid #7f1d1d; color: #fca5a5; padding: 8px 12px; border-radius: 6px; font-size: 12px;">
+            🚫 <strong>Eylem Reddedildi:</strong> Kullanıcı bu sistem işlemini iptal etti.
+          </div>
+        `;
+      }, 400);
+    });
+
+    container.appendChild(card);
+    container.scrollTop = container.scrollHeight;
+  }
+
+  // Deprecated modal wrapper maintained for backward compatibility
+  function showFilePermissionDialog(action) {
+    renderInlineActionCard(action, activeMode);
+  }
+
+  // CODE CARD DELEGATED INTERACTIONS (KOPYALA, EDİTÖRE AKTAR, ÇALIŞTIR)
+  function setupCodeCardActions(container) {
+    if (!container) return;
+    container.addEventListener('click', async (e) => {
+      // 1. Copy button
+      const copyBtn = e.target.closest('.btn-copy-chat-code');
+      if (copyBtn) {
+        const card = copyBtn.closest('.chat-gui-code-card');
+        if (!card) return;
+        const code = decodeURIComponent(card.dataset.code || '');
+        await navigator.clipboard.writeText(code);
+        const origText = copyBtn.innerHTML;
+        copyBtn.innerHTML = '<span>✓</span> Kopyalandı!';
+        setTimeout(() => { copyBtn.innerHTML = origText; }, 1600);
+        showToast('Kod panoya kopyalandı!');
+        return;
+      }
+
+      // 2. Apply to Editor button
+      const applyBtn = e.target.closest('.btn-apply-file');
+      if (applyBtn) {
+        const card = applyBtn.closest('.chat-gui-code-card');
+        if (!card) return;
+        const code = decodeURIComponent(card.dataset.code || '');
+        const lang = card.dataset.lang || '';
+        
+        if (codeStudioView) {
+          codeStudioView.value = code;
+          currentCodeChat.codeContent = code;
+        }
+
+        if (lang.startsWith('file:') && activeFileTitle) {
+          const fname = lang.substring(5).trim();
+          activeFileTitle.textContent = fname;
+          currentCodeChat.activeFile = fname;
+          if (lblActiveFullPath) {
+            lblActiveFullPath.textContent = 'Yerel Bellek / ' + fname;
+          }
+        }
+
+        if (activeMode !== 'code') {
+          switchMode('code');
+        }
+
+        showToast('Kod Stüdyo editörüne aktarıldı!');
+        return;
+      }
+
+      // 3. Run on PC button
+      const runBtn = e.target.closest('.btn-run-chat-code');
+      if (runBtn) {
+        const card = runBtn.closest('.chat-gui-code-card');
+        if (!card) return;
+        const code = decodeURIComponent(card.dataset.code || '');
+        const lang = (card.dataset.lang || '').toLowerCase();
+
+        showToast('⚡ Kod bilgisayarınızda çalıştırılıyor...');
+
+        const isPython = lang.includes('python') || lang === 'py' || code.includes('import ') || code.includes('def ') || code.includes('print(');
+        const isCmd = lang.startsWith('command') || lang === 'bash' || lang === 'powershell' || lang === 'sh';
+
+        let cmd = '';
+        if (isCmd) {
+          cmd = code.trim();
+        } else if (isPython) {
+          cmd = `python -c "${code.replace(/"/g, '`"').replace(/\n/g, '; ')}"`;
+        } else {
+          cmd = `node -e "${code.replace(/"/g, '`"').replace(/\n/g, '; ')}"`;
+        }
+
+        if (window.cageAI && window.cageAI.runSystemCommand) {
+          const orig = runBtn.innerHTML;
+          runBtn.innerHTML = '<span>⏳</span>';
+          const res = await window.cageAI.runSystemCommand(cmd);
+          runBtn.innerHTML = orig;
+
+          if (res.success && !res.stderr) {
+            showToast('Kod başarıyla çalıştırıldı!');
+            renderTerminalCard(res.stdout || '(Kod başarıyla tamamlandı, çıktı üretilmedi)', activeMode);
+          } else {
+            showToast('Çalıştırma hatası oluştu', true);
+            const errorOutput = res.stderr || res.error || res.stdout || 'Hata oluştu';
+            renderErrorGuiCard({
+              error: errorOutput,
+              code: code,
+              isPython: isPython
+            }, activeMode);
+          }
+        }
+        return;
+      }
+    });
+  }
+
+  // ERROR CARD DELEGATED INTERACTIONS (LOG GÖSTER / GİZLE & YENİDEN ÇÖZ)
+  function setupErrorCardActions(container) {
+    if (!container) return;
+    container.addEventListener('click', (e) => {
+      const toggle = e.target.closest('.error-trace-toggle');
+      if (toggle) {
+        const wrapper = toggle.closest('.error-card-trace-wrapper');
+        const pre = wrapper ? wrapper.querySelector('.error-trace-pre') : null;
+        if (pre) {
+          pre.classList.toggle('hidden');
+          toggle.textContent = pre.classList.contains('hidden') ? '▼ Hata Logunu Göster' : '▲ Hata Logunu Gizle';
+        }
+        return;
+      }
+
+      const healBtn = e.target.closest('.btn-heal-error');
+      if (healBtn) {
+        const card = healBtn.closest('.chat-gui-error-card');
+        const errText = card ? card.querySelector('.error-trace-pre')?.textContent : '';
+        triggerAutonomousSelfHealing(errText || 'Bilinmeyen çalıştırma hatası', activeMode);
+        healBtn.innerHTML = '<span>✓</span> Çözüm Başlatıldı';
+        healBtn.disabled = true;
+        return;
+      }
+    });
+  }
+
+  // Setup Delegated Listeners for both chat and code containers
+  setupCodeCardActions(messagesContainerChat);
+  setupCodeCardActions(messagesContainerCode);
+  setupErrorCardActions(messagesContainerChat);
+  setupErrorCardActions(messagesContainerCode);
+
+  if (window.cageAI && window.cageAI.onFilePermissionRequest) {
+    window.cageAI.onFilePermissionRequest((action) => {
+      renderInlineActionCard(action, activeMode);
+    });
+  }
 
   // MARKET & BILLING
   btnHeaderUpgrade.addEventListener('click', () => marketModal.classList.remove('hidden'));
