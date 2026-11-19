@@ -807,9 +807,15 @@ document.addEventListener('DOMContentLoaded', async () => {
       await window.cageAI.saveChat(currentChat);
       await loadChatHistory();
 
-      if (reply.fileAction && reply.fileAction.requiresPermission) {
-        renderInlineActionCard(reply.fileAction, 'chat');
-      }
+      const actions = (reply.fileActions && reply.fileActions.length > 0) 
+        ? reply.fileActions 
+        : (reply.fileAction ? [reply.fileAction] : []);
+
+      actions.forEach(act => {
+        if (act && act.requiresPermission) {
+          renderInlineActionCard(act, 'chat');
+        }
+      });
     } catch (err) {
       aiBubble.innerHTML = `<span style="color: #ef4444;">Bağlantı hatası: ${escapeHtml(err.message)}</span>`;
     }
@@ -919,7 +925,15 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (extracted) {
         codeStudioView.value = extracted.code;
         currentCodeChat.codeContent = extracted.code;
-        if (extracted.lang) {
+        if (extracted.filePath) {
+          const fname = extracted.filePath.split(/[\\/]/).pop() || 'main.py';
+          activeFileTitle.textContent = fname;
+          currentCodeChat.activeFile = fname;
+          currentCodeChat.activePath = extracted.filePath;
+          if (lblActiveFullPath) {
+            lblActiveFullPath.textContent = extracted.filePath;
+          }
+        } else if (extracted.lang) {
           const extension = getExtensionFromLang(extracted.lang);
           const fname = `solution.${extension}`;
           activeFileTitle.textContent = fname;
@@ -940,9 +954,15 @@ document.addEventListener('DOMContentLoaded', async () => {
       await window.cageAI.saveCodeChat(currentCodeChat);
       await loadCodeChatHistory();
 
-      if (reply.fileAction && reply.fileAction.requiresPermission) {
-        renderInlineActionCard(reply.fileAction, 'code');
-      }
+      const actions = (reply.fileActions && reply.fileActions.length > 0) 
+        ? reply.fileActions 
+        : (reply.fileAction ? [reply.fileAction] : []);
+
+      actions.forEach(act => {
+        if (act && act.requiresPermission) {
+          renderInlineActionCard(act, 'code');
+        }
+      });
     } catch (err) {
       aiBubble.innerHTML = `<span style="color: #ef4444;">Bağlantı hatası: ${escapeHtml(err.message)}</span>`;
     }
@@ -979,11 +999,28 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Code Block Extractor
   function extractCodeBlock(text) {
-    const match = text.match(/```([a-zA-Z0-9_-]*)\n([\s\S]*?)```/);
-    if (match) {
+    if (!text) return null;
+    const match = text.match(/```([^\r\n]*)[\r\n]+([\s\S]*?)(?:```[^\S\r\n]*|$)/);
+    if (match && match[2].trim().length > 0) {
+      const header = (match[1] || '').trim();
+      let lang = 'javascript';
+      let filePath = '';
+
+      if (header.startsWith('file:') || header.startsWith('write:') || header.startsWith('create:')) {
+        filePath = header.substring(header.indexOf(':') + 1).trim();
+        const ext = filePath.split('.').pop() || 'py';
+        lang = ext.toLowerCase();
+      } else if (header.startsWith('command:')) {
+        lang = 'bash';
+      } else if (header) {
+        lang = header.toLowerCase();
+      }
+
       return {
-        lang: match[1] || 'javascript',
-        code: match[2].trim()
+        lang: lang,
+        code: match[2].trim(),
+        filePath: filePath,
+        rawHeader: header
       };
     }
     return null;
@@ -1149,31 +1186,60 @@ document.addEventListener('DOMContentLoaded', async () => {
     const codeBlocks = [];
 
     // 1. Extract and replace code blocks with tokens
-    let processed = text.replace(/```([a-zA-Z0-9_\-\.\/:]*)\n([\s\S]*?)```/g, (match, rawLang, code) => {
-      const cleanLang = (rawLang || '').trim();
-      let badge = cleanLang || 'Kod';
+    // Matches ```header\n...``` across CRLF and LF, supporting paths, spaces, colons, etc.
+    let processed = text.replace(/```([^\r\n]*)[\r\n]+([\s\S]*?)(?:```[^\S\r\n]*|$)/g, (match, rawHeader, codeContent) => {
+      const header = (rawHeader || '').trim();
+      let badge = 'Kod';
+      let displayCode = codeContent ? codeContent.replace(/\r\n/g, '\n') : '';
+      let detectedLang = 'javascript';
+      let filePath = '';
       let runActionAllowed = true;
 
-      if (cleanLang.startsWith('file:')) {
-        const fname = cleanLang.substring(5).trim();
-        badge = `📄 ${fname}`;
-      } else if (cleanLang.startsWith('folder:') || cleanLang.startsWith('mkdir:')) {
-        const dname = cleanLang.substring(cleanLang.indexOf(':') + 1).trim();
-        badge = `📁 ${dname}`;
+      if (header.startsWith('file:') || header.startsWith('write:') || header.startsWith('create:')) {
+        const colonIdx = header.indexOf(':');
+        filePath = header.substring(colonIdx + 1).trim();
+        const basename = filePath.split(/[\\/]/).pop() || filePath;
+        const ext = basename.split('.').pop() || 'py';
+        badge = `📄 ${basename}`;
+        detectedLang = ext.toLowerCase();
+      } else if (header.startsWith('folder:') || header.startsWith('mkdir:')) {
+        const colonIdx = header.indexOf(':');
+        const folderPath = header.substring(colonIdx + 1).trim();
+        badge = `📁 ${folderPath || 'Yeni Klasör'}`;
+        detectedLang = 'folder';
         runActionAllowed = false;
-      } else if (cleanLang.startsWith('command:')) {
+        if (!displayCode.trim()) displayCode = folderPath;
+      } else if (header.startsWith('command:') || header.startsWith('run:') || header.startsWith('setup:') || header.startsWith('install:')) {
+        const colonIdx = header.indexOf(':');
+        const headerCmd = header.substring(colonIdx + 1).trim();
         badge = `⚡ Terminal Komutu`;
-      } else if (cleanLang.startsWith('read:')) {
-        badge = `🔍 Dosya İçeriği`;
+        detectedLang = 'powershell';
+        if (!displayCode.trim()) {
+          displayCode = headerCmd;
+        } else if (headerCmd) {
+          displayCode = `${headerCmd}\n${displayCode.trim()}`;
+        }
+      } else if (header === 'command' || header === 'cmd' || header === 'powershell' || header === 'bash' || header === 'sh') {
+        badge = `⚡ Terminal Komutu`;
+        detectedLang = 'powershell';
+      } else if (header.startsWith('read:') || header.startsWith('view:')) {
+        const colonIdx = header.indexOf(':');
+        const rPath = header.substring(colonIdx + 1).trim();
+        badge = `🔍 ${rPath}`;
+        detectedLang = 'text';
         runActionAllowed = false;
+      } else if (header) {
+        badge = header;
+        detectedLang = header.toLowerCase();
       }
 
-      const lines = code.trim().split('\n').length;
-      const linesLabel = `${lines} satır`;
+      displayCode = displayCode.trim();
+      const lines = displayCode ? displayCode.split('\n').length : 1;
+      const linesLabel = detectedLang === 'powershell' ? `${lines} komut` : `${lines} satır`;
       const placeholder = `__CAGE_CODE_BLOCK_${codeBlocks.length}__`;
 
       const blockHtml = `
-        <div class="chat-gui-code-card" data-code="${encodeURIComponent(code)}" data-lang="${cleanLang}">
+        <div class="chat-gui-code-card" data-code="${encodeURIComponent(displayCode)}" data-lang="${escapeHtml(detectedLang)}" data-filepath="${escapeHtml(filePath)}">
           <div class="code-card-header">
             <div class="code-card-tags">
               <span class="code-lang-badge">${escapeHtml(badge)}</span>
@@ -1193,7 +1259,7 @@ document.addEventListener('DOMContentLoaded', async () => {
               ` : ''}
             </div>
           </div>
-          <pre class="code-card-body"><code>${escapeHtml(code)}</code></pre>
+          <pre class="code-card-body"><code>${escapeHtml(displayCode)}</code></pre>
         </div>
       `;
 
@@ -1205,7 +1271,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     let html = escapeHtml(processed);
 
     // 3. Inline code `...`
-    html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+    html = html.replace(/`([^`\r\n]+)`/g, '<code>$1</code>');
 
     // 4. Bold **text**
     html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
@@ -1214,7 +1280,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     html = html.replace(/^\* (.*$)/gim, '• $1');
 
     // 6. Newlines to <br>
-    html = html.replace(/\n/g, '<br>');
+    html = html.replace(/\r\n/g, '<br>').replace(/\n/g, '<br>');
 
     // 7. Restore code blocks
     codeBlocks.forEach((block, idx) => {
@@ -1413,9 +1479,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         await window.cageAI.saveChat(currentChat);
       }
 
-      if (reply.fileAction && reply.fileAction.requiresPermission) {
-        renderInlineActionCard(reply.fileAction, mode);
-      }
+      const actions = (reply.fileActions && reply.fileActions.length > 0) 
+        ? reply.fileActions 
+        : (reply.fileAction ? [reply.fileAction] : []);
+
+      actions.forEach(act => {
+        if (act && act.requiresPermission) {
+          renderInlineActionCard(act, mode);
+        }
+      });
     } catch (err) {
       aiBubble.innerHTML = `<span style="color: #ef4444;">Otonom çözüm bağlantı hatası: ${escapeHtml(err.message)}</span>`;
     } finally {
@@ -1617,19 +1689,20 @@ document.addEventListener('DOMContentLoaded', async () => {
         const card = applyBtn.closest('.chat-gui-code-card');
         if (!card) return;
         const code = decodeURIComponent(card.dataset.code || '');
-        const lang = card.dataset.lang || '';
+        const fPath = card.dataset.filepath || '';
         
         if (codeStudioView) {
           codeStudioView.value = code;
           currentCodeChat.codeContent = code;
         }
 
-        if (lang.startsWith('file:') && activeFileTitle) {
-          const fname = lang.substring(5).trim();
+        if (fPath && activeFileTitle) {
+          const fname = fPath.split(/[\\/]/).pop();
           activeFileTitle.textContent = fname;
           currentCodeChat.activeFile = fname;
+          currentCodeChat.activePath = fPath;
           if (lblActiveFullPath) {
-            lblActiveFullPath.textContent = 'Yerel Bellek / ' + fname;
+            lblActiveFullPath.textContent = fPath;
           }
         }
 
@@ -1648,17 +1721,29 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!card) return;
         const code = decodeURIComponent(card.dataset.code || '');
         const lang = (card.dataset.lang || '').toLowerCase();
+        const fPath = card.dataset.filepath || '';
 
         showToast('⚡ Kod bilgisayarınızda çalıştırılıyor...');
 
         const isPython = lang.includes('python') || lang === 'py' || code.includes('import ') || code.includes('def ') || code.includes('print(');
-        const isCmd = lang.startsWith('command') || lang === 'bash' || lang === 'powershell' || lang === 'sh';
+        const isCmd = lang.includes('powershell') || lang.startsWith('command') || lang === 'bash' || lang === 'sh';
 
         let cmd = '';
         if (isCmd) {
           cmd = code.trim();
         } else if (isPython) {
-          cmd = `python -c "${code.replace(/"/g, '`"').replace(/\n/g, '; ')}"`;
+          if (fPath) {
+            if (window.cageAI && window.cageAI.fsWriteFile) {
+              await window.cageAI.fsWriteFile({ filePath: fPath, content: code });
+            }
+            cmd = `python "${fPath}"`;
+          } else {
+            const tempScript = `${process.env.TEMP || 'C:\\Windows\\Temp'}\\cage_run_${Date.now()}.py`;
+            if (window.cageAI && window.cageAI.fsWriteFile) {
+              await window.cageAI.fsWriteFile({ filePath: tempScript, content: code });
+            }
+            cmd = `python "${tempScript}"`;
+          }
         } else {
           cmd = `node -e "${code.replace(/"/g, '`"').replace(/\n/g, '; ')}"`;
         }

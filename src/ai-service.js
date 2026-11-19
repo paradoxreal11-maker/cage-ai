@@ -64,67 +64,125 @@ class AIService {
     return codeKeywords.some(kw => lower.includes(kw));
   }
 
-  detectAgentFileAction(prompt, responseText) {
-    // 1. File write/create action: ```file:path ... ``` or [FILE_ACTION: WRITE ...]
-    const fileMatch = responseText.match(/```(?:file|write|create):([^\n\r]+)[\r\n]+([\s\S]*?)```/i) ||
-                      responseText.match(/\[FILE_ACTION:\s*(READ|WRITE|MODIFY)\s*\|\s*PATH:\s*([^\s\|]+)(?:\s*\|\s*CONTENT:\s*([\s\S]*?))?\]/i);
+  detectAgentFileActions(prompt, responseText) {
+    if (!responseText) return [];
+    const actions = [];
+    const seenKeys = new Set();
 
-    if (fileMatch) {
-      if (fileMatch[1] && fileMatch[2] && !fileMatch[3]) {
-        // Format: ```file:path ... ```
-        return {
+    // 1. Scan for file blocks: ```file:path ... ``` or ```write:path ... ``` or ```create:path ... ```
+    const fileRegex = /```(?:file|write|create):([^\r\n]+)[\r\n]+([\s\S]*?)```/gi;
+    let fileMatch;
+    while ((fileMatch = fileRegex.exec(responseText)) !== null) {
+      const fPath = fileMatch[1].trim();
+      const key = 'WRITE:' + fPath;
+      if (!seenKeys.has(key)) {
+        seenKeys.add(key);
+        actions.push({
           requiresPermission: true,
           action: 'WRITE',
-          filePath: fileMatch[1].trim(),
+          filePath: fPath,
           content: fileMatch[2].trim()
-        };
-      } else {
-        return {
-          requiresPermission: true,
-          action: fileMatch[1].toUpperCase(),
-          filePath: fileMatch[2].trim(),
-          content: fileMatch[3] ? fileMatch[3].trim() : ''
-        };
+        });
       }
     }
 
-    // 2. Command run / library setup action: ```command:cmd ... ``` or ```setup:cmd ... ```
-    const cmdMatch = responseText.match(/```(?:command|run|setup|install):([^\n\r]+)[\r\n]*([\s\S]*?)```/i) ||
-                     responseText.match(/\[COMMAND_ACTION:\s*([^\n\r\]]+)\]/i);
-    if (cmdMatch) {
-      const commandStr = (cmdMatch[2] && cmdMatch[2].trim()) ? (cmdMatch[1].trim() + '\n' + cmdMatch[2].trim()) : cmdMatch[1].trim();
-      return {
-        requiresPermission: true,
-        action: 'COMMAND',
-        command: commandStr,
-        filePath: 'Terminal / PowerShell',
-        content: commandStr
-      };
+    // 2. Scan for command blocks: ```command:cmd ... ``` or ```command\ncmd```
+    const cmdRegex = /```(?:command|run|setup|install)(?::([^\r\n]*))?[\r\n]*([\s\S]*?)```/gi;
+    let cmdMatch;
+    while ((cmdMatch = cmdRegex.exec(responseText)) !== null) {
+      const headerCmd = (cmdMatch[1] || '').trim();
+      const bodyCmd = (cmdMatch[2] || '').trim();
+      const finalCmd = headerCmd && bodyCmd ? `${headerCmd}\n${bodyCmd}` : (headerCmd || bodyCmd);
+      if (finalCmd) {
+        const key = 'COMMAND:' + finalCmd;
+        if (!seenKeys.has(key)) {
+          seenKeys.add(key);
+          actions.push({
+            requiresPermission: true,
+            action: 'COMMAND',
+            command: finalCmd,
+            filePath: 'Terminal / PowerShell',
+            content: finalCmd
+          });
+        }
+      }
     }
 
-    // 3. Folder create action: ```folder:path ... ``` or ```mkdir:path ... ```
-    const folderMatch = responseText.match(/```(?:folder|mkdir):([^\n\r]+)[\r\n]*([\s\S]*?)```/i);
-    if (folderMatch) {
-      return {
-        requiresPermission: true,
-        action: 'MKDIR',
-        filePath: folderMatch[1].trim(),
-        content: folderMatch[2] ? folderMatch[2].trim() : ''
-      };
+    // 3. Scan for folder blocks: ```folder:path ... ``` or ```mkdir:path ... ```
+    const folderRegex = /```(?:folder|mkdir):([^\r\n]+)[\r\n]*([\s\S]*?)```/gi;
+    let folderMatch;
+    while ((folderMatch = folderRegex.exec(responseText)) !== null) {
+      const dPath = folderMatch[1].trim();
+      const key = 'MKDIR:' + dPath;
+      if (!seenKeys.has(key)) {
+        seenKeys.add(key);
+        actions.push({
+          requiresPermission: true,
+          action: 'MKDIR',
+          filePath: dPath,
+          content: folderMatch[2] ? folderMatch[2].trim() : ''
+        });
+      }
     }
 
-    // 4. File read action: ```read:path ... ```
-    const readMatch = responseText.match(/```(?:read|view):([^\n\r]+)```/i);
-    if (readMatch) {
-      return {
-        requiresPermission: true,
-        action: 'READ',
-        filePath: readMatch[1].trim(),
-        content: ''
-      };
+    // 4. Scan for read blocks: ```read:path ... ```
+    const readRegex = /```(?:read|view):([^\r\n]+)[\r\n]*([\s\S]*?)```/gi;
+    let readMatch;
+    while ((readMatch = readRegex.exec(responseText)) !== null) {
+      const rPath = readMatch[1].trim();
+      const key = 'READ:' + rPath;
+      if (!seenKeys.has(key)) {
+        seenKeys.add(key);
+        actions.push({
+          requiresPermission: true,
+          action: 'READ',
+          filePath: rPath,
+          content: ''
+        });
+      }
     }
 
-    return null;
+    // 5. Structured action tags fallback: [FILE_ACTION: ...], [COMMAND_ACTION: ...]
+    const tagFileRegex = /\[FILE_ACTION:\s*(READ|WRITE|MODIFY)\s*\|\s*PATH:\s*([^\s\|]+)(?:\s*\|\s*CONTENT:\s*([\s\S]*?))?\]/gi;
+    let tagMatch;
+    while ((tagMatch = tagFileRegex.exec(responseText)) !== null) {
+      const act = tagMatch[1].toUpperCase();
+      const p = tagMatch[2].trim();
+      const key = act + ':' + p;
+      if (!seenKeys.has(key)) {
+        seenKeys.add(key);
+        actions.push({
+          requiresPermission: true,
+          action: act,
+          filePath: p,
+          content: tagMatch[3] ? tagMatch[3].trim() : ''
+        });
+      }
+    }
+
+    const tagCmdRegex = /\[COMMAND_ACTION:\s*([^\n\r\]]+)\]/gi;
+    let tagCmdMatch;
+    while ((tagCmdMatch = tagCmdRegex.exec(responseText)) !== null) {
+      const cmd = tagCmdMatch[1].trim();
+      const key = 'COMMAND:' + cmd;
+      if (!seenKeys.has(key)) {
+        seenKeys.add(key);
+        actions.push({
+          requiresPermission: true,
+          action: 'COMMAND',
+          command: cmd,
+          filePath: 'Terminal / PowerShell',
+          content: cmd
+        });
+      }
+    }
+
+    return actions;
+  }
+
+  detectAgentFileAction(prompt, responseText) {
+    const actions = this.detectAgentFileActions(prompt, responseText);
+    return actions[0] || null;
   }
 
   async generateResponse({ modelKey, userPrompt, history = [], userTier = 'free' }) {
@@ -261,8 +319,9 @@ Kod veya komutta hata meydana gelirse (hata geri bildirimi geldiğinde), hatayı
       throw new Error(`CAGE AI Bağlantı Hatası: ${lastError ? lastError.message : 'Tüm model sunucuları şu an yoğun, lütfen birkaç saniye sonra tekrar deneyin.'}`);
     }
 
-    // 6. Check for Agent File Action
-    const fileAction = this.detectAgentFileAction(userPrompt, rawText);
+    // 6. Check for Agent File Actions (Supports multiple actions per reply)
+    const fileActions = this.detectAgentFileActions(userPrompt, rawText);
+    const fileAction = fileActions[0] || null;
 
     let outputText = rawText;
     if (flaggedIncident) {
@@ -272,6 +331,7 @@ Kod veya komutta hata meydana gelirse (hata geri bildirimi geldiğinde), hatayı
     return {
       text: outputText,
       fileAction,
+      fileActions,
       flaggedIncident
     };
   }
