@@ -9,6 +9,22 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@500;600;700;800&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23d97706'><polygon points='12 2 2 7 12 12 22 7 12 2'/><polyline points='2 17 12 22 22 17'/><polyline points='2 12 12 17 22 12'/></svg>">
+
+  <!-- Anında İndirme Kalkanı ve Önbellek Denetleyicisi (0 milisaniye gecikme) -->
+  <script>
+    (function() {
+      try {
+        var cached = localStorage.getItem('cage_site_config');
+        if (cached) {
+          var cfg = JSON.parse(cached);
+          window.__CAGE_CACHED_CONFIG = cfg;
+          if (cfg.downloadsEnabled === false) {
+            document.documentElement.classList.add('downloads-blocked');
+          }
+        }
+      } catch (e) {}
+    })();
+  </script>
 </head>
 <body>
   
@@ -42,9 +58,9 @@
       </nav>
 
       <div class="nav-actions">
-        <a href="/CAGE_AI_Setup.exe" class="nav-download-btn" download="CAGE_AI_Setup.exe">
+        <a href="javascript:void(0)" class="nav-download-btn" id="btnDownloadNav" onclick="handleSiteDownload(event)">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-          <span>İndir (.exe)</span>
+          <span class="btn-dl-text">İndir (.exe)</span>
         </a>
       </div>
     </div>
@@ -105,7 +121,7 @@
 
       <!-- CTA & Download Box -->
       <div class="hero-cta-group" id="download">
-        <a href="/CAGE_AI_Setup.exe" class="btn btn-hero-primary" download="CAGE_AI_Setup.exe" id="btnDownloadHero">
+        <a href="javascript:void(0)" class="btn btn-hero-primary" id="btnDownloadHero" onclick="handleSiteDownload(event)">
           <div class="btn-icon-wrapper">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
           </div>
@@ -632,9 +648,9 @@
         </div>
       </div>
       <div class="cta-col-right">
-        <a href="/CAGE_AI_Setup.exe" class="btn btn-hero-primary" download="CAGE_AI_Setup.exe">
+        <a href="javascript:void(0)" class="btn btn-hero-primary" id="btnDownloadBottom" onclick="handleSiteDownload(event)">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-          <span>Hemen İndir (.exe)</span>
+          <span class="btn-dl-text">Hemen İndir (.exe)</span>
         </a>
       </div>
     </div>
@@ -736,10 +752,57 @@
       });
     }
 
-    // 6. DİNAMİK YÖNETİM AYARLARI & GERİ SAYIM MOTORU (CAGE AI CLOUD SYNC)
+    // 6. DİNAMİK YÖNETİM AYARLARI & GÜVENLİ İNDİRME MOTORU (CAGE AI CLOUD SYNC)
     const GIST_CONFIG_URL = "https://gist.githubusercontent.com/paradoxreal11-maker/4edc7a70b46bd596d2782412311b44e2/raw/site-config.json";
     let siteCountdownInterval = null;
     let siteCurrentNotice = "CAGE AI indirmeleri bakım nedeniyle geçici olarak durdurulmuştur.";
+    let isSiteConfigLoaded = false;
+    let pendingDownloadRequested = false;
+
+    // Önbellekten hemen uygula (varsa 0ms)
+    if (window.__CAGE_CACHED_CONFIG) {
+      applySiteConfiguration(window.__CAGE_CACHED_CONFIG, true);
+    }
+
+    // Güvenli İndirme Tıklama Yöneticisi (HTML'de direkt dosya linki bulunmaz)
+    function handleSiteDownload(e) {
+      if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+
+      // 1. Ayarlar yüklendiyse ve indirmeler kapalıysa modal aç
+      if (window.__CAGE_SITE_CONFIG && window.__CAGE_SITE_CONFIG.downloadsEnabled === false) {
+        openDownloadModal();
+        return false;
+      }
+
+      // 2. Ayarlar henüz buluttan inmediyse (yenileme / dondurma anı)
+      if (!isSiteConfigLoaded) {
+        // Önbellekte kapalı olduğu biliniyorsa hemen engelle
+        if (window.__CAGE_CACHED_CONFIG && window.__CAGE_CACHED_CONFIG.downloadsEnabled === false) {
+          openDownloadModal();
+          return false;
+        }
+
+        // Değilse beklemeye al, doğrulama tamamlanmadan indirme başlatma
+        pendingDownloadRequested = true;
+        const heroBtn = document.getElementById('btnDownloadHero');
+        if (heroBtn) {
+          const sub = heroBtn.querySelector('.btn-sub');
+          if (sub) sub.textContent = 'Durum doğrulanıyor, lütfen bekleyiniz...';
+        }
+        return false;
+      }
+
+      // 3. İndirmeler açık ve onaylandıysa güvenli indirme endpointine git
+      executeDownload();
+      return true;
+    }
+
+    function executeDownload() {
+      window.location.href = '/api/download?_t=' + Date.now();
+    }
 
     async function loadDynamicSiteConfig() {
       try {
@@ -761,14 +824,31 @@
         }
 
         if (config) {
-          applySiteConfiguration(config);
+          window.__CAGE_SITE_CONFIG = config;
+          isSiteConfigLoaded = true;
+          try {
+            localStorage.setItem('cage_site_config', JSON.stringify(config));
+          } catch(e) {}
+          applySiteConfiguration(config, false);
+
+          // Kullanıcı sayfa açılırken indirmeye basmışsa
+          if (pendingDownloadRequested) {
+            pendingDownloadRequested = false;
+            if (config.downloadsEnabled === false) {
+              openDownloadModal();
+            } else {
+              executeDownload();
+            }
+          }
         }
       } catch (err) {
         console.warn("Dinamik ayarlar yüklenemedi:", err);
       }
     }
 
-    function applySiteConfiguration(cfg) {
+    function applySiteConfiguration(cfg, fromCache = false) {
+      window.__CAGE_SITE_CONFIG = cfg;
+
       // 1. Çok Yakında Duyurusu Kontrolü
       const topBar = document.getElementById('siteTopAnnouncementBar');
       const topBarText = document.getElementById('siteTopAnnouncementText');
@@ -780,17 +860,17 @@
         const pos = cfg.comingSoonPosition || 'both';
 
         if (pos === 'both' || pos === 'topbar') {
-          topBarText.textContent = text;
-          topBar.style.display = 'flex';
+          if (topBarText) topBarText.textContent = text;
+          if (topBar) topBar.style.display = 'flex';
         } else {
-          topBar.style.display = 'none';
+          if (topBar) topBar.style.display = 'none';
         }
 
         if (pos === 'both' || pos === 'hero') {
-          heroBadgeText.textContent = text;
-          heroBadge.style.display = 'inline-flex';
+          if (heroBadgeText) heroBadgeText.textContent = text;
+          if (heroBadge) heroBadge.style.display = 'inline-flex';
         } else {
-          heroBadge.style.display = 'none';
+          if (heroBadge) heroBadge.style.display = 'none';
         }
       } else {
         if (topBar) topBar.style.display = 'none';
@@ -802,7 +882,7 @@
       const countdownLabel = document.getElementById('siteCountdownLabel');
 
       if (cfg.showCountdown && cfg.countdownTarget) {
-        countdownBox.style.display = 'block';
+        if (countdownBox) countdownBox.style.display = 'block';
         if (countdownLabel && cfg.countdownLabel) {
           countdownLabel.textContent = cfg.countdownLabel;
         }
@@ -812,47 +892,42 @@
         if (countdownBox) countdownBox.style.display = 'none';
       }
 
-      // 3. İndirme Kapatma / Kilitleme Kontrolü
+      // 3. İndirme Kapatma / Kilitleme Kontrolü (Tam Güvenlikli)
       siteCurrentNotice = cfg.downloadsDisabledNotice || siteCurrentNotice;
       const downloadElements = [
         document.getElementById('btnDownloadHero'),
-        document.querySelector('.nav-download-btn'),
-        document.querySelector('.bottom-cta-banner a[download]')
+        document.getElementById('btnDownloadNav'),
+        document.getElementById('btnDownloadBottom')
       ].filter(Boolean);
 
       if (cfg.downloadsEnabled === false) {
+        document.documentElement.classList.add('downloads-blocked');
         downloadElements.forEach(el => {
           el.classList.add('download-disabled');
-          el.removeAttribute('download');
           el.setAttribute('data-disabled', 'true');
           
-          // Güncelleme başlıkları
           const titleSpan = el.querySelector('.btn-title');
           if (titleSpan) titleSpan.textContent = 'İndirmeler Geçici Olarak Kapalı';
           const subSpan = el.querySelector('.btn-sub');
           if (subSpan) subSpan.textContent = 'Bakım ve yeni sürüm hazırlığı sürüyor';
-          const navSpan = el.querySelector('span');
-          if (navSpan && el.classList.contains('nav-download-btn')) navSpan.textContent = 'İndirmeler Kapalı';
-          
-          el.onclick = function(e) {
-            e.preventDefault();
-            openDownloadModal();
-          };
+          const navSpan = el.querySelector('.btn-dl-text') || el.querySelector('span');
+          if (navSpan && (el.id === 'btnDownloadNav' || el.id === 'btnDownloadBottom')) {
+            navSpan.textContent = 'İndirmeler Kapalı';
+          }
         });
       } else {
+        document.documentElement.classList.remove('downloads-blocked');
         downloadElements.forEach(el => {
           el.classList.remove('download-disabled');
-          el.setAttribute('download', 'CAGE_AI_Setup.exe');
           el.removeAttribute('data-disabled');
           
           const titleSpan = el.querySelector('.btn-title');
           if (titleSpan) titleSpan.textContent = "Windows İçin CAGE AI'yı İndir (.exe)";
           const subSpan = el.querySelector('.btn-sub');
           if (subSpan) subSpan.textContent = "v1.0.1 Resmi Kurulum Sihirbazı • 83.4 MB • 64-Bit";
-          const navSpan = el.querySelector('span');
-          if (navSpan && el.classList.contains('nav-download-btn')) navSpan.textContent = 'İndir (.exe)';
-          
-          el.onclick = null;
+          const navSpan = el.querySelector('.btn-dl-text') || el.querySelector('span');
+          if (navSpan && el.id === 'btnDownloadNav') navSpan.textContent = 'İndir (.exe)';
+          if (navSpan && el.id === 'btnDownloadBottom') navSpan.textContent = 'Hemen İndir (.exe)';
         });
       }
     }

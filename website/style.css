@@ -1523,7 +1523,10 @@ input:checked + .slider:before {
   margin-top: 6px;
 }
 
-/* 4. İndirme Durumu Kilitlendiğinde (Download Disabled State) */
+/* 4. İndirme Durumu Kilitlendiğinde (Download Disabled State & Erken Kalkan) */
+html.downloads-blocked #btnDownloadHero,
+html.downloads-blocked #btnDownloadNav,
+html.downloads-blocked #btnDownloadBottom,
 .btn.download-disabled,
 .nav-download-btn.download-disabled {
   background: rgba(30, 41, 59, 0.8) !important;
@@ -1534,15 +1537,25 @@ input:checked + .slider:before {
   transform: none !important;
 }
 
-.btn.download-disabled .btn-title,
-.nav-download-btn.download-disabled span {
+html.downloads-blocked #btnDownloadHero .btn-title,
+.btn.download-disabled .btn-title {
   color: #fda4af !important;
 }
 
+html.downloads-blocked #btnDownloadHero .btn-sub,
 .btn.download-disabled .btn-sub {
   color: #94a3b8 !important;
 }
 
+html.downloads-blocked #btnDownloadNav span,
+html.downloads-blocked #btnDownloadBottom span,
+.nav-download-btn.download-disabled span {
+  color: #fda4af !important;
+}
+
+html.downloads-blocked #btnDownloadHero:hover,
+html.downloads-blocked #btnDownloadNav:hover,
+html.downloads-blocked #btnDownloadBottom:hover,
 .btn.download-disabled:hover,
 .nav-download-btn.download-disabled:hover {
   background: rgba(244, 63, 94, 0.15) !important;
