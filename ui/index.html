@@ -142,8 +142,91 @@
           </div>
         </div>
 
-        <!-- User Profile Card -->
+        <!-- User Profile Card & Floating Popover Menu -->
         <div class="sidebar-footer">
+          <!-- Popover Dropup Menu (User Menu) -->
+          <div class="user-popover-menu hidden" id="userPopoverMenu">
+            <!-- Popover Header -->
+            <div class="popover-user-header">
+              <div class="popover-user-info">
+                <span class="popover-email" id="popoverUserEmail">kullanici@cageai.internal</span>
+                <span class="popover-plan-badge" id="popoverPlanBadge">Free plan</span>
+              </div>
+            </div>
+
+            <div class="popover-divider"></div>
+
+            <!-- Popover Menu List -->
+            <div class="popover-menu-list">
+              <button class="popover-item" id="menuItemSettings">
+                <div class="p-item-left">
+                  <span class="p-icon">⚙️</span>
+                  <span class="p-text">Hesap &amp; Ayarlar</span>
+                </div>
+                <span class="p-shortcut">Ctrl+,</span>
+              </button>
+
+              <button class="popover-item" id="menuItemLanguage">
+                <div class="p-item-left">
+                  <span class="p-icon">🌐</span>
+                  <span class="p-text">Dil / Language</span>
+                </div>
+                <span class="p-badge-sub">TR</span>
+              </button>
+
+              <button class="popover-item" id="menuItemHelp">
+                <div class="p-item-left">
+                  <span class="p-icon">❓</span>
+                  <span class="p-text">Yardım &amp; Destek</span>
+                </div>
+              </button>
+
+              <button class="popover-item" id="menuItemAbout">
+                <div class="p-item-left">
+                  <span class="p-icon">ℹ️</span>
+                  <span class="p-text">CAGE AI Hakkında</span>
+                </div>
+                <span class="p-arrow">›</span>
+              </button>
+
+              <div class="popover-divider"></div>
+
+              <button class="popover-item highlight-plan" id="menuItemUpgrade">
+                <div class="p-item-left">
+                  <span class="p-icon">⬆️</span>
+                  <span class="p-text">Planı Yükselt</span>
+                </div>
+                <span class="p-badge-pro">PRO</span>
+              </button>
+
+              <button class="popover-item" id="menuItemExtensions">
+                <div class="p-item-left">
+                  <span class="p-icon">💻</span>
+                  <span class="p-text">Kodlama Stüdyosu Modu</span>
+                </div>
+              </button>
+
+              <div class="popover-divider"></div>
+
+              <button class="popover-item" id="menuItemApiKey">
+                <div class="p-item-left">
+                  <span class="p-icon">🔑</span>
+                  <span class="p-text">CAGE API &amp; Token</span>
+                </div>
+                <span class="p-ext-icon">↗</span>
+              </button>
+
+              <div class="popover-divider"></div>
+
+              <button class="popover-item danger-item" id="menuItemAuthAction">
+                <div class="p-item-left">
+                  <span class="p-icon" id="popoverAuthIcon">🚪</span>
+                  <span class="p-text" id="popoverAuthText">Çıkış Yap</span>
+                </div>
+              </button>
+            </div>
+          </div>
+
           <div class="user-profile-badge" id="btnUserProfile">
             <div class="user-avatar" id="userAvatar">K</div>
             <div class="user-meta">
@@ -151,7 +234,7 @@
               <span class="user-plan-tag" id="userPlanTag">• Free plan</span>
             </div>
             <button class="user-menu-btn" title="Kullanıcı Menüsü">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
             </button>
           </div>
         </div>

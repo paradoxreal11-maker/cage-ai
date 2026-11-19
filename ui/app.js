@@ -66,6 +66,21 @@ document.addEventListener('DOMContentLoaded', async () => {
   const userPlanTag = document.getElementById('userPlanTag');
   const userAvatar = document.getElementById('userAvatar');
 
+  // Floating Popover Menu Elements (Örnek Panel Birebir Entegrasyon)
+  const userPopoverMenu = document.getElementById('userPopoverMenu');
+  const popoverUserEmail = document.getElementById('popoverUserEmail');
+  const popoverPlanBadge = document.getElementById('popoverPlanBadge');
+  const menuItemSettings = document.getElementById('menuItemSettings');
+  const menuItemLanguage = document.getElementById('menuItemLanguage');
+  const menuItemHelp = document.getElementById('menuItemHelp');
+  const menuItemAbout = document.getElementById('menuItemAbout');
+  const menuItemUpgrade = document.getElementById('menuItemUpgrade');
+  const menuItemExtensions = document.getElementById('menuItemExtensions');
+  const menuItemApiKey = document.getElementById('menuItemApiKey');
+  const menuItemAuthAction = document.getElementById('menuItemAuthAction');
+  const popoverAuthIcon = document.getElementById('popoverAuthIcon');
+  const popoverAuthText = document.getElementById('popoverAuthText');
+
   // Chat Mode View Elements
   const welcomeContainerChat = document.getElementById('welcomeContainerChat');
   const messagesContainerChat = document.getElementById('messagesContainerChat');
@@ -1074,7 +1089,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   // USER AUTHENTICATION & ACCOUNT PROFILE LOGIC
   function isUserLoggedIn() {
     const u = storeData?.currentUser;
-    return !!(u && u.role !== 'guest' && u.email && !u.email.endsWith('@cageai.internal'));
+    if (!u) return false;
+    if (u.id === 'user_default' || u.role === 'guest') return false;
+    if (u.email === 'kullanici@cageai.internal' && u.username === 'Kullanıcı') return false;
+    return true;
   }
 
   function openAccountSettings() {
@@ -1104,16 +1122,156 @@ document.addEventListener('DOMContentLoaded', async () => {
     accountSettingsModal.classList.remove('hidden');
   }
 
-  btnAuthTrigger.addEventListener('click', () => authModal.classList.remove('hidden'));
-  
-  // Clicking profile name/avatar opens Account Settings if logged in, otherwise opens Auth Login
-  btnUserProfile.addEventListener('click', () => {
-    if (isUserLoggedIn()) {
-      openAccountSettings();
+  // 1. Popover Kullanıcı Bilgisi Güncelleme
+  function updatePopoverUserUI() {
+    const u = storeData?.currentUser || {};
+    const loggedIn = isUserLoggedIn();
+
+    if (popoverUserEmail) {
+      if (loggedIn && u.email && !u.email.endsWith('@cageai.internal')) {
+        popoverUserEmail.textContent = u.email;
+      } else if (loggedIn && u.username) {
+        popoverUserEmail.textContent = u.username;
+      } else {
+        popoverUserEmail.textContent = 'Kullanıcı (Giriş Yapılmadı)';
+      }
+    }
+
+    if (popoverPlanBadge) {
+      let pName = 'Free plan';
+      if (u.plan === 'premium_ultra') pName = 'Premium & Ultra';
+      else if (u.plan === 'codium_5_1_ultra') pName = 'Codium 5.1 Ultra';
+      popoverPlanBadge.textContent = pName;
+    }
+
+    if (popoverAuthIcon && popoverAuthText && menuItemAuthAction) {
+      if (loggedIn) {
+        popoverAuthIcon.textContent = '🚪';
+        popoverAuthText.textContent = 'Çıkış Yap';
+        menuItemAuthAction.className = 'popover-item danger-item';
+      } else {
+        popoverAuthIcon.textContent = '🔑';
+        popoverAuthText.textContent = 'Giriş Yap / Kayıt Ol';
+        menuItemAuthAction.className = 'popover-item';
+      }
+    }
+  }
+
+  function toggleUserPopover() {
+    if (!userPopoverMenu) return;
+    const isHidden = userPopoverMenu.classList.contains('hidden');
+    if (isHidden) {
+      updatePopoverUserUI();
+      userPopoverMenu.classList.remove('hidden');
+      btnUserProfile.classList.add('active');
     } else {
-      authModal.classList.remove('hidden');
+      userPopoverMenu.classList.add('hidden');
+      btnUserProfile.classList.remove('active');
+    }
+  }
+
+  function closeUserPopover() {
+    if (userPopoverMenu && !userPopoverMenu.classList.contains('hidden')) {
+      userPopoverMenu.classList.add('hidden');
+      btnUserProfile.classList.remove('active');
+    }
+  }
+
+  // Kullanıcı profiline basıldığında ASLA giriş modalı açılmaz, yalnızca Popover Menü açılır!
+  btnUserProfile.addEventListener('click', (e) => {
+    e.stopPropagation();
+    toggleUserPopover();
+  });
+
+  // Menü dışına tıklandığında menüyü kapat
+  document.addEventListener('click', (e) => {
+    if (userPopoverMenu && !userPopoverMenu.classList.contains('hidden')) {
+      if (!userPopoverMenu.contains(e.target) && !btnUserProfile.contains(e.target)) {
+        closeUserPopover();
+      }
     }
   });
+
+  // Escape ile kapat, Ctrl+, ile Ayarlar Modalını aç
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      closeUserPopover();
+    }
+    if ((e.ctrlKey || e.metaKey) && e.key === ',') {
+      e.preventDefault();
+      closeUserPopover();
+      openAccountSettings();
+    }
+  });
+
+  // Popover Menü İşlemleri
+  if (menuItemSettings) {
+    menuItemSettings.addEventListener('click', () => {
+      closeUserPopover();
+      openAccountSettings();
+    });
+  }
+
+  if (menuItemLanguage) {
+    menuItemLanguage.addEventListener('click', () => {
+      closeUserPopover();
+      showToast('CAGE AI varsayılan olarak Türkçe diline ayarlanmıştır.');
+    });
+  }
+
+  if (menuItemHelp) {
+    menuItemHelp.addEventListener('click', () => {
+      closeUserPopover();
+      if (navTickets) navTickets.click();
+    });
+  }
+
+  if (menuItemAbout) {
+    menuItemAbout.addEventListener('click', () => {
+      closeUserPopover();
+      showToast('CAGE AI v1.0.1 • Windows Yönetici Yetkili Masaüstü Sürümü');
+    });
+  }
+
+  if (menuItemUpgrade) {
+    menuItemUpgrade.addEventListener('click', () => {
+      closeUserPopover();
+      marketModal.classList.remove('hidden');
+    });
+  }
+
+  if (menuItemExtensions) {
+    menuItemExtensions.addEventListener('click', () => {
+      closeUserPopover();
+      if (tabModeCode) tabModeCode.click();
+    });
+  }
+
+  if (menuItemApiKey) {
+    menuItemApiKey.addEventListener('click', () => {
+      closeUserPopover();
+      showToast('CAGE AI Yerel Codium Motoru ve Otonom Ajan API aktif.');
+    });
+  }
+
+  if (menuItemAuthAction) {
+    menuItemAuthAction.addEventListener('click', async () => {
+      closeUserPopover();
+      if (isUserLoggedIn()) {
+        if (window.cageAI) {
+          await window.cageAI.authLogout();
+          showToast('Hesabınızdan güvenle çıkış yapıldı.');
+          await refreshStoreData();
+          focusActiveInput();
+        }
+      } else {
+        // Yalnızca kullanıcı bilinçli olarak bu menü butonuna basarsa giriş modalı açılır
+        authModal.classList.remove('hidden');
+      }
+    });
+  }
+
+  btnAuthTrigger.addEventListener('click', () => authModal.classList.remove('hidden'));
 
   btnCloseAuth.addEventListener('click', () => {
     authModal.classList.add('hidden');
